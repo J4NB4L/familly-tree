@@ -9,14 +9,7 @@ export function renderLeftSidebar() {
         <li>
           <button id="bellman-ford-button" class="sidebar-button">Bellman-Ford</button>
         </li>
-        <li>
-          <button id="prim-button" class="sidebar-button">Prim</button>
-        </li>
-        <li>
-          <button id="kruskal-button" class="sidebar-button">Kruskal</button>
-        </li>
       </ul>
-      <h3 class="sidebar-title" style="margin-top: 30px;">Sous-famille</h3>
       <div id="dijkstra-form" class="sidebar-form" style="display: none;">
         <h3 class="sidebar-title">Dijkstra</h3>
         <label>Personne de départ :</label>
@@ -33,6 +26,15 @@ export function renderLeftSidebar() {
         <select id="bellman-ford-end-person"></select>
         <button id="run-bellman-ford">Lancer Bellman-Ford</button>
       </div>
+      <h3 class="sidebar-title" style="margin-top: 30px;">Sous-famille</h3>
+      <ul class="sidebar-menu">
+        <li>
+          <button id="prim-button" class="sidebar-button">Prim</button>
+        </li>
+        <li>
+          <button id="kruskal-button" class="sidebar-button">Kruskal</button>
+        </li>
+      </ul>
       <div id="prim-form" class="sidebar-form" style="display: none;">
         <h3 class="sidebar-title">Prim</h3>
         <label>Personne de départ :</label>

@@ -111,7 +111,9 @@ export function initRouter(rawFamilyData) {
                   option.value = person.id;
                   option.textContent = person.name;
                   startPersonSelect.appendChild(option);
-                  endPersonSelect.appendChild(option.cloneNode(true));
+                  if (endPersonSelect) {
+                    endPersonSelect.appendChild(option.cloneNode(true));
+                  }
                 });
               }
             });
