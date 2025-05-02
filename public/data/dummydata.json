@@ -1,0 +1,60 @@
+[
+    {
+      "id": 1,
+      "name": "Jean Dupont",
+      "pid": null,
+      "gender": "male",
+      "birthYear": 1955,
+      "img": "/assets/avatars/father.svg",
+      "gmail": "jean.dupont@gmail.com"
+    },
+    {
+      "id": 2,
+      "name": "Claire Martin",
+      "pid": null,
+      "gender": "female",
+      "birthYear": 1958,
+      "img": "/assets/avatars/mother.svg",
+      "gmail": "claire.martin@gmail.com"
+    },
+    {
+      "id": 3,
+      "name": "Lucas Dupont",
+      "pid": 1,
+      "mid": 2,
+      "gender": "male",
+      "birthYear": 1985,
+      "img": "/assets/avatars/son.svg",
+      "gmail": "lucas.dupont@gmail.com"
+    },
+    {
+      "id": 4,
+      "name": "Emma Dupont",
+      "pid": 1,
+      "mid": 2,
+      "gender": "female",
+      "birthYear": 1988,
+      "img": "/assets/avatars/daughter.svg",
+      "gmail": "emma.dupont@gmail.com"
+    },
+    {
+      "id": 5,
+      "name": "Sophie Bernard",
+      "pid": null,
+      "gender": "female",
+      "birthYear": 1986,
+      "img": "/assets/avatars/wife.svg",
+      "gmail": "sophie.bernard@gmail.com"
+    },
+    {
+      "id": 6,
+      "name": "Léo Dupont",
+      "pid": 3,
+      "mid": 5,
+      "gender": "male",
+      "birthYear": 2015,
+      "img": "/assets/avatars/grandson.svg",
+      "gmail": "leo.dupont@gmail.com"
+    }
+  ]
+  
