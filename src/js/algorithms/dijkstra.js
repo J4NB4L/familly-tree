@@ -1,18 +1,128 @@
-// js/algorithm/dijkstra.js
 import cytoscape from 'cytoscape';
+import { clearAlgorithmSteps } from '../utils/helper';
 
 export function initDijkstra(cy, startNode, endNode) {
-  const dijkstra = cy.elements().dijkstra({
-    root: startNode,
-    directed: false
+  clearAlgorithmSteps();
+
+  // Initialiser le suivi des étapes
+  const steps = [];
+  steps.push("Initialisation de l'algorithme de Dijkstra");
+  steps.push(`Nœud de départ: ${startNode.id()}, Nœud d'arrivée: ${endNode.id()}`);
+  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+
+  // Réinitialiser les styles
+  cy.edges().style({
+    'line-color': '#9dbaea',
+    'width': 6
   });
 
-  const pathToEnd = dijkstra.pathTo(endNode);
+  // Tous les nœuds du graphe
+  const nodes = cy.nodes();
 
-  if (pathToEnd.length > 0) {
-    pathToEnd.edges().style({
-      'line-color': 'red',
-      'width': 3
+  // Maps pour suivre les distances et les parents
+  const visited = new Map();
+  const distances = new Map();
+  const parent = new Map();
+
+  // Initialisation des structures de données
+  nodes.forEach(node => {
+    const id = node.id();
+    distances.set(id, id === startNode.id() ? 0 : Infinity);
+    parent.set(id, null);
+  });
+
+  // Algorithme de Dijkstra
+  while (true) {
+    // Trouver le nœud non visité avec la distance minimale
+    let minDistance = Infinity;
+    let minNode = null;
+
+    nodes.forEach(node => {
+      const id = node.id();
+      if (!visited.has(id) && distances.get(id) < minDistance) {
+        minDistance = distances.get(id);
+        minNode = node;
+      }
+    });
+
+    // Si aucun nœud n'est accessible ou si nous avons atteint le nœud cible
+    if (minNode === null || minNode.id() === endNode.id()) break;
+
+    // Marquer le nœud comme visité
+    visited.set(minNode.id(), true);
+    steps.push(`Exploration du nœud ${minNode.id()} avec distance ${distances.get(minNode.id())}`);
+    localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+
+    // Mettre à jour les distances des nœuds adjacents
+    const neighbors = minNode.neighborhood().nodes().filter(n => !visited.has(n.id()));
+
+    neighbors.forEach(neighbor => {
+      const neighborId = neighbor.id();
+      // Trouver l'arête entre minNode et neighbor
+      const edge = cy.elements().edges(`[source = "${minNode.id()}"][target = "${neighborId}"], [source = "${neighborId}"][target = "${minNode.id()}"]`);
+
+      // Dans un graphe non pondéré, la distance est 1; sinon utiliser le poids de l'arête
+      const weight = edge.data('weight') || 1;
+      const distance = distances.get(minNode.id()) + weight;
+
+      if (distance < distances.get(neighborId)) {
+        distances.set(neighborId, distance);
+        parent.set(neighborId, minNode.id());
+        steps.push(`Mise à jour de la distance du nœud ${neighborId}: ${distances.get(neighborId)} → ${distance}`);
+        localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+
+        // Animer le changement de couleur
+        edge.addClass('highlighted-dijkstra');
+        setTimeout(() => {
+          edge.removeClass('highlighted-dijkstra');
+        }, 1000); // Durée de l'animation
+      }
     });
   }
+
+  // Reconstruire le chemin du nœud de départ au nœud d'arrivée
+  const path = [];
+  let current = endNode.id();
+
+  while (current !== null && current !== startNode.id()) {
+    const parentId = parent.get(current);
+    if (parentId === null) break; // Pas de chemin
+
+    // Ajouter l'arête au chemin
+    const edge = cy.elements().edges(`[source = "${parentId}"][target = "${current}"], [source = "${current}"][target = "${parentId}"]`);
+    path.unshift(edge);
+
+    current = parentId;
+  }
+
+  // Afficher le chemin trouvé
+  if (path.length > 0) {
+    path.forEach(edge => {
+      edge.style({
+        'line-color': 'red', // Couleur pour Dijkstra
+        'width': 5
+      });
+    });
+
+    // Animation facultative
+    let delay = 0;
+    const animationStep = 500;
+
+    path.forEach(edge => {
+      setTimeout(() => {
+        edge.flashClass('highlighted-dijkstra', 1000);
+      }, delay);
+      delay += animationStep;
+    });
+
+    console.log(`Algorithme de Dijkstra: chemin trouvé de ${startNode.id()} à ${endNode.id()} avec ${path.length} arêtes`);
+    console.log(`Distance totale: ${distances.get(endNode.id())}`);
+    steps.push(`Chemin trouvé de ${startNode.id()} à ${endNode.id()} avec distance totale ${distances.get(endNode.id())}`);
+  } else {
+    console.log(`Aucun chemin trouvé de ${startNode.id()} à ${endNode.id()}`);
+    steps.push(`Aucun chemin trouvé de ${startNode.id()} à ${endNode.id()}`);
+  }
+  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+
+  return path;
 }

@@ -1,3 +1,5 @@
+// login.js
+
 export function renderLoginPage() {
   return `
     <div class="container-card">
@@ -57,13 +59,320 @@ export function setupLoginFormHandler() {
       id: 100,
       name,
       pid: null,
+      mid: null,
+      pids: [],
       gender,
       birthYear,
       img,
       gmail // <-- ajouté ici
     };
 
+    // Initialiser les données de la famille dans le localStorage
+    const initialFamilyData = [
+      {
+        "id": 1,
+        "name": "Maurice Dupont",
+        "pid": null,
+        "mid": null,
+        "pids": [2],
+        "gender": "male",
+        "birthYear": 1935,
+        "deathYear": 2010,
+        "img": "/assets/avatars/grandfather.svg",
+        "gmail": "maurice.dupont@gmail.com"
+      },
+      {
+        "id": 2,
+        "name": "Jeanne Martin",
+        "pid": null,
+        "mid": null,
+        "pids": [1],
+        "gender": "female",
+        "birthYear": 1938,
+        "deathYear": 2015,
+        "img": "/assets/avatars/grandmother.svg",
+        "gmail": "jeanne.martin@gmail.com"
+      },
+      {
+        "id": 3,
+        "name": "Bernard Dupont",
+        "pid": 1,
+        "mid": 2,
+        "pids": [4],
+        "gender": "male",
+        "birthYear": 1960,
+        "img": "/assets/avatars/father.svg",
+        "gmail": "bernard.dupont@gmail.com"
+      },
+      {
+        "id": 4,
+        "name": "Sophie Lefèvre",
+        "pid": null,
+        "mid": null,
+        "pids": [3],
+        "gender": "female",
+        "birthYear": 1962,
+        "img": "/assets/avatars/mother.svg",
+        "gmail": "sophie.lefevre@gmail.com"
+      },
+      {
+        "id": 5,
+        "name": "Pierre Lambert",
+        "pid": null,
+        "mid": null,
+        "pids": [6],
+        "gender": "male",
+        "birthYear": 1958,
+        "img": "/assets/avatars/father.svg",
+        "gmail": "pierre.lambert@gmail.com"
+      },
+      {
+        "id": 6,
+        "name": "Catherine Dupont",
+        "pid": 1,
+        "mid": 2,
+        "pids": [5],
+        "gender": "female",
+        "birthYear": 1963,
+        "img": "/assets/avatars/mother.svg",
+        "gmail": "catherine.dupont@gmail.com"
+      },
+      {
+        "id": 7,
+        "name": "René Moreau",
+        "pid": null,
+        "mid": null,
+        "pids": [8],
+        "gender": "male",
+        "birthYear": 1965,
+        "img": "/assets/avatars/father.svg",
+        "gmail": "rene.moreau@gmail.com"
+      },
+      {
+        "id": 8,
+        "name": "Marie Dupont",
+        "pid": 1,
+        "mid": 2,
+        "pids": [7],
+        "gender": "female",
+        "birthYear": 1965,
+        "img": "/assets/avatars/mother.svg",
+        "gmail": "marie.dupont@gmail.com"
+      },
+      {
+        "id": 9,
+        "name": "Thomas Dupont",
+        "pid": 3,
+        "mid": 4,
+        "pids": [10],
+        "gender": "male",
+        "birthYear": 1985,
+        "img": "/assets/avatars/son.svg",
+        "gmail": "thomas.dupont@gmail.com"
+      },
+      {
+        "id": 10,
+        "name": "Laura Blanc",
+        "pid": null,
+        "mid": null,
+        "pids": [9],
+        "gender": "female",
+        "birthYear": 1988,
+        "img": "/assets/avatars/wife.svg",
+        "gmail": "laura.blanc@gmail.com"
+      },
+      {
+        "id": 11,
+        "name": "Emilie Dupont",
+        "pid": 3,
+        "mid": 4,
+        "pids": [12],
+        "gender": "female",
+        "birthYear": 1990,
+        "img": "/assets/avatars/daughter.svg",
+        "gmail": "emilie.dupont@gmail.com"
+      },
+      {
+        "id": 12,
+        "name": "Julien Petit",
+        "pid": null,
+        "mid": null,
+        "pids": [11],
+        "gender": "male",
+        "birthYear": 1987,
+        "img": "/assets/avatars/husband.svg",
+        "gmail": "julien.petit@gmail.com"
+      },
+      {
+        "id": 13,
+        "name": "Marc Lambert",
+        "pid": 5,
+        "mid": 6,
+        "gender": "male",
+        "birthYear": 1988,
+        "img": "/assets/avatars/son.svg",
+        "gmail": "marc.lambert@gmail.com"
+      },
+      {
+        "id": 14,
+        "name": "Claire Lambert",
+        "pid": 5,
+        "mid": 6,
+        "gender": "female",
+        "birthYear": 1992,
+        "img": "/assets/avatars/daughter.svg",
+        "gmail": "claire.lambert@gmail.com"
+      },
+      {
+        "id": 15,
+        "name": "Pascal Moreau",
+        "pid": 7,
+        "mid": 8,
+        "gender": "male",
+        "birthYear": 1990,
+        "img": "/assets/avatars/son.svg",
+        "gmail": "pascal.moreau@gmail.com"
+      },
+      {
+        "id": 16,
+        "name": "Alice Moreau",
+        "pid": 7,
+        "mid": 8,
+        "gender": "female",
+        "birthYear": 1993,
+        "img": "/assets/avatars/daughter.svg",
+        "gmail": "alice.moreau@gmail.com"
+      },
+      {
+        "id": 17,
+        "name": "Léo Dupont",
+        "pid": 9,
+        "mid": 10,
+        "gender": "male",
+        "birthYear": 2015,
+        "img": "/assets/avatars/grandson.svg",
+        "gmail": "leo.dupont@gmail.com"
+      },
+      {
+        "id": 18,
+        "name": "Emma Dupont",
+        "pid": 9,
+        "mid": 10,
+        "gender": "female",
+        "birthYear": 2018,
+        "img": "/assets/avatars/granddaughter.svg",
+        "gmail": "emma.dupont@gmail.com"
+      },
+      {
+        "id": 19,
+        "name": "Lucas Petit",
+        "pid": 12,
+        "mid": 11,
+        "gender": "male",
+        "birthYear": 2019,
+        "img": "/assets/avatars/grandson.svg",
+        "gmail": "lucas.petit@gmail.com"
+      },
+      {
+        "id": 20,
+        "name": "Louise Petit",
+        "pid": 12,
+        "mid": 11,
+        "gender": "female",
+        "birthYear": 2021,
+        "img": "/assets/avatars/granddaughter.svg",
+        "gmail": "louise.petit@gmail.com"
+      },
+      {
+        "id": 21,
+        "name": "Richard Roy",
+        "pid": null,
+        "mid": null,
+        "pids": [22],
+        "gender": "male",
+        "birthYear": 1940,
+        "deathYear": 2020,
+        "img": "/assets/avatars/grandfather.svg",
+        "gmail": "richard.roy@gmail.com"
+      },
+      {
+        "id": 22,
+        "name": "Hélène Durand",
+        "pid": null,
+        "mid": null,
+        "pids": [21],
+        "gender": "female",
+        "birthYear": 1942,
+        "img": "/assets/avatars/grandmother.svg",
+        "gmail": "helene.durand@gmail.com"
+      },
+      {
+        "id": 23,
+        "name": "Philippe Roy",
+        "pid": 21,
+        "mid": 22,
+        "pids": [24],
+        "gender": "male",
+        "birthYear": 1964,
+        "img": "/assets/avatars/father.svg",
+        "gmail": "philippe.roy@gmail.com"
+      },
+      {
+        "id": 24,
+        "name": "Nathalie Simon",
+        "pid": null,
+        "mid": null,
+        "pids": [23],
+        "gender": "female",
+        "birthYear": 1967,
+        "img": "/assets/avatars/mother.svg",
+        "gmail": "nathalie.simon@gmail.com"
+      },
+      {
+        "id": 25,
+        "name": "Isabelle Roy",
+        "pid": 21,
+        "mid": 22,
+        "pids": [15],
+        "gender": "female",
+        "birthYear": 1968,
+        "img": "/assets/avatars/mother.svg",
+        "gmail": "isabelle.roy@gmail.com"
+      },
+      {
+        "id": 26,
+        "name": "Antoine Roy",
+        "pid": 23,
+        "mid": 24,
+        "gender": "male",
+        "birthYear": 1995,
+        "img": "/assets/avatars/son.svg",
+        "gmail": "antoine.roy@gmail.com"
+      },
+      {
+        "id": 27,
+        "name": "Camille Roy",
+        "pid": 23,
+        "mid": 24,
+        "gender": "female",
+        "birthYear": 1998,
+        "img": "/assets/avatars/daughter.svg",
+        "gmail": "camille.roy@gmail.com"
+      },
+      {
+        "id": 28,
+        "name": "Théo Moreau",
+        "pid": 15,
+        "mid": 25,
+        "gender": "male",
+        "birthYear": 2020,
+        "img": "/assets/avatars/grandson.svg",
+        "gmail": "theo.moreau@gmail.com"
+      }
+    ];
+
     localStorage.setItem('userProfile', JSON.stringify(userData));
+    localStorage.setItem('familyData', JSON.stringify(initialFamilyData));
     window.location.href = '/profile';
   });
 

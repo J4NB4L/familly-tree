@@ -125,7 +125,8 @@ body {
     border: 1px solid rgba(0, 0, 0, 0.05);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     flex: 1; /* Ajoutez cette ligne pour permettre au conteneur de s'étendre */
-    overflow: hidden; /* Évitez les scrollbars */
+    max-height: calc(100vh - 150px); /* Ajustez la hauteur maximale */
+    overflow-y: auto; /* Permettre le défilement vertical */
 }
 
 .container-card:hover {
@@ -155,8 +156,9 @@ body {
     font-weight: 600;
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
     letter-spacing: 0.5px;
+    color: #fbfbfb; /* Change text color to black */
 }
 
 .sidebar-menu {
@@ -168,7 +170,7 @@ body {
 }
 
 .sidebar-menu a {
-    color: #e2e8f0;
+    color: #000; /* Change text color to black */
     text-decoration: none;
     display: block;
     padding: 12px 15px;
@@ -203,6 +205,18 @@ body {
 #right-sidebar .info-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Process steps */
+.process-steps {
+    list-style: none;
+    padding: 0;
+}
+
+.process-steps li {
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: #2d3748;
 }
 
 /* Responsive design */
@@ -256,7 +270,7 @@ form {
 
 form label {
     font-weight: 600;
-    color: #2d3748;
+    color: #000; /* Change text color to black */
     font-size: 1.05rem;
     margin-bottom: 5px;
     display: block;
@@ -378,9 +392,6 @@ form button:hover {
     box-shadow: 0 6px 15px rgba(231, 76, 60, 0.4);
 }
 
-
-/* Ajoutez ces styles à votre fichier style.css */
-
 /* Styles pour les boutons dans la sidebar */
 .sidebar-button {
     padding: 10px 20px;
@@ -391,44 +402,44 @@ form button:hover {
     cursor: pointer;
     transition: background-color 0.3s ease;
     margin-top: 10px;
-  }
-  
-  .sidebar-button:hover {
+}
+
+.sidebar-button:hover {
     background-color: #3182ce;
-  }
-  
-  /* Styles pour les formulaires dans la sidebar */
-  .sidebar-form {
+}
+
+/* Styles pour les formulaires dans la sidebar */
+.sidebar-form {
     display: flex;
     flex-direction: column;
     gap: 10px;
     margin-top: 20px;
-  }
-  
-  .sidebar-form label {
+}
+
+.sidebar-form label {
     font-weight: 600;
-    color: #e2e8f0;
+    color: #000; /* Change text color to black */
     font-size: 1rem;
     margin-bottom: 5px;
-  }
-  
-  .sidebar-form select {
+}
+
+.sidebar-form select {
     padding: 10px;
     border-radius: 8px;
     border: 1px solid #e2e8f0;
-    background-color: #1e293b;
-    color: #e2e8f0;
+    background-color: #ffffff;
+    color: #000; /* Change text color to black */
     font-size: 1rem;
     transition: all 0.3s ease;
-  }
-  
-  .sidebar-form select:focus {
+}
+
+.sidebar-form select:focus {
     outline: none;
     border-color: #4299e1;
     box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.25);
-  }
-  
-  .sidebar-form button {
+}
+
+.sidebar-form button {
     padding: 10px 20px;
     border-radius: 8px;
     background-color: #4299e1;
@@ -440,11 +451,131 @@ form button:hover {
     transition: all 0.3s ease;
     box-shadow: 0 4px 10px rgba(49, 130, 206, 0.3);
     margin-top: 20px;
-  }
-  
-  .sidebar-form button:hover {
+}
+
+.sidebar-form button:hover {
     background-color: #3182ce;
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(49, 130, 206, 0.4);
-  }
-  
+}
+
+/* Styles pour les formulaires de recherche */
+.search-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.1); /* Fond légèrement translucide */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Ombre pour un effet de profondeur */
+    transition: all 0.3s ease;
+}
+
+.search-form .sidebar-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #000; /* Change text color to black */
+    margin-bottom: 15px;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.2); /* Ligne de séparation */
+}
+
+.search-form label {
+    font-weight: 500;
+    color: #000; /* Change text color to black */
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+.search-form select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    color: #000; /* Change text color to black */
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.search-form select:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.25);
+}
+
+.search-form button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    background-color: #4299e1;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(49, 130, 206, 0.3);
+    margin-top: 20px;
+}
+
+.search-form button:hover {
+    background-color: #3182ce;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(49, 130, 206, 0.4);
+}
+
+/* Highlighted classes for different algorithms */
+.highlighted-dijkstra {
+    background-color: red !important;
+    line-color: red !important;
+    target-arrow-color: red !important;
+    transition: background-color 1s ease, line-color 1s ease, target-arrow-color 1s ease;
+}
+
+.highlighted-bellman-ford {
+    background-color: blue !important;
+    line-color: blue !important;
+    target-arrow-color: blue !important;
+    transition: background-color 1s ease, line-color 1s ease, target-arrow-color 1s ease;
+}
+
+.highlighted-prim {
+    background-color: green !important;
+    line-color: green !important;
+    target-arrow-color: green !important;
+    transition: background-color 1s ease, line-color 1s ease, target-arrow-color 1s ease;
+}
+
+.highlighted-kruskal {
+    background-color: purple !important;
+    line-color: purple !important;
+    target-arrow-color: purple !important;
+    transition: background-color 1s ease, line-color 1s ease, target-arrow-color 1s ease;
+}
+
+/* Styles for child menus */
+.child-menu {
+    margin-bottom: 15px;
+}
+
+.child-menu label {
+    font-weight: 500;
+    color: #000; /* Change text color to black */
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+.child-menu select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    color: #000; /* Change text color to black */
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.child-menu select:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.25);
+}

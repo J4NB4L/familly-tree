@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@balkangraph/orgchart.js": "^8.16.24",
+    "axios": "^1.9.0",
     "cytoscape": "^3.32.0",
     "family-tp": "file:"
   }
