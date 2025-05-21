@@ -1,5 +1,3 @@
-// profile.js
-
 export function renderProfilePage() {
   const stored = localStorage.getItem('userProfile');
   const user = stored ? JSON.parse(stored) : {
@@ -294,15 +292,15 @@ export function setupProfileFormHandler() {
           childMenu.classList.add('child-menu');
           childMenu.innerHTML = `
             <label>Nom de l'enfant ${i + 1} :</label>
-            <select class="child-select" data-index="${i}"></select>
+            <select id="child-select-${i}" class="child-select"></select>
           `;
           childMenusContainer.appendChild(childMenu);
         }
 
         // Populate the child select menus
-        document.querySelectorAll('.child-select').forEach(select => {
-          populateSelectMenu(select.getAttribute('data-index'), familyData);
-        });
+        for (let i = 0; i < childCount; i++) {
+          populateSelectMenu(`child-select-${i}`, familyData);
+        }
       });
     }
 

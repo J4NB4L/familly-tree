@@ -7,7 +7,7 @@ export function initDijkstra(cy, startNode, endNode) {
   // Initialiser le suivi des étapes
   const steps = [];
   steps.push("Initialisation de l'algorithme de Dijkstra");
-  steps.push(`Nœud de départ: ${startNode.id()}, Nœud d'arrivée: ${endNode.id()}`);
+  steps.push(`Nœud de départ: ${startNode.data('label')}, Nœud d'arrivée: ${endNode.data('label')}`);
   localStorage.setItem('algorithmSteps', JSON.stringify(steps));
 
   // Réinitialiser les styles
@@ -50,7 +50,7 @@ export function initDijkstra(cy, startNode, endNode) {
 
     // Marquer le nœud comme visité
     visited.set(minNode.id(), true);
-    steps.push(`Exploration du nœud ${minNode.id()} avec distance ${distances.get(minNode.id())}`);
+    steps.push(`Exploration du nœud ${minNode.data('label')} avec distance ${distances.get(minNode.id())}`);
     localStorage.setItem('algorithmSteps', JSON.stringify(steps));
 
     // Mettre à jour les distances des nœuds adjacents
@@ -68,7 +68,7 @@ export function initDijkstra(cy, startNode, endNode) {
       if (distance < distances.get(neighborId)) {
         distances.set(neighborId, distance);
         parent.set(neighborId, minNode.id());
-        steps.push(`Mise à jour de la distance du nœud ${neighborId}: ${distances.get(neighborId)} → ${distance}`);
+        steps.push(`Mise à jour de la distance du nœud ${neighbor.data('label')}: ${distances.get(neighborId)} → ${distance}`);
         localStorage.setItem('algorithmSteps', JSON.stringify(steps));
 
         // Animer le changement de couleur
@@ -115,12 +115,12 @@ export function initDijkstra(cy, startNode, endNode) {
       delay += animationStep;
     });
 
-    console.log(`Algorithme de Dijkstra: chemin trouvé de ${startNode.id()} à ${endNode.id()} avec ${path.length} arêtes`);
+    console.log(`Algorithme de Dijkstra: chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')} avec ${path.length} arêtes`);
     console.log(`Distance totale: ${distances.get(endNode.id())}`);
-    steps.push(`Chemin trouvé de ${startNode.id()} à ${endNode.id()} avec distance totale ${distances.get(endNode.id())}`);
+    steps.push(`Chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')} avec distance totale ${distances.get(endNode.id())}`);
   } else {
-    console.log(`Aucun chemin trouvé de ${startNode.id()} à ${endNode.id()}`);
-    steps.push(`Aucun chemin trouvé de ${startNode.id()} à ${endNode.id()}`);
+    console.log(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
+    steps.push(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
   }
   localStorage.setItem('algorithmSteps', JSON.stringify(steps));
 

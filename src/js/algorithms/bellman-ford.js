@@ -7,7 +7,7 @@ export function initBellmanFord(cy, startNode, endNode) {
   // Initialiser le suivi des étapes
   const steps = [];
   steps.push("Initialisation de l'algorithme de Bellman-Ford");
-  steps.push(`Nœud de départ: ${startNode.id()}, Nœud d'arrivée: ${endNode.id()}`);
+  steps.push(`Nœud de départ: ${startNode.data('label')}, Nœud d'arrivée: ${endNode.data('label')}`);
   localStorage.setItem('algorithmSteps', JSON.stringify(steps));
 
   // Réinitialiser les styles
@@ -48,7 +48,7 @@ export function initBellmanFord(cy, startNode, endNode) {
       if (distances.get(source) !== Infinity && distances.get(source) + weight < distances.get(target)) {
         distances.set(target, distances.get(source) + weight);
         parent.set(target, source);
-        steps.push(`Mise à jour de la distance du nœud ${target}: ${distances.get(target)} → ${distances.get(source) + weight}`);
+        steps.push(`Mise à jour de la distance du nœud ${cy.getElementById(target).data('label')}: ${distances.get(target)} → ${distances.get(source) + weight}`);
         localStorage.setItem('algorithmSteps', JSON.stringify(steps));
 
         // Animer le changement de couleur
@@ -61,7 +61,7 @@ export function initBellmanFord(cy, startNode, endNode) {
       if (distances.get(target) !== Infinity && distances.get(target) + weight < distances.get(source)) {
         distances.set(source, distances.get(target) + weight);
         parent.set(source, target);
-        steps.push(`Mise à jour de la distance du nœud ${source}: ${distances.get(source)} → ${distances.get(target) + weight}`);
+        steps.push(`Mise à jour de la distance du nœud ${cy.getElementById(source).data('label')}: ${distances.get(source)} → ${distances.get(target) + weight}`);
         localStorage.setItem('algorithmSteps', JSON.stringify(steps));
 
         // Animer le changement de couleur
@@ -131,12 +131,12 @@ export function initBellmanFord(cy, startNode, endNode) {
       delay += animationStep;
     });
 
-    console.log(`Algorithme de Bellman-Ford: chemin trouvé de ${startNode.id()} à ${endNode.id()} avec ${path.length} arêtes`);
+    console.log(`Algorithme de Bellman-Ford: chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')} avec ${path.length} arêtes`);
     console.log(`Distance totale: ${distances.get(endNode.id())}`);
-    steps.push(`Chemin trouvé de ${startNode.id()} à ${endNode.id()} avec distance totale ${distances.get(endNode.id())}`);
+    steps.push(`Chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')} avec distance totale ${distances.get(endNode.id())}`);
   } else {
-    console.log(`Aucun chemin trouvé de ${startNode.id()} à ${endNode.id()}`);
-    steps.push(`Aucun chemin trouvé de ${startNode.id()} à ${endNode.id()}`);
+    console.log(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
+    steps.push(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
   }
   localStorage.setItem('algorithmSteps', JSON.stringify(steps));
 

@@ -7,7 +7,7 @@ export function initPrim(cy, startNode) {
   // Initialiser le suivi des étapes
   const steps = [];
   steps.push("Initialisation de l'algorithme de Prim");
-  steps.push(`Nœud de départ: ${startNode.id()}`);
+  steps.push(`Nœud de départ: ${startNode.data('label')}`);
   localStorage.setItem('algorithmSteps', JSON.stringify(steps));
 
   // Réinitialiser les styles
@@ -51,7 +51,7 @@ export function initPrim(cy, startNode) {
 
     // Marquer le nœud comme visité
     visited.set(minNode.id(), true);
-    steps.push(`Ajout du nœud ${minNode.id()} à l'arbre couvrant minimal`);
+    steps.push(`Ajout du nœud ${minNode.data('label')} à l'arbre couvrant minimal`);
     localStorage.setItem('algorithmSteps', JSON.stringify(steps));
 
     // Mettre à jour les distances des nœuds adjacents
@@ -67,7 +67,7 @@ export function initPrim(cy, startNode) {
       if (weight < distances.get(neighborId)) {
         distances.set(neighborId, weight);
         parent.set(neighborId, minNode.id());
-        steps.push(`Mise à jour de la distance du nœud ${neighborId}: ${distances.get(neighborId)} → ${weight}`);
+        steps.push(`Mise à jour de la distance du nœud ${neighbor.data('label')}: ${distances.get(neighborId)} → ${weight}`);
         localStorage.setItem('algorithmSteps', JSON.stringify(steps));
 
         // Animer le changement de couleur

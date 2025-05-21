@@ -81,7 +81,7 @@ export function initKruskal(cy, startNode) {
     if (find(source) !== find(target)) {
       union(source, target);
       mstEdges.push(edge);
-      steps.push(`Ajout de l'arête ${source}-${target} de poids ${edgeData.weight} à l'arbre couvrant minimal`);
+      steps.push(`Ajout de l'arête ${cy.getElementById(source).data('label')}-${cy.getElementById(target).data('label')} de poids ${edgeData.weight} à l'arbre couvrant minimal`);
       localStorage.setItem('algorithmSteps', JSON.stringify(steps));
 
       // Colorer l'arête

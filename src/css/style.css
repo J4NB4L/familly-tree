@@ -1,5 +1,3 @@
-/* css/style.css */
-
 /* Réinitialisation et styles globaux */
 * {
     margin: 0;
@@ -459,7 +457,118 @@ form button:hover {
     box-shadow: 0 6px 15px rgba(49, 130, 206, 0.4);
 }
 
-/* Styles pour les formulaires de recherche */
+/* Style for the "Ajouter un enfant" form container */
+#add-child-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+    background-color: #ffffff; /* White background */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Style for the title within the form */
+#add-child-form .sidebar-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #333333; /* Dark text color */
+    margin-bottom: 15px;
+    border-bottom: 2px solid #e2e8f0; /* Light border */
+    padding-bottom: 10px;
+}
+
+/* Style for labels within the form */
+#add-child-form label {
+    font-weight: 500;
+    color: #333333; /* Dark text color */
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+/* Style for input fields within the form */
+#add-child-form input[type="number"],
+#add-child-form button {
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+/* Style for input fields on focus */
+#add-child-form input[type="number"]:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.25);
+}
+
+/* Style for buttons within the form */
+#add-child-form button {
+    background-color: #4299e1;
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+/* Style for buttons on hover */
+#add-child-form button:hover {
+    background-color: #3182ce;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(49, 130, 206, 0.4);
+}
+
+/* Style for the child menus container */
+#child-menus {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Style for individual child menu items */
+.child-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Style for child menu labels */
+.child-menu label {
+    font-weight: 500;
+    color: #333333; /* Dark text color */
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+/* Style for child menu select fields */
+.child-menu select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    color: #333333; /* Dark text color */
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+/* Style for child menu select fields on focus */
+.child-menu select:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.25);
+}
+
+/* Styles for the formulaires de recherche */
 .search-form {
     display: flex;
     flex-direction: column;
@@ -472,17 +581,36 @@ form button:hover {
     transition: all 0.3s ease;
 }
 
-.search-form .sidebar-title {
+/* Style for .sidebar-title within .search-form in the left sidebar */
+#left-sidebar .search-form .sidebar-title {
     font-size: 1.2rem;
     font-weight: 600;
-    color: #000; /* Change text color to black */
+    color: #ffffff; /* White text color for left sidebar */
     margin-bottom: 15px;
-    border-bottom: 2px solid rgba(0, 0, 0, 0.2); /* Ligne de séparation */
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2); /* White border for left sidebar */
 }
 
-.search-form label {
+/* Style for .sidebar-title within .search-form in the profile */
+#main-content .search-form .sidebar-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #000000; /* Black text color for profile */
+    margin-bottom: 15px;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.2); /* Black border for profile */
+}
+
+/* Style for .search-form label within the left sidebar */
+#left-sidebar .search-form label {
     font-weight: 500;
-    color: #000; /* Change text color to black */
+    color: #ffffff; /* White text color for left sidebar */
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+/* Style for .search-form label within the profile section */
+#main-content .search-form label {
+    font-weight: 500;
+    color: #000000; /* Black text color for profile */
     font-size: 1rem;
     margin-bottom: 5px;
 }
@@ -550,32 +678,4 @@ form button:hover {
     line-color: purple !important;
     target-arrow-color: purple !important;
     transition: background-color 1s ease, line-color 1s ease, target-arrow-color 1s ease;
-}
-
-/* Styles for child menus */
-.child-menu {
-    margin-bottom: 15px;
-}
-
-.child-menu label {
-    font-weight: 500;
-    color: #000; /* Change text color to black */
-    font-size: 1rem;
-    margin-bottom: 5px;
-}
-
-.child-menu select {
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    background-color: #ffffff;
-    color: #000; /* Change text color to black */
-    font-size: 1rem;
-    transition: all 0.3s ease;
-}
-
-.child-menu select:focus {
-    outline: none;
-    border-color: #4299e1;
-    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.25);
 }
