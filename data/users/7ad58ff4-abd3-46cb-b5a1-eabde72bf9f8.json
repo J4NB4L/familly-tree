@@ -1,0 +1,10 @@
+{
+  "id": "7ad58ff4-abd3-46cb-b5a1-eabde72bf9f8",
+  "email": "test@gmail.com",
+  "password": "$2b$10$t5XhVftNe45WDMKik8EqVeOQ7lFiU6amzk3NpufC0pj8SZ4rgTug6",
+  "firstName": "test",
+  "lastName": "test",
+  "families": [],
+  "createdAt": "2025-05-01T13:46:10.876Z",
+  "updatedAt": "2025-05-01T13:46:10.876Z"
+}

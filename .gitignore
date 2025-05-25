@@ -1,0 +1,12 @@
+.env
+node_modules/
+dist/
+coverage/
+.vscode/
+.DS_Store
+*.log
+*.env
+*.local
+
+project_context.txt
+prompter.sh

@@ -1,0 +1,15 @@
+{
+  "id": "a64e4204-d0de-4990-9728-114109b311bd",
+  "email": "nguepssibrayanne10@gmail.com",
+  "password": "$2b$10$88wDwOpC8l3SmLMIIGnOgezt2wolx2NnoRy7kNKe/Dcnsn7yM77Z6",
+  "firstName": "Brayanne",
+  "lastName": "Nguepssi",
+  "families": [
+    {
+      "familyId": "74221eb1-c105-433d-b641-e9223c9e644a",
+      "role": "owner"
+    }
+  ],
+  "createdAt": "2025-05-01T10:31:04.890Z",
+  "updatedAt": "2025-05-01T10:32:20.792Z"
+}
