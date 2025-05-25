@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import { v4 as uuidv4 } from 'uuid';
 import { FamilyPerson, User } from '../types';
+import { JwtPayload } from '../types'; // Ajout de l'import pour JwtPayload
 
 const dataDirectory = process.env.DATA_DIRECTORY || path.join(__dirname, '../../data');
 const familyDataPath = path.join(dataDirectory, 'familydata.json');
