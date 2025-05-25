@@ -1,5 +1,5 @@
 Project Context From: /c/Users/PC/School/RO/TP/TP1/frontend
-Generated On: Sun May 25 06:30:44     2025
+Generated On: Sun May 25 08:23:42     2025
 ===============================================
 Ignored Directory Patterns: .* node_modules vendor build dist target __pycache__ .next cache target venv storage
 Ignored File Patterns: *.log *.jar *.pdf *.png *.jpg *.class *.sqlite *.csv project_context.txt package-lock.json yarn.lock composer.lock *.ico pnpm-lock.yaml
@@ -31,6 +31,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Custom ignores
+project_context.txt
+prompter.sh
 // END OF FILE: .gitignore
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/index.html
@@ -699,12 +703,19 @@ export function setupLoginFormHandler() {
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/maincontent.js
 
+//---> PATH: src/components/maincontent.js
 export function renderMainContent() {
   return `
-    <div id="main-content">
-      <div class="view-buttons">
-        <button class="view-button" data-view="tree">Arbre Généalogique</button>
-        <button class="view-button" data-view="graph">Graphe des Relations</button>
+    <div id="main-content-area">
+      <div class="view-controls">
+        <div class="view-buttons">
+          <button class="view-button active-view-btn" data-view="tree">Arbre Généalogique</button>
+          <button class="view-button" data-view="graph">Graphe des Relations</button>
+        </div>
+        <div class="scope-buttons">
+          <button class="scope-button active-scope-btn" data-scope="full">Voir Toute la Famille</button>
+          <button class="scope-button" data-scope="personal">Voir Ma Famille Proche</button>
+        </div>
       </div>
       <div class="container-card" id="tree-view">
         <h2>Arbre Généalogique</h2>
@@ -717,7 +728,7 @@ export function renderMainContent() {
     </div>
   `;
 }
-// END OF FILE: src/components/maincontent.js
+// END OF FILE: src/components/maincontent.js// END OF FILE: src/components/maincontent.js
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/navbar.js
 
@@ -1478,11 +1489,65 @@ form {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    max-width: 600px;
+    margin: 0 auto;
     padding: 25px;
     border-radius: 12px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
     border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Styles spécifiques pour le formulaire de profil */
+#profile-form {
+    max-width: 100%; /* Élargir le formulaire de profil */
+    margin: 0;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    align-items: start;
+    animation: fadeInUp 0.5s ease-out forwards;
+}
+
+#profile-form img {
+    grid-column: 1;
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border: 3px solid #4299e1;
+    margin-bottom: 20px;
+}
+
+#profile-form label {
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 5px;
+}
+
+#profile-form input, 
+#profile-form select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+    font-size: 0.95rem;
+}
+
+#profile-form button[type="submit"] {
+    grid-column: 1 / -1;
+    margin-top: 15px;
+    background: linear-gradient(90deg, #3182ce 0%, #4299e1 100%);
+    font-weight: 600;
+    padding: 12px 20px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(66, 153, 225, 0.25);
 }
 
 form label {
@@ -1588,6 +1653,15 @@ form button:hover {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.profile-header h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: #2d3748;
+    font-weight: 600;
 }
 
 .logout-button {
@@ -1604,7 +1678,6 @@ form button:hover {
 }
 
 .logout-button:hover {
-    background: linear-gradient(90deg, #c0392b 0%, #9b2c2c 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(231, 76, 60, 0.4);
 }
@@ -1677,7 +1750,7 @@ form button:hover {
 }
 
 /* Style for the "Ajouter un enfant" form container */
-#add-child-form {
+#add-child-form, #add-spouse-form, #add-father-form, #add-mother-form {
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -1686,6 +1759,8 @@ form button:hover {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
     background-color: #ffffff; /* White background */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-top: 10px;
+    animation: slideDown 0.3s ease-out forwards;
 }
 
 /* Style for the title within the form */
@@ -1800,6 +1875,16 @@ form button:hover {
     transition: all 0.3s ease;
 }
 
+/* Style pour les formulaires de recherche dans les relations familiales */
+.family-selection-menu .search-form {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    margin-top: 10px;
+    border: 1px solid #e2e8f0;
+}
+
 /* Style for .sidebar-title within .search-form in the left sidebar */
 #left-sidebar .search-form .sidebar-title {
     font-size: 1.2rem;
@@ -1898,7 +1983,245 @@ form button:hover {
     target-arrow-color: purple !important;
     transition: background-color 1s ease, line-color 1s ease, target-arrow-color 1s ease;
 }
-// END OF FILE: src/css/style.css
+
+/* Styles for view and scope controls */
+.view-controls {
+    display: flex;
+    justify-content: space-between; /* Aligns view buttons to left, scope to right */
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap; /* Allows wrapping on smaller screens */
+    gap: 15px; /* Space between button groups if they wrap */
+}
+
+.view-buttons, .scope-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.view-button, .scope-button {
+    padding: 10px 20px;
+    border: 1px solid #3182ce; /* Default border */
+    border-radius: 8px;
+    background-color: #f0f4f8; /* Default background */
+    color: #3182ce; /* Default text color */
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    font-weight: 500;
+}
+
+.view-button:hover, .scope-button:hover {
+    background-color: #e0e8f0;
+    border-color: #2b6cb0;
+}
+
+/* Style for the active button */
+.view-button.active-view-btn, .scope-button.active-scope-btn {
+    background-color: #4299e1;
+    color: white;
+    border-color: #4299e1;
+}
+
+/* Adjust main content area name if you changed it in maincontent.js */
+#main-content-area { /* Or whatever ID you used for the main content wrapper */
+    grid-area: main-content;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Reduced gap slightly */
+    overflow: hidden;
+    height: calc(100vh - 70px);
+}
+
+/* Ensure container-card within the new #main-content-area still behaves well */
+#main-content-area .container-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    padding: 25px;
+    /* margin-bottom: 25px; Remove if gap from flex parent is enough */
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    flex: 1; 
+    max-height: calc(100vh - 190px); /* Adjusted max-height based on new controls */
+    overflow-y: auto; 
+}
+
+/* Style principal pour la page de profil */
+.profile-container {
+    grid-area: main-content;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 70px);
+    overflow: auto;
+}
+
+/* Styles pour les relations familiales */
+.family-relations {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid #e2e8f0;
+    animation: fadeIn 0.6s ease-out forwards;
+}
+
+.family-relations h3 {
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.scrollable-container {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.family-selection-menus {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.family-selection-menu {
+    background-color: #f8fafc;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e2e8f0;
+    position: relative;
+}
+
+.family-selection-menu:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    border-color: #cbd5e0;
+}
+
+.family-selection-menu .sidebar-button {
+    width: 100%;
+    text-align: left;
+    padding: 12px 15px;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    margin-top: 0;
+}
+
+.family-selection-menu .sidebar-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 100%;
+    background-color: rgba(66, 153, 225, 0.2);
+    transition: width 0.3s ease;
+    z-index: -1;
+}
+
+.family-selection-menu .sidebar-button:hover::before {
+    width: 100%;
+}
+
+/* Style pour l'affichage des sections familiales dans le panneau de droite */
+.family-section {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    border-left: 4px solid #4299e1;
+}
+
+.family-section h5 {
+    margin: 0 0 10px 0;
+    font-size: 1.1rem;
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.family-section p {
+    margin: 5px 0;
+    color: #4a5568;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Améliorations des interactions utilisateur */
+.child-menu {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.child-menu:hover {
+    border-color: #4299e1;
+    box-shadow: 0 4px 8px rgba(66, 153, 225, 0.15);
+}
+
+#profile-form button[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(49, 130, 206, 0.3);
+    background: linear-gradient(90deg, #2b6cb0 0%, #3182ce 100%);
+}
+
+/* Responsivité pour les menus de relations familiales */
+@media (max-width: 768px) {
+    .family-selection-menus {
+        grid-template-columns: 1fr;
+    }
+    
+    #profile-form {
+        padding: 20px;
+        grid-template-columns: 1fr;
+    }
+    
+    #profile-form img {
+        margin: 0 auto 20px auto;
+    }
+    
+    .container-card {
+        padding: 15px;
+    }
+}// END OF FILE: src/css/style.css
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/algorithms/bellman-ford.js
 
@@ -2792,6 +3115,68 @@ export const resetPassword = async (userData) => {
 
 // END OF FILE: src/js/utils/dom-utils.js
 
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/utils/family-data-filter.js
+
+//---> PATH: src/js/utils/family-data-filter.js
+export function getPersonalFamilyData(fullFamilyData, userProfile) {
+    if (!userProfile || !fullFamilyData || fullFamilyData.length === 0) {
+      return [];
+    }
+  
+    const personalDataMap = new Map();
+    const userId = userProfile.id;
+  
+    // 1. Add the user
+    const user = fullFamilyData.find(p => p.id === userId);
+    if (user) {
+      personalDataMap.set(userId, { ...user }); // Store a copy
+    } else {
+      // If user is not in familyData (e.g., new user not yet fully integrated)
+      // Add the profile directly. Ensure it has the necessary fields.
+      personalDataMap.set(userId, { 
+          id: userProfile.id,
+          name: userProfile.name,
+          mid: userProfile.mid,
+          fid: userProfile.fid,
+          pids: userProfile.pids || [],
+          gender: userProfile.gender,
+          birthYear: userProfile.birthYear,
+          img: userProfile.img,
+          gmail: userProfile.gmail
+       });
+    }
+  
+    const currentUserInMap = personalDataMap.get(userId);
+  
+    // 2. Add parents
+    if (currentUserInMap && currentUserInMap.fid) {
+      const father = fullFamilyData.find(p => p.id === currentUserInMap.fid);
+      if (father) personalDataMap.set(father.id, { ...father });
+    }
+    if (currentUserInMap && currentUserInMap.mid) {
+      const mother = fullFamilyData.find(p => p.id === currentUserInMap.mid);
+      if (mother) personalDataMap.set(mother.id, { ...mother });
+    }
+  
+    // 3. Add spouses (pids)
+    if (currentUserInMap && currentUserInMap.pids && currentUserInMap.pids.length > 0) {
+      currentUserInMap.pids.forEach(partnerId => {
+        const spouse = fullFamilyData.find(p => p.id === partnerId);
+        if (spouse) personalDataMap.set(spouse.id, { ...spouse });
+      });
+    }
+  
+    // 4. Add children (where user is fid or mid)
+    fullFamilyData.forEach(person => {
+      if (person.fid === userId || person.mid === userId) {
+        personalDataMap.set(person.id, { ...person });
+      }
+    });
+  
+    return Array.from(personalDataMap.values());
+  }
+  // END OF FILE: src/js/utils/family-data-filter.js// END OF FILE: src/js/utils/family-data-filter.js
+
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/utils/graph-utils.js
 
 // END OF FILE: src/js/utils/graph-utils.js
@@ -2835,15 +3220,22 @@ initRouter(familyData);
 
 // router.js
 import { renderNavbar } from './components/navbar';
-import { renderLeftSidebar } from './components/leftSidebar';
-import { renderRightSidebar } from './components/rightSidebar';
-import { renderMainContent } from './components/mainContent';
+import { renderLeftSidebar } from './components/leftSidebar'; // corrected casing
+import { renderRightSidebar } from './components/rightSidebar'; // corrected casing
+import { renderMainContent } from './components/mainContent'; // corrected casing
 import { renderProfilePage, setupProfileFormHandler } from './components/profile';
 import { renderLoginPage, setupLoginFormHandler } from './components/login';
 import { initDijkstra } from './js/algorithms/dijkstra';
 import { initBellmanFord } from './js/algorithms/bellman-ford';
 import { initPrim } from './js/algorithms/prim';
 import { initKruskal } from './js/algorithms/kruskal';
+import { getPersonalFamilyData } from './js/utils/family-data-filter'; // Import new filter
+
+// Module-level state for current view and scope
+let currentActiveView = 'tree'; // 'tree' or 'graph'
+let currentDataScope = 'full'; // 'full' or 'personal'
+let cyInstance = null; // To keep track of cytoscape instance for destroy
+let familyTreeInstance = null; // To keep track of FamilyTree instance
 
 export function initRouter() {
   const app = document.querySelector('#app');
@@ -2853,281 +3245,277 @@ export function initRouter() {
     renderRoute();
   }
 
+  function getPreparedData() {
+    const fullFamilyData = JSON.parse(localStorage.getItem('familyData')) || [];
+    if (currentDataScope === 'personal') {
+      const userProfile = JSON.parse(localStorage.getItem('userProfile'));
+      if (!userProfile) return fullFamilyData; // Fallback or handle error
+      return getPersonalFamilyData(fullFamilyData, userProfile);
+    }
+    return fullFamilyData;
+  }
+
+  function renderFamilyTree() {
+    if (familyTreeInstance) {
+        // Attempt to destroy or clean up the old instance if the library supports it
+        // For BalkanGraph, re-creating is often the simplest for data changes.
+        // Ensure the container is empty or the library handles replacement.
+        const container = document.getElementById('family-tree-container');
+        if(container) container.innerHTML = ''; // Simple clear
+    }
+    document.getElementById('tree-view').style.display = 'block';
+    document.getElementById('graph-view').style.display = 'none';
+    import('./js/family-tree/tree-view').then(({ initFamilyTree, transformFamilyData }) => {
+      const dataToDisplay = getPreparedData();
+      if (dataToDisplay.length === 0 && currentDataScope === 'personal') {
+        document.getElementById('family-tree-container').innerHTML = 
+          '<p style="text-align:center; padding-top:20px;">Aucune donnée familiale proche à afficher. Vérifiez votre profil et vos relations.</p>';
+        return;
+      }
+      familyTreeInstance = initFamilyTree('family-tree-container', transformFamilyData(dataToDisplay));
+    });
+  }
+
+  function renderGraphView() {
+    if (cyInstance) {
+      cyInstance.destroy();
+      cyInstance = null;
+    }
+    document.getElementById('tree-view').style.display = 'none';
+    document.getElementById('graph-view').style.display = 'block';
+    import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
+      const dataToDisplay = getPreparedData();
+      if (dataToDisplay.length === 0 && currentDataScope === 'personal') {
+         document.getElementById('graph-container').innerHTML = 
+           '<p style="text-align:center; padding-top:20px;">Aucune donnée familiale proche à afficher pour le graphe.</p>';
+        return;
+      }
+      const graphData = transformGraphData(dataToDisplay);
+      cyInstance = initGraph('graph-container', graphData);
+      // Re-attach algorithm button handlers if cyInstance is new
+      setupAlgorithmButtons(cyInstance);
+    });
+  }
+
+  function updateActiveButtons() {
+    document.querySelectorAll('.view-button').forEach(btn => {
+        btn.classList.toggle('active-view-btn', btn.getAttribute('data-view') === currentActiveView);
+    });
+    document.querySelectorAll('.scope-button').forEach(btn => {
+        btn.classList.toggle('active-scope-btn', btn.getAttribute('data-scope') === currentDataScope);
+    });
+  }
+
+  function setupMainViewControls() {
+    document.querySelectorAll('.view-button').forEach(button => {
+      button.addEventListener('click', (e) => {
+        currentActiveView = e.target.getAttribute('data-view');
+        if (currentActiveView === 'tree') {
+          renderFamilyTree();
+        } else if (currentActiveView === 'graph') {
+          renderGraphView();
+        }
+        updateActiveButtons();
+      });
+    });
+
+    document.querySelectorAll('.scope-button').forEach(button => {
+      button.addEventListener('click', (e) => {
+        currentDataScope = e.target.getAttribute('data-scope');
+        if (currentActiveView === 'tree') {
+          renderFamilyTree();
+        } else if (currentActiveView === 'graph') {
+          renderGraphView();
+        }
+        updateActiveButtons();
+      });
+    });
+  }
+  
+  function setupAlgorithmButtons(cy) { // Pass cy instance
+    const runDijkstraButton = document.getElementById('run-dijkstra');
+    if (runDijkstraButton) {
+      runDijkstraButton.onclick = () => { // Use onclick to overwrite previous if any, or manage listeners carefully
+        const startPersonId = document.getElementById('start-person').value;
+        const endPersonId = document.getElementById('end-person').value;
+        if (startPersonId && endPersonId && cy) {
+          const startNode = cy.getElementById(startPersonId);
+          const endNode = cy.getElementById(endPersonId);
+          if (startNode.length && endNode.length) { // Cytoscape returns collections
+            initDijkstra(cy, startNode, endNode);
+            updateRightSidebar();
+          } else {
+            console.warn("Dijkstra: Start or end node not found in current graph view.");
+          }
+        }
+      };
+    }
+
+    const runBellmanFordButton = document.getElementById('run-bellman-ford');
+    if (runBellmanFordButton) {
+      runBellmanFordButton.onclick = () => {
+        const startPersonId = document.getElementById('bellman-ford-start-person').value;
+        const endPersonId = document.getElementById('bellman-ford-end-person').value;
+        if (startPersonId && endPersonId && cy) {
+          const startNode = cy.getElementById(startPersonId);
+          const endNode = cy.getElementById(endPersonId);
+          if (startNode.length && endNode.length) {
+            initBellmanFord(cy, startNode, endNode);
+            updateRightSidebar();
+          } else {
+            console.warn("Bellman-Ford: Start or end node not found.");
+          }
+        }
+      };
+    }
+
+    const runPrimButton = document.getElementById('run-prim');
+    if (runPrimButton) {
+      runPrimButton.onclick = () => {
+        const startPersonId = document.getElementById('prim-start-person').value;
+        if (startPersonId && cy) {
+          const startNode = cy.getElementById(startPersonId);
+          if (startNode.length) {
+            initPrim(cy, startNode);
+            updateRightSidebar();
+          } else {
+            console.warn("Prim: Start node not found.");
+          }
+        }
+      };
+    }
+
+    const runKruskalButton = document.getElementById('run-kruskal');
+    if (runKruskalButton) {
+      runKruskalButton.onclick = () => {
+        // Kruskal doesn't strictly need a start node from UI for its logic, but your UI has one
+        // const startPersonId = document.getElementById('kruskal-start-person').value;
+        if (cy) { // Kruskal operates on the whole graph
+            initKruskal(cy); // Pass full cy, startNode might be optional or handled inside
+            updateRightSidebar();
+        }
+      };
+    }
+  }
+
+
   function renderRoute() {
     const path = window.location.pathname;
     const userProfile = localStorage.getItem('userProfile');
     const isLoginPage = path === '/login';
 
-    // 🔐 Rediriger vers /login si pas connecté
     if (!userProfile && !isLoginPage) {
       history.replaceState(null, null, '/login');
       return renderRoute();
     }
 
-    // 🔁 Rediriger vers / si déjà connecté et tente d'aller à /login
     if (userProfile && isLoginPage) {
       history.replaceState(null, null, '/');
       return renderRoute();
     }
 
-    // Cas normal
     app.innerHTML = `${renderNavbar()}`;
 
-    // Si pas sur /login ou /profile, on affiche les sidebars
+    // Main layout structure
+    let mainLayoutHtml = '';
     if (path === '/') {
-      app.innerHTML += `
-        ${renderLeftSidebar()}
-        ${renderRightSidebar()}
-      `;
+        mainLayoutHtml = `
+            ${renderLeftSidebar()}
+            ${renderMainContent()} {/* This now includes the view/scope buttons */}
+            ${renderRightSidebar()}
+        `;
+    } else if (path === '/profile') {
+        // Profile page might not need sidebars or a different layout
+        mainLayoutHtml = `<div id="main-content-profile" class="profile-container">${renderProfilePage()}</div>`;
+    } else if (path === '/login') {
+        mainLayoutHtml = `<div id="main-content-login" class="login-container">${renderLoginPage()}</div>`;
+    } else {
+        mainLayoutHtml = `<div id="main-content-404"><h2>404 - Page non trouvée</h2></div>`;
     }
+    app.innerHTML += mainLayoutHtml;
 
-    // Ajout du contenu central
-    const contentContainer = document.createElement('div');
-    contentContainer.id = 'main-content';
-    app.appendChild(contentContainer);
 
-    switch (path) {
-      case '/':
-        contentContainer.innerHTML = renderMainContent();
-        import('./js/family-tree/tree-view').then(({ initFamilyTree, transformFamilyData }) => {
-          const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-          initFamilyTree('family-tree-container', transformFamilyData(familyData));
-        });
-
-        // Ajouter un gestionnaire d'événements pour les boutons de vue
-        document.querySelectorAll('.view-button').forEach(button => {
-          button.addEventListener('click', (e) => {
-            const view = e.target.getAttribute('data-view');
-            document.getElementById('tree-view').style.display = view === 'tree' ? 'block' : 'none';
-            document.getElementById('graph-view').style.display = view === 'graph' ? 'block' : 'none';
-
-            // Initialiser Cytoscape uniquement si le conteneur est visible
-            if (view === 'graph') {
-              import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
-                const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-                const graphData = transformGraphData(familyData);
-                initGraph('graph-container', graphData);
-              });
-            }
-          });
-        });
-
-        // Initialiser Cytoscape si le conteneur est visible par défaut
-        if (document.getElementById('graph-view').style.display === 'block') {
-          import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
-            const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-            const graphData = transformGraphData(familyData);
-            initGraph('graph-container', graphData);
-          });
+    // Content-specific initializations
+    if (path === '/') {
+        // Initial view rendering
+        if (currentActiveView === 'tree') {
+            renderFamilyTree();
+        } else {
+            renderGraphView(); // This will also setup algorithm buttons via its callback
         }
+        setupMainViewControls();
+        updateActiveButtons();
 
-        // Ajouter un gestionnaire d'événements pour le bouton "Dijkstra"
+        // Setup algorithm selection forms (populating dropdowns)
+        // These don't depend on cyInstance directly for setup, only for execution
         const dijkstraButton = document.getElementById('dijkstra-button');
         if (dijkstraButton) {
           dijkstraButton.addEventListener('click', () => {
             const dijkstraForm = document.getElementById('dijkstra-form');
             dijkstraForm.style.display = dijkstraForm.style.display === 'none' ? 'block' : 'none';
-
-            // Remplir les sélections avec les noms des individus
-            const startPersonSelect = document.getElementById('start-person');
-            const endPersonSelect = document.getElementById('end-person');
-            startPersonSelect.innerHTML = '';
-            endPersonSelect.innerHTML = '';
-
-            const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-            familyData.forEach(person => {
-              const option = document.createElement('option');
-              option.value = person.id;
-              option.textContent = person.name;
-              startPersonSelect.appendChild(option);
-              endPersonSelect.appendChild(option.cloneNode(true));
-            });
+            const familyDataForSelect = JSON.parse(localStorage.getItem('familyData')) || []; // Always use full data for selection
+            populateAlgorithmSelects(['start-person', 'end-person'], familyDataForSelect);
           });
         }
 
-        // Ajouter un gestionnaire d'événements pour le bouton "Lancer Dijkstra"
-        const runDijkstraButton = document.getElementById('run-dijkstra');
-        if (runDijkstraButton) {
-          runDijkstraButton.addEventListener('click', () => {
-            const startPersonId = document.getElementById('start-person').value;
-            const endPersonId = document.getElementById('end-person').value;
-
-            if (startPersonId && endPersonId) {
-              import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
-                const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-                const graphData = transformGraphData(familyData);
-                const cy = initGraph('graph-container', graphData);
-
-                const startNode = cy.getElementById(startPersonId);
-                const endNode = cy.getElementById(endPersonId);
-
-                if (startNode && endNode) {
-                  initDijkstra(cy, startNode, endNode);
-                  updateRightSidebar(); // Mettre à jour la barre latérale droite
-                }
-              });
-            }
-          });
-        }
-
-        // Ajouter un gestionnaire d'événements pour le bouton "Bellman-Ford"
         const bellmanFordButton = document.getElementById('bellman-ford-button');
         if (bellmanFordButton) {
           bellmanFordButton.addEventListener('click', () => {
             const bellmanFordForm = document.getElementById('bellman-ford-form');
             bellmanFordForm.style.display = bellmanFordForm.style.display === 'none' ? 'block' : 'none';
-
-            // Remplir les sélections avec les noms des individus
-            const startPersonSelect = document.getElementById('bellman-ford-start-person');
-            const endPersonSelect = document.getElementById('bellman-ford-end-person');
-            startPersonSelect.innerHTML = '';
-            endPersonSelect.innerHTML = '';
-
-            const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-            familyData.forEach(person => {
-              const option = document.createElement('option');
-              option.value = person.id;
-              option.textContent = person.name;
-              startPersonSelect.appendChild(option);
-              endPersonSelect.appendChild(option.cloneNode(true));
-            });
+            const familyDataForSelect = JSON.parse(localStorage.getItem('familyData')) || [];
+            populateAlgorithmSelects(['bellman-ford-start-person', 'bellman-ford-end-person'], familyDataForSelect);
           });
         }
 
-        // Ajouter un gestionnaire d'événements pour le bouton "Lancer Bellman-Ford"
-        const runBellmanFordButton = document.getElementById('run-bellman-ford');
-        if (runBellmanFordButton) {
-          runBellmanFordButton.addEventListener('click', () => {
-            const startPersonId = document.getElementById('bellman-ford-start-person').value;
-            const endPersonId = document.getElementById('bellman-ford-end-person').value;
-
-            if (startPersonId && endPersonId) {
-              import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
-                const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-                const graphData = transformGraphData(familyData);
-                const cy = initGraph('graph-container', graphData);
-
-                const startNode = cy.getElementById(startPersonId);
-                const endNode = cy.getElementById(endPersonId);
-
-                if (startNode && endNode) {
-                  initBellmanFord(cy, startNode, endNode);
-                  updateRightSidebar(); // Mettre à jour la barre latérale droite
-                }
-              });
-            }
-          });
-        }
-
-        // Ajouter un gestionnaire d'événements pour le bouton "Prim"
         const primButton = document.getElementById('prim-button');
         if (primButton) {
           primButton.addEventListener('click', () => {
             const primForm = document.getElementById('prim-form');
             primForm.style.display = primForm.style.display === 'none' ? 'block' : 'none';
-
-            // Remplir les sélections avec les noms des individus
-            const startPersonSelect = document.getElementById('prim-start-person');
-            startPersonSelect.innerHTML = '';
-
-            const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-            familyData.forEach(person => {
-              const option = document.createElement('option');
-              option.value = person.id;
-              option.textContent = person.name;
-              startPersonSelect.appendChild(option);
-            });
+            const familyDataForSelect = JSON.parse(localStorage.getItem('familyData')) || [];
+            populateAlgorithmSelects(['prim-start-person'], familyDataForSelect);
           });
         }
-
-        // Ajouter un gestionnaire d'événements pour le bouton "Lancer Prim"
-        const runPrimButton = document.getElementById('run-prim');
-        if (runPrimButton) {
-          runPrimButton.addEventListener('click', () => {
-            const startPersonId = document.getElementById('prim-start-person').value;
-
-            if (startPersonId) {
-              import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
-                const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-                const graphData = transformGraphData(familyData);
-                const cy = initGraph('graph-container', graphData);
-
-                const startNode = cy.getElementById(startPersonId);
-
-                if (startNode) {
-                  initPrim(cy, startNode);
-                  updateRightSidebar(); // Mettre à jour la barre latérale droite
-                }
-              });
-            }
-          });
-        }
-
-        // Ajouter un gestionnaire d'événements pour le bouton "Kruskal"
+        
         const kruskalButton = document.getElementById('kruskal-button');
         if (kruskalButton) {
           kruskalButton.addEventListener('click', () => {
             const kruskalForm = document.getElementById('kruskal-form');
             kruskalForm.style.display = kruskalForm.style.display === 'none' ? 'block' : 'none';
-
-            // Remplir les sélections avec les noms des individus
-            const startPersonSelect = document.getElementById('kruskal-start-person');
-            startPersonSelect.innerHTML = '';
-
-            const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-            familyData.forEach(person => {
-              const option = document.createElement('option');
-              option.value = person.id;
-              option.textContent = person.name;
-              startPersonSelect.appendChild(option);
-            });
+            // Kruskal might not need a select, or if it does, populate it.
+            // const familyDataForSelect = JSON.parse(localStorage.getItem('familyData')) || [];
+            // populateAlgorithmSelects(['kruskal-start-person'], familyDataForSelect); 
           });
         }
-
-        // Ajouter un gestionnaire d'événements pour le bouton "Lancer Kruskal"
-        const runKruskalButton = document.getElementById('run-kruskal');
-        if (runKruskalButton) {
-          runKruskalButton.addEventListener('click', () => {
-            const startPersonId = document.getElementById('kruskal-start-person').value;
-
-            if (startPersonId) {
-              import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
-                const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-                const graphData = transformGraphData(familyData);
-                const cy = initGraph('graph-container', graphData);
-
-                const startNode = cy.getElementById(startPersonId);
-
-                if (startNode) {
-                  initKruskal(cy, startNode);
-                  updateRightSidebar(); // Mettre à jour la barre latérale droite
-                }
-              });
-            }
-          });
+        // Initial setup of algorithm buttons (will be re-attached if graph view re-renders)
+        if (cyInstance) {
+            setupAlgorithmButtons(cyInstance);
         }
-        break;
 
-      case '/profile':
-        contentContainer.innerHTML = renderProfilePage();
-        setupProfileFormHandler(); // Ajouter le gestionnaire du profil
-        break;
 
-      case '/login':
-        contentContainer.innerHTML = renderLoginPage();
-        setupLoginFormHandler(); // Ajouter le gestionnaire de la page de connexion
-        break;
-
-      default:
-        contentContainer.innerHTML = `
-          <div id="main-content">
-            <h2>404 - Page non trouvée</h2>
-          </div>
-        `;
+    } else if (path === '/profile') {
+        setupProfileFormHandler();
+    } else if (path === '/login') {
+        setupLoginFormHandler();
     }
   }
 
-  // Navigation interne
+  function populateAlgorithmSelects(selectIds, data) {
+    selectIds.forEach(selectId => {
+        const selectElement = document.getElementById(selectId);
+        if (selectElement) {
+            selectElement.innerHTML = ''; // Clear previous options
+            data.forEach(person => {
+                const option = document.createElement('option');
+                option.value = person.id;
+                option.textContent = person.name;
+                selectElement.appendChild(option);
+            });
+        }
+    });
+  }
+
   document.body.addEventListener('click', e => {
     if (e.target.matches('a[data-link]')) {
       e.preventDefault();
@@ -3135,19 +3523,17 @@ export function initRouter() {
     }
   });
 
-  window.addEventListener('popstate', renderRoute); // Back/forward support
-
-  renderRoute(); // Initial load
+  window.addEventListener('popstate', renderRoute);
+  renderRoute();
 }
 
-// Fonction pour mettre à jour la barre latérale droite
 function updateRightSidebar() {
   const rightSidebar = document.getElementById('right-sidebar');
   if (rightSidebar) {
     rightSidebar.innerHTML = renderRightSidebar();
   }
 }
-// END OF FILE: src/router.js
+// END OF FILE: src/router.js// END OF FILE: src/router.js
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/typescript.svg
 

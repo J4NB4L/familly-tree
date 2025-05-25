@@ -1,14 +1,14 @@
 import cytoscape from 'cytoscape';
-import { clearAlgorithmSteps } from '../utils/helper';
+import { uiStateService } from '../../services/uiStateService';
 
 export function initPrim(cy, startNode) {
-  clearAlgorithmSteps();
+  uiStateService.clearAlgorithmSteps();
 
   // Initialiser le suivi des étapes
   const steps = [];
   steps.push("Initialisation de l'algorithme de Prim");
   steps.push(`Nœud de départ: ${startNode.data('label')}`);
-  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+  uiStateService.setAlgorithmSteps(steps);
 
   // Réinitialiser les styles
   cy.edges().style({
@@ -52,7 +52,7 @@ export function initPrim(cy, startNode) {
     // Marquer le nœud comme visité
     visited.set(minNode.id(), true);
     steps.push(`Ajout du nœud ${minNode.data('label')} à l'arbre couvrant minimal`);
-    localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+    uiStateService.setAlgorithmSteps(steps);
 
     // Mettre à jour les distances des nœuds adjacents
     const neighbors = minNode.neighborhood().nodes().filter(n => !visited.has(n.id()));
@@ -68,7 +68,7 @@ export function initPrim(cy, startNode) {
         distances.set(neighborId, weight);
         parent.set(neighborId, minNode.id());
         steps.push(`Mise à jour de la distance du nœud ${neighbor.data('label')}: ${distances.get(neighborId)} → ${weight}`);
-        localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+        uiStateService.setAlgorithmSteps(steps);
 
         // Animer le changement de couleur
         edge.addClass('highlighted-prim');
@@ -111,5 +111,5 @@ export function initPrim(cy, startNode) {
   });
 
   steps.push(`Arbre couvrant minimal construit avec ${visited.size} nœuds`);
-  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+  uiStateService.setAlgorithmSteps(steps);
 }

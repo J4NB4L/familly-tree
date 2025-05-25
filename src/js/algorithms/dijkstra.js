@@ -1,14 +1,14 @@
 import cytoscape from 'cytoscape';
-import { clearAlgorithmSteps } from '../utils/helper';
+import { uiStateService } from '../../services/uiStateService';
 
 export function initDijkstra(cy, startNode, endNode) {
-  clearAlgorithmSteps();
+  uiStateService.clearAlgorithmSteps();
 
   // Initialiser le suivi des étapes
   const steps = [];
   steps.push("Initialisation de l'algorithme de Dijkstra");
   steps.push(`Nœud de départ: ${startNode.data('label')}, Nœud d'arrivée: ${endNode.data('label')}`);
-  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+  uiStateService.setAlgorithmSteps(steps);
 
   // Réinitialiser les styles
   cy.edges().style({
@@ -51,7 +51,7 @@ export function initDijkstra(cy, startNode, endNode) {
     // Marquer le nœud comme visité
     visited.set(minNode.id(), true);
     steps.push(`Exploration du nœud ${minNode.data('label')} avec distance ${distances.get(minNode.id())}`);
-    localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+    uiStateService.setAlgorithmSteps(steps);
 
     // Mettre à jour les distances des nœuds adjacents
     const neighbors = minNode.neighborhood().nodes().filter(n => !visited.has(n.id()));
@@ -69,7 +69,7 @@ export function initDijkstra(cy, startNode, endNode) {
         distances.set(neighborId, distance);
         parent.set(neighborId, minNode.id());
         steps.push(`Mise à jour de la distance du nœud ${neighbor.data('label')}: ${distances.get(neighborId)} → ${distance}`);
-        localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+        uiStateService.setAlgorithmSteps(steps);
 
         // Animer le changement de couleur
         edge.addClass('highlighted-dijkstra');
@@ -122,7 +122,7 @@ export function initDijkstra(cy, startNode, endNode) {
     console.log(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
     steps.push(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
   }
-  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+  uiStateService.setAlgorithmSteps(steps);
 
   return path;
 }

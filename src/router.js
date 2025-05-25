@@ -5,11 +5,13 @@ import { renderRightSidebar } from './components/rightSidebar'; // corrected cas
 import { renderMainContent } from './components/mainContent'; // corrected casing
 import { renderProfilePage, setupProfileFormHandler } from './components/profile';
 import { renderLoginPage, setupLoginFormHandler } from './components/login';
+import { authService } from './services/authService';
+import { familyDataService } from './services/familyDataService';
+import { uiStateService } from './services/uiStateService';
 import { initDijkstra } from './js/algorithms/dijkstra';
 import { initBellmanFord } from './js/algorithms/bellman-ford';
 import { initPrim } from './js/algorithms/prim';
-import { initKruskal } from './js/algorithms/kruskal';
-import { getPersonalFamilyData } from './js/utils/family-data-filter'; // Import new filter
+import { initKruskal } from './js/algorithms/kruskal'; 
 
 // Module-level state for current view and scope
 let currentActiveView = 'tree'; // 'tree' or 'graph'
@@ -25,17 +27,17 @@ export function initRouter() {
     renderRoute();
   }
 
-  function getPreparedData() {
-    const fullFamilyData = JSON.parse(localStorage.getItem('familyData')) || [];
+  async function getPreparedData() {
+    const fullFamilyData = await familyDataService.getAllFamilyData(); 
     if (currentDataScope === 'personal') {
-      const userProfile = JSON.parse(localStorage.getItem('userProfile'));
+      const userProfile = authService.getCurrentUserProfile();
       if (!userProfile) return fullFamilyData; // Fallback or handle error
-      return getPersonalFamilyData(fullFamilyData, userProfile);
+      return familyDataService.getPersonalFamilyData(fullFamilyData, userProfile);
     }
     return fullFamilyData;
   }
 
-  function renderFamilyTree() {
+  async function renderFamilyTree() {
     if (familyTreeInstance) {
         // Attempt to destroy or clean up the old instance if the library supports it
         // For BalkanGraph, re-creating is often the simplest for data changes.
@@ -45,8 +47,8 @@ export function initRouter() {
     }
     document.getElementById('tree-view').style.display = 'block';
     document.getElementById('graph-view').style.display = 'none';
-    import('./js/family-tree/tree-view').then(({ initFamilyTree, transformFamilyData }) => {
-      const dataToDisplay = getPreparedData();
+    import('./js/family-tree/tree-view').then(async ({ initFamilyTree, transformFamilyData }) => {
+      const dataToDisplay = await getPreparedData();
       if (dataToDisplay.length === 0 && currentDataScope === 'personal') {
         document.getElementById('family-tree-container').innerHTML = 
           '<p style="text-align:center; padding-top:20px;">Aucune donnée familiale proche à afficher. Vérifiez votre profil et vos relations.</p>';
@@ -56,15 +58,15 @@ export function initRouter() {
     });
   }
 
-  function renderGraphView() {
+  async function renderGraphView() {
     if (cyInstance) {
       cyInstance.destroy();
       cyInstance = null;
     }
     document.getElementById('tree-view').style.display = 'none';
     document.getElementById('graph-view').style.display = 'block';
-    import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
-      const dataToDisplay = getPreparedData();
+    import('./js/family-tree/graph-view').then(async ({ initGraph, transformGraphData }) => {
+      const dataToDisplay = await getPreparedData();
       if (dataToDisplay.length === 0 && currentDataScope === 'personal') {
          document.getElementById('graph-container').innerHTML = 
            '<p style="text-align:center; padding-top:20px;">Aucune donnée familiale proche à afficher pour le graphe.</p>';
@@ -179,19 +181,20 @@ export function initRouter() {
   }
 
 
-  function renderRoute() {
+  async function renderRoute() { // Now async
     const path = window.location.pathname;
-    const userProfile = localStorage.getItem('userProfile');
+    // const userProfile = authService.getCurrentUserProfile(); // Use service
+    const isAuthenticated = authService.isAuthenticated(); // Use service
     const isLoginPage = path === '/login';
 
-    if (!userProfile && !isLoginPage) {
+    if (!isAuthenticated && !isLoginPage) {
       history.replaceState(null, null, '/login');
-      return renderRoute();
+      return renderRoute(); // Recursive call to re-evaluate
     }
 
-    if (userProfile && isLoginPage) {
+    if (isAuthenticated && isLoginPage) {
       history.replaceState(null, null, '/');
-      return renderRoute();
+      return renderRoute(); // Recursive call
     }
 
     app.innerHTML = `${renderNavbar()}`;
@@ -219,12 +222,14 @@ export function initRouter() {
     if (path === '/') {
         // Initial view rendering
         if (currentActiveView === 'tree') {
-            renderFamilyTree();
+            await renderFamilyTree();
         } else {
-            renderGraphView(); // This will also setup algorithm buttons via its callback
+            await renderGraphView(); // This will also setup algorithm buttons via its callback
         }
         setupMainViewControls();
         updateActiveButtons();
+
+        const familyDataForSelect = await familyDataService.getAllFamilyData();
 
         // Setup algorithm selection forms (populating dropdowns)
         // These don't depend on cyInstance directly for setup, only for execution
@@ -233,7 +238,6 @@ export function initRouter() {
           dijkstraButton.addEventListener('click', () => {
             const dijkstraForm = document.getElementById('dijkstra-form');
             dijkstraForm.style.display = dijkstraForm.style.display === 'none' ? 'block' : 'none';
-            const familyDataForSelect = JSON.parse(localStorage.getItem('familyData')) || []; // Always use full data for selection
             populateAlgorithmSelects(['start-person', 'end-person'], familyDataForSelect);
           });
         }
@@ -243,7 +247,6 @@ export function initRouter() {
           bellmanFordButton.addEventListener('click', () => {
             const bellmanFordForm = document.getElementById('bellman-ford-form');
             bellmanFordForm.style.display = bellmanFordForm.style.display === 'none' ? 'block' : 'none';
-            const familyDataForSelect = JSON.parse(localStorage.getItem('familyData')) || [];
             populateAlgorithmSelects(['bellman-ford-start-person', 'bellman-ford-end-person'], familyDataForSelect);
           });
         }
@@ -253,7 +256,6 @@ export function initRouter() {
           primButton.addEventListener('click', () => {
             const primForm = document.getElementById('prim-form');
             primForm.style.display = primForm.style.display === 'none' ? 'block' : 'none';
-            const familyDataForSelect = JSON.parse(localStorage.getItem('familyData')) || [];
             populateAlgorithmSelects(['prim-start-person'], familyDataForSelect);
           });
         }
@@ -263,9 +265,7 @@ export function initRouter() {
           kruskalButton.addEventListener('click', () => {
             const kruskalForm = document.getElementById('kruskal-form');
             kruskalForm.style.display = kruskalForm.style.display === 'none' ? 'block' : 'none';
-            // Kruskal might not need a select, or if it does, populate it.
-            // const familyDataForSelect = JSON.parse(localStorage.getItem('familyData')) || [];
-            // populateAlgorithmSelects(['kruskal-start-person'], familyDataForSelect); 
+            populateAlgorithmSelects(['kruskal-start-person'], familyDataForSelect); 
           });
         }
         // Initial setup of algorithm buttons (will be re-attached if graph view re-renders)

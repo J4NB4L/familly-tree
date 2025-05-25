@@ -1,14 +1,14 @@
 import cytoscape from 'cytoscape';
-import { clearAlgorithmSteps } from '../utils/helper';
+import { uiStateService } from '../../services/uiStateService';
 
 export function initBellmanFord(cy, startNode, endNode) {
-  clearAlgorithmSteps();
+  uiStateService.clearAlgorithmSteps();
 
   // Initialiser le suivi des étapes
   const steps = [];
   steps.push("Initialisation de l'algorithme de Bellman-Ford");
   steps.push(`Nœud de départ: ${startNode.data('label')}, Nœud d'arrivée: ${endNode.data('label')}`);
-  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+  uiStateService.setAlgorithmSteps(steps);
 
   // Réinitialiser les styles
   cy.edges().style({
@@ -37,7 +37,7 @@ export function initBellmanFord(cy, startNode, endNode) {
   // Relaxation des arêtes V-1 fois
   for (let i = 0; i < V - 1; i++) {
     steps.push(`Itération ${i+1}/${V-1} - Relaxation de toutes les arêtes`);
-    localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+    uiStateService.setAlgorithmSteps(steps);
 
     edges.forEach(edge => {
       const source = edge.source().id();
@@ -49,7 +49,7 @@ export function initBellmanFord(cy, startNode, endNode) {
         distances.set(target, distances.get(source) + weight);
         parent.set(target, source);
         steps.push(`Mise à jour de la distance du nœud ${cy.getElementById(target).data('label')}: ${distances.get(target)} → ${distances.get(source) + weight}`);
-        localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+        uiStateService.setAlgorithmSteps(steps);
 
         // Animer le changement de couleur
         edge.addClass('highlighted-bellman-ford');
@@ -62,7 +62,7 @@ export function initBellmanFord(cy, startNode, endNode) {
         distances.set(source, distances.get(target) + weight);
         parent.set(source, target);
         steps.push(`Mise à jour de la distance du nœud ${cy.getElementById(source).data('label')}: ${distances.get(source)} → ${distances.get(target) + weight}`);
-        localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+        uiStateService.setAlgorithmSteps(steps);
 
         // Animer le changement de couleur
         edge.addClass('highlighted-bellman-ford');
@@ -93,7 +93,7 @@ export function initBellmanFord(cy, startNode, endNode) {
   if (hasNegativeCycle) {
     console.warn("Le graphe contient un cycle de poids négatif!");
     steps.push("Cycle négatif détecté dans le graphe");
-    localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+    uiStateService.setAlgorithmSteps(steps);
   }
 
   // Reconstruire le chemin du nœud de départ au nœud d'arrivée
@@ -138,7 +138,7 @@ export function initBellmanFord(cy, startNode, endNode) {
     console.log(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
     steps.push(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
   }
-  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+  uiStateService.setAlgorithmSteps(steps);
 
   return path;
 }

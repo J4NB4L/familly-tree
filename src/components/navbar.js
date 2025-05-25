@@ -1,6 +1,8 @@
+import { authService } from '../services/authService';
+
+
 export function renderNavbar() {
-  const stored = localStorage.getItem('userProfile');
-  const user = stored ? JSON.parse(stored) : null;
+  const user = authService.getCurrentUserProfile();
 
   const userSection = user
     ? `

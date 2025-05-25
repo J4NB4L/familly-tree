@@ -1,15 +1,15 @@
 import cytoscape from 'cytoscape';
-import { clearAlgorithmSteps } from '../utils/helper';
+import { uiStateService } from '../../services/uiStateService';
 
 export function initKruskal(cy, startNode) {
-  clearAlgorithmSteps();
+  uiStateService.clearAlgorithmSteps();
 
   // Initialiser le suivi des étapes
   const steps = [];
   steps.push("Initialisation de l'algorithme de Kruskal");
   const edges = cy.edges();
   steps.push(`${edges.length} arêtes à examiner`);
-  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+  uiStateService.setAlgorithmSteps(steps);
 
   // Réinitialiser les styles
   cy.edges().style({
@@ -69,7 +69,7 @@ export function initKruskal(cy, startNode) {
   // Trier les arêtes par poids croissant
   edgesArray.sort((a, b) => a.weight - b.weight);
   steps.push("Arêtes triées par poids croissant");
-  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+  uiStateService.setAlgorithmSteps(steps);
 
   // Algorithme de Kruskal
   const mstEdges = [];
@@ -82,7 +82,7 @@ export function initKruskal(cy, startNode) {
       union(source, target);
       mstEdges.push(edge);
       steps.push(`Ajout de l'arête ${cy.getElementById(source).data('label')}-${cy.getElementById(target).data('label')} de poids ${edgeData.weight} à l'arbre couvrant minimal`);
-      localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+      uiStateService.setAlgorithmSteps(steps);
 
       // Colorer l'arête
       edge.style({
@@ -112,7 +112,7 @@ export function initKruskal(cy, startNode) {
   // Ajouter des logs pour débogage
   console.log(`Algorithme de Kruskal: ${mstEdges.length} arêtes dans l'arbre couvrant minimal`);
   steps.push(`Arbre couvrant minimal construit avec ${mstEdges.length} arêtes`);
-  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+  uiStateService.setAlgorithmSteps(steps);
 
   return mstEdges;
 }

@@ -1,4 +1,5 @@
 import FamilyTree from '@balkangraph/familytree.js';
+import familyDataService from '../services/familyDataService';
 
 export function initFamilyTree(containerId, familyData) {
   const chart = new FamilyTree(document.getElementById(containerId), {
@@ -85,7 +86,7 @@ function updatePersonDetails(person) {
   }
 
   // Récupérer les données complètes depuis localStorage pour les relations
-  const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
+  const familyData = familyDataService.getRawFamilyDataSync();
   
   // Trouver les partenaires
   let partners = [];

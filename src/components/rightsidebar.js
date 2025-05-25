@@ -1,6 +1,7 @@
+import { uiStateService } from '../services/uiStateService';
+
 export function renderRightSidebar() {
-  // Récupérer les étapes de l'algorithme depuis localStorage
-  const algorithmSteps = JSON.parse(localStorage.getItem('algorithmSteps') || '[]');
+  const algorithmSteps = uiStateService.getAlgorithmSteps();
 
   // Générer la liste des étapes
   let stepsHtml = '';
