@@ -66,26 +66,26 @@ export function transformGraphData(familyData) {
   const edges = [];
 
   familyData.forEach(person => {
-    // Child to father edge
+    // Father to child edge
     if (person.fid !== null) {
       edges.push({
         data: {
-          id: `${person.id}-to-father-${person.fid}`,
-          source: person.id.toString(),
-          target: person.fid.toString(),
-          relationship: 'child-to-father'
+          id: `${person.fid}-to-child-${person.id}`,
+          source: person.fid.toString(),
+          target: person.id.toString(),
+          relationship: 'father-to-child'
         }
       });
     }
 
-    // Child to mother edge
+    // Mother to child edge
     if (person.mid !== null) {
       edges.push({
         data: {
-          id: `${person.id}-to-mother-${person.mid}`,
-          source: person.id.toString(),
-          target: person.mid.toString(),
-          relationship: 'child-to-mother'
+          id: `${person.mid}-to-child-${person.id}`,
+          source: person.mid.toString(),
+          target: person.id.toString(),
+          relationship: 'mother-to-child'
         }
       });
     }
