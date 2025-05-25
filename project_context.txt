@@ -1,0 +1,3189 @@
+Project Context From: /c/Users/PC/School/RO/TP/TP1/frontend
+Generated On: Sun May 25 06:30:44     2025
+===============================================
+Ignored Directory Patterns: .* node_modules vendor build dist target __pycache__ .next cache target venv storage
+Ignored File Patterns: *.log *.jar *.pdf *.png *.jpg *.class *.sqlite *.csv project_context.txt package-lock.json yarn.lock composer.lock *.ico pnpm-lock.yaml
+===============================================
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/.gitignore
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+// END OF FILE: .gitignore
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/index.html
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + TS</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
+// END OF FILE: index.html
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/package.json
+
+{
+  "name": "family-tp",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.1.5",
+    "typescript": "~5.7.2",
+    "vite": "^6.3.1"
+  },
+  "dependencies": {
+    "@balkangraph/familytree.js": "^1.9.45",
+    "@balkangraph/orgchart.js": "^8.16.24",
+    "axios": "^1.9.0",
+    "cytoscape": "^3.32.0",
+    "family-tp": "file:"
+  }
+}
+// END OF FILE: package.json
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/prompter.sh
+
+#!/bin/bash
+
+# --- Configuration ---
+
+# Default project path if none provided
+DEFAULT_PROJECT_PATH="."
+PROJECT_PATH=${1:-"$DEFAULT_PROJECT_PATH"}
+
+# Output file name (relative to PROJECT_PATH)
+OUTPUT_FILENAME="project_context.txt"
+
+# Directories to completely ignore (won't be traversed)
+EXCLUDE_DIRS_PATTERN=( \
+    ".*"            # All hidden folders (.git, .vscode, .idea, .svn, etc.)
+    "node_modules"
+    "vendor"        # PHP Composer
+    "build"
+    "dist"
+    "target"        # Java/Rust build outputs
+    "__pycache__"   # Python cache
+    ".next"         # Next.js build output
+    "cache"         # General cache folders
+    "target"
+    "venv"
+    "storage"       # Laravel storage (often contains logs, cache, etc.)
+    # Add more directory names here if needed
+)
+
+# Specific file patterns to ignore within traversed directories
+EXCLUDE_FILES_PATTERN=( \
+    "*.log"
+    "*.jar"
+    "*.pdf"
+    "*.png"
+    "*.jpg"
+    "*.class"
+    "*.sqlite"
+    "*.csv"
+    "project_context.txt"
+    # ".env*"       # Consider if you NEED .env files; uncomment if NOT needed.
+    "package-lock.json"
+    "yarn.lock"
+    "composer.lock"
+    "*.ico"
+    "pnpm-lock.yaml"
+    # Add more file patterns here (e.g., "*.swp", "*.bak", "*.tmp")
+)
+
+# --- Script Logic ---
+
+# Attempt to get absolute path; exit if PROJECT_PATH is invalid early
+PROJECT_PATH=$(realpath "$PROJECT_PATH" 2>/dev/null)
+if [ $? -ne 0 ] || [ ! -d "$PROJECT_PATH" ]; then
+    echo "Error: Invalid or non-existent project directory specified." >&2 # Error to stderr
+    exit 1
+fi
+
+OUTPUT_FILE="$PROJECT_PATH/$OUTPUT_FILENAME"
+
+# --- Safety Check: Prevent overwriting the project directory itself ---
+# This is unlikely but guards against strange configurations
+if [ "$PROJECT_PATH" == "$OUTPUT_FILE" ]; then
+    echo "Error: Project directory path conflicts with output file name '$OUTPUT_FILENAME'." >&2
+    exit 1
+fi
+
+# Delete output file silently if it exists
+rm -f "$OUTPUT_FILE"
+
+# --- Build the find command ---
+# Uses arrays to construct the find command safely and avoid complex escaping issues with eval
+find_args=("$PROJECT_PATH")
+
+# Add directory prune conditions
+if [ ${#EXCLUDE_DIRS_PATTERN[@]} -gt 0 ]; then
+    find_args+=(\()
+    first_prune=true
+    for dir_pattern in "${EXCLUDE_DIRS_PATTERN[@]}"; do
+        if ! $first_prune; then
+            find_args+=(-o)
+        fi
+        find_args+=(-name "$dir_pattern" -type d)
+        first_prune=false
+    done
+    find_args+=(\) -prune -o) # Add the prune action and the OR for the next part
+fi
+
+# Add primary find conditions (type file, exclude output file, exclude patterns)
+find_args+=(\( -type f -not -path "$OUTPUT_FILE")
+if [ ${#EXCLUDE_FILES_PATTERN[@]} -gt 0 ]; then
+    for file_pattern in "${EXCLUDE_FILES_PATTERN[@]}"; do
+        find_args+=(-not -name "$file_pattern")
+    done
+fi
+find_args+=(-print \)) # Add the print action and close the group
+
+# --- Execute the find command and process results ---
+
+# Create the header in the output file
+{
+    echo "Project Context From: $PROJECT_PATH"
+    echo "Generated On: $(date)"
+    echo "==============================================="
+    echo "Ignored Directory Patterns: ${EXCLUDE_DIRS_PATTERN[*]}"
+    echo "Ignored File Patterns: ${EXCLUDE_FILES_PATTERN[*]}"
+    echo "==============================================="
+    echo ""
+} > "$OUTPUT_FILE"
+
+error_count=0
+# Use find with process substitution and sorting. Avoids eval.
+while IFS= read -r FILE_PATH; do
+    # Calculate relative path for cleaner output
+    RELATIVE_PATH="${FILE_PATH#"$PROJECT_PATH"/}"
+
+    # Append file info and content to the output file
+    {
+        # echo ""
+        # echo "// ==============================================="
+        # echo "---> FILE: $RELATIVE_PATH"
+        echo "//---> PATH: $FILE_PATH"
+        # echo "// ==============================================="
+        echo ""
+    } >> "$OUTPUT_FILE"
+
+    # Check if file is likely binary/non-text using 'file' command
+    # -b: omit filename; check for common non-text types
+    if file -b "$FILE_PATH" | grep -q -E 'binary|archive|compressed|image|font'; then
+        echo "[Non-text file (e.g., binary, data, compressed) - Contents omitted]" >> "$OUTPUT_FILE"
+    else
+        # Append text file content, redirect cat errors to stderr
+        if ! cat "$FILE_PATH" >> "$OUTPUT_FILE" 2> /dev/null; then # Hide cat errors from stdout
+             # Optionally log error to the output file itself, or just count it
+             echo "[Error reading file content for $RELATIVE_PATH]" >> "$OUTPUT_FILE"
+             ((error_count++))
+        fi
+    fi
+
+    {
+        # echo ""
+        echo "// END OF FILE: $RELATIVE_PATH"
+        echo ""
+    } >> "$OUTPUT_FILE"
+
+done < <(find "${find_args[@]}" | sort) # Execute find command using safe array expansion
+
+# Optionally report errors to stderr if any occurred
+if [ $error_count -gt 0 ]; then
+    echo "Warning: Encountered $error_count errors reading file contents during context generation." >&2
+    # Exit with a non-zero status to indicate partial success/warning
+    exit 1
+fi
+
+# Exit silently on success
+exit 0
+// END OF FILE: prompter.sh
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/public/data/dummydata.json
+
+[
+  {
+    "id": 1,
+    "name": "Maurice Dupont",
+    "mid": null,
+    "fid": null,
+    "pids": [2],
+    "gender": "male",
+    "birthYear": 1935,
+    "deathYear": 2010,
+    "img": "/assets/avatars/grandfather.svg",
+    "gmail": "maurice.dupont@gmail.com"
+  },
+  {
+    "id": 2,
+    "name": "Jeanne Martin",
+    "mid": null,
+    "fid": null,
+    "pids": [1],
+    "gender": "female",
+    "birthYear": 1938,
+    "deathYear": 2015,
+    "img": "/assets/avatars/grandmother.svg",
+    "gmail": "jeanne.martin@gmail.com"
+  },
+  {
+    "id": 3,
+    "name": "Bernard Dupont",
+    "mid": 2,
+    "fid": 1,
+    "pids": [4],
+    "gender": "male",
+    "birthYear": 1960,
+    "img": "/assets/avatars/father.svg",
+    "gmail": "bernard.dupont@gmail.com"
+  },
+  {
+    "id": 4,
+    "name": "Sophie Lefèvre",
+    "mid": null,
+    "fid": null,
+    "pids": [3],
+    "gender": "female",
+    "birthYear": 1962,
+    "img": "/assets/avatars/mother.svg",
+    "gmail": "sophie.lefevre@gmail.com"
+  },
+  {
+    "id": 5,
+    "name": "Pierre Lambert",
+    "mid": null,
+    "fid": null,
+    "pids": [6],
+    "gender": "male",
+    "birthYear": 1958,
+    "img": "/assets/avatars/father.svg",
+    "gmail": "pierre.lambert@gmail.com"
+  },
+  {
+    "id": 6,
+    "name": "Catherine Dupont",
+    "mid": 2,
+    "fid": 1,
+    "pids": [5],
+    "gender": "female",
+    "birthYear": 1963,
+    "img": "/assets/avatars/mother.svg",
+    "gmail": "catherine.dupont@gmail.com"
+  },
+  {
+    "id": 7,
+    "name": "René Moreau",
+    "mid": null,
+    "fid": null,
+    "pids": [8],
+    "gender": "male",
+    "birthYear": 1965,
+    "img": "/assets/avatars/father.svg",
+    "gmail": "rene.moreau@gmail.com"
+  },
+  {
+    "id": 8,
+    "name": "Marie Dupont",
+    "mid": 2,
+    "fid": 1,
+    "pids": [7],
+    "gender": "female",
+    "birthYear": 1965,
+    "img": "/assets/avatars/mother.svg",
+    "gmail": "marie.dupont@gmail.com"
+  },
+  {
+    "id": 9,
+    "name": "Thomas Dupont",
+    "mid": 4,
+    "fid": 3,
+    "pids": [10],
+    "gender": "male",
+    "birthYear": 1985,
+    "img": "/assets/avatars/son.svg",
+    "gmail": "thomas.dupont@gmail.com"
+  },
+  {
+    "id": 10,
+    "name": "Laura Blanc",
+    "mid": null,
+    "fid": null,
+    "pids": [9],
+    "gender": "female",
+    "birthYear": 1988,
+    "img": "/assets/avatars/wife.svg",
+    "gmail": "laura.blanc@gmail.com"
+  },
+  {
+    "id": 11,
+    "name": "Emilie Dupont",
+    "mid": 4,
+    "fid": 3,
+    "pids": [12],
+    "gender": "female",
+    "birthYear": 1990,
+    "img": "/assets/avatars/daughter.svg",
+    "gmail": "emilie.dupont@gmail.com"
+  },
+  {
+    "id": 12,
+    "name": "Julien Petit",
+    "mid": null,
+    "fid": null,
+    "pids": [11],
+    "gender": "male",
+    "birthYear": 1987,
+    "img": "/assets/avatars/husband.svg",
+    "gmail": "julien.petit@gmail.com"
+  },
+  {
+    "id": 13,
+    "name": "Marc Lambert",
+    "mid": 6,
+    "fid": 5,
+    "gender": "male",
+    "birthYear": 1988,
+    "img": "/assets/avatars/son.svg",
+    "gmail": "marc.lambert@gmail.com"
+  },
+  {
+    "id": 14,
+    "name": "Claire Lambert",
+    "mid": 6,
+    "fid": 5,
+    "gender": "female",
+    "birthYear": 1992,
+    "img": "/assets/avatars/daughter.svg",
+    "gmail": "claire.lambert@gmail.com"
+  },
+  {
+    "id": 15,
+    "name": "Pascal Moreau",
+    "mid": 8,
+    "fid": 7,
+    "gender": "male",
+    "birthYear": 1990,
+    "img": "/assets/avatars/son.svg",
+    "gmail": "pascal.moreau@gmail.com"
+  },
+  {
+    "id": 16,
+    "name": "Alice Moreau",
+    "mid": 8,
+    "fid": 7,
+    "gender": "female",
+    "birthYear": 1993,
+    "img": "/assets/avatars/daughter.svg",
+    "gmail": "alice.moreau@gmail.com"
+  },
+  {
+    "id": 17,
+    "name": "Léo Dupont",
+    "mid": 10,
+    "fid": 9,
+    "gender": "male",
+    "birthYear": 2015,
+    "img": "/assets/avatars/grandson.svg",
+    "gmail": "leo.dupont@gmail.com"
+  },
+  {
+    "id": 18,
+    "name": "Emma Dupont",
+    "mid": 10,
+    "fid": 9,
+    "gender": "female",
+    "birthYear": 2018,
+    "img": "/assets/avatars/granddaughter.svg",
+    "gmail": "emma.dupont@gmail.com"
+  },
+  {
+    "id": 19,
+    "name": "Lucas Petit",
+    "mid": 11,
+    "fid": 12,
+    "gender": "male",
+    "birthYear": 2019,
+    "img": "/assets/avatars/grandson.svg",
+    "gmail": "lucas.petit@gmail.com"
+  },
+  {
+    "id": 20,
+    "name": "Louise Petit",
+    "mid": 11,
+    "fid": 12,
+    "gender": "female",
+    "birthYear": 2021,
+    "img": "/assets/avatars/granddaughter.svg",
+    "gmail": "louise.petit@gmail.com"
+  },
+  {
+    "id": 21,
+    "name": "Richard Roy",
+    "mid": null,
+    "fid": null,
+    "pids": [22],
+    "gender": "male",
+    "birthYear": 1940,
+    "deathYear": 2020,
+    "img": "/assets/avatars/grandfather.svg",
+    "gmail": "richard.roy@gmail.com"
+  },
+  {
+    "id": 22,
+    "name": "Hélène Durand",
+    "mid": null,
+    "fid": null,
+    "pids": [21],
+    "gender": "female",
+    "birthYear": 1942,
+    "img": "/assets/avatars/grandmother.svg",
+    "gmail": "helene.durand@gmail.com"
+  },
+  {
+    "id": 23,
+    "name": "Philippe Roy",
+    "mid": 22,
+    "fid": 21,
+    "pids": [24],
+    "gender": "male",
+    "birthYear": 1964,
+    "img": "/assets/avatars/father.svg",
+    "gmail": "philippe.roy@gmail.com"
+  },
+  {
+    "id": 24,
+    "name": "Nathalie Simon",
+    "mid": null,
+    "fid": null,
+    "pids": [23],
+    "gender": "female",
+    "birthYear": 1967,
+    "img": "/assets/avatars/mother.svg",
+    "gmail": "nathalie.simon@gmail.com"
+  },
+  {
+    "id": 25,
+    "name": "Isabelle Roy",
+    "mid": 22,
+    "fid": 21,
+    "pids": [15],
+    "gender": "female",
+    "birthYear": 1968,
+    "img": "/assets/avatars/mother.svg",
+    "gmail": "isabelle.roy@gmail.com"
+  },
+  {
+    "id": 26,
+    "name": "Antoine Roy",
+    "mid": 24,
+    "fid": 23,
+    "gender": "male",
+    "birthYear": 1995,
+    "img": "/assets/avatars/son.svg",
+    "gmail": "antoine.roy@gmail.com"
+  },
+  {
+    "id": 27,
+    "name": "Camille Roy",
+    "mid": 24,
+    "fid": 23,
+    "gender": "female",
+    "birthYear": 1998,
+    "img": "/assets/avatars/daughter.svg",
+    "gmail": "camille.roy@gmail.com"
+  },
+  {
+    "id": 28,
+    "name": "Théo Moreau",
+    "mid": 25,
+    "fid": 15,
+    "gender": "male",
+    "birthYear": 2020,
+    "img": "/assets/avatars/grandson.svg",
+    "gmail": "theo.moreau@gmail.com"
+  }
+]
+// END OF FILE: public/data/dummydata.json
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/public/vite.svg
+
+[Non-text file (e.g., binary, data, compressed) - Contents omitted]
+// END OF FILE: public/vite.svg
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/leftsidebar.js
+
+export function renderLeftSidebar() {
+  return `
+    <div id="left-sidebar">
+      <h3 class="sidebar-title">Recherche</h3>
+      <ul class="sidebar-menu">
+        <li>
+          <button id="dijkstra-button" class="sidebar-button">Dijkstra</button>
+          <div id="dijkstra-form" class="search-form" style="display: none;">
+            <h3 class="sidebar-title">Dijkstra</h3>
+            <label>Personne de départ :</label>
+            <select id="start-person"></select>
+            <label>Personne de fin :</label>
+            <select id="end-person"></select>
+            <button id="run-dijkstra">Lancer Dijkstra</button>
+          </div>
+        </li>
+        <li>
+          <button id="bellman-ford-button" class="sidebar-button">Bellman-Ford</button>
+          <div id="bellman-ford-form" class="search-form" style="display: none;">
+            <h3 class="sidebar-title">Bellman-Ford</h3>
+            <label>Personne de départ :</label>
+            <select id="bellman-ford-start-person"></select>
+            <label>Personne de fin :</label>
+            <select id="bellman-ford-end-person"></select>
+            <button id="run-bellman-ford">Lancer Bellman-Ford</button>
+          </div>
+        </li>
+      </ul>
+      <h3 class="sidebar-title" style="margin-top: 30px;">Sous-famille</h3>
+      <ul class="sidebar-menu">
+        <li>
+          <button id="prim-button" class="sidebar-button">Prim</button>
+          <div id="prim-form" class="search-form" style="display: none;">
+            <h3 class="sidebar-title">Prim</h3>
+            <label>Personne de départ :</label>
+            <select id="prim-start-person"></select>
+            <button id="run-prim">Lancer Prim</button>
+          </div>
+        </li>
+        <li>
+          <button id="kruskal-button" class="sidebar-button">Kruskal</button>
+          <div id="kruskal-form" class="search-form" style="display: none;">
+            <h3 class="sidebar-title">Kruskal</h3>
+            <label>Personne de départ :</label>
+            <select id="kruskal-start-person"></select>
+            <button id="run-kruskal">Lancer Kruskal</button>
+          </div>
+        </li>
+      </ul>
+    </div>
+  `;
+}
+// END OF FILE: src/components/leftsidebar.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/login.js
+
+// login.js
+
+export function renderLoginPage() {
+  return `
+    <div class="container-card">
+      <h2>Connexion</h2>
+      <form id="login-form">
+        <label>Nom complet :</label>
+        <input type="text" name="name" required />
+
+        <label>Année de naissance :</label>
+        <input type="number" name="birthYear" required min="1900" max="2025" />
+
+        <label>Email (Gmail) :</label>
+        <input type="email" name="email" pattern=".+@gmail\\.com" required />
+
+        <label>Genre :</label>
+        <select name="gender" required>
+          <option value="">-- Choisissez --</option>
+          <option value="male">Homme</option>
+          <option value="female">Femme</option>
+        </select>
+
+        <label>Photo (URL ou fichier) :</label>
+        <input type="file" name="imgFile" accept="image/*" />
+        <input type="url" name="imgUrl" placeholder="ou collez une URL d'image" />
+
+        <button type="submit">Se connecter</button>
+      </form>
+    </div>
+  `;
+}
+
+export function setupLoginFormHandler() {
+  const form = document.getElementById('login-form');
+  if (!form) return;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    const name = formData.get('name');
+    const birthYear = parseInt(formData.get('birthYear'), 10);
+    const gmail = formData.get('email'); // renommé pour cohérence
+    const gender = formData.get('gender');
+
+    // Gestion image
+    let img = '/assets/avatars/default.svg'; // Fallback
+    const imgFile = formData.get('imgFile');
+    const imgUrl = formData.get('imgUrl');
+
+    if (imgFile && imgFile.size > 0) {
+      img = await toBase64(imgFile);
+    } else if (imgUrl) {
+      img = imgUrl;
+    }
+
+    const userData = {
+      id: Date.now(),
+      name,
+      pid: null,
+      mid: null,
+      pids: [],
+      gender,
+      birthYear,
+      img,
+      gmail // <-- ajouté ici
+    };
+
+    // Initialiser les données de la famille dans le localStorage
+    const response = await fetch('/data/dummydata.json');
+    const initialFamilyData = await response.json();
+
+
+    localStorage.setItem('userProfile', JSON.stringify(userData));
+    localStorage.setItem('familyData', JSON.stringify(initialFamilyData));
+    window.location.href = '/profile';
+  });
+
+  function toBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+    });
+  }
+}
+// END OF FILE: src/components/login.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/maincontent.js
+
+export function renderMainContent() {
+  return `
+    <div id="main-content">
+      <div class="view-buttons">
+        <button class="view-button" data-view="tree">Arbre Généalogique</button>
+        <button class="view-button" data-view="graph">Graphe des Relations</button>
+      </div>
+      <div class="container-card" id="tree-view">
+        <h2>Arbre Généalogique</h2>
+        <div id="family-tree-container"></div>
+      </div>
+      <div class="container-card" id="graph-view" style="display: none;">
+        <h2>Graphe des Relations</h2>
+        <div id="graph-container"></div>
+      </div>
+    </div>
+  `;
+}
+// END OF FILE: src/components/maincontent.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/navbar.js
+
+export function renderNavbar() {
+  const stored = localStorage.getItem('userProfile');
+  const user = stored ? JSON.parse(stored) : null;
+
+  const userSection = user
+    ? `
+      <a href="/profile" data-link class="user-info">
+        <img src="${user.img}" alt="Photo de ${user.name}" class="user-avatar" />
+        <span>${user.name}</span>
+      </a>
+    `
+    : `<a href="/login" data-link>Connexion</a>`;
+
+  return `
+    <div id="navbar">
+      <h1>Arbre Généalogique Familial</h1>
+      <div id="navbar-menu">
+        <a href="/" data-link>Accueil</a>
+        ${userSection}
+      </div>
+    </div>
+  `;
+}
+// END OF FILE: src/components/navbar.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/profile.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/profile.js
+export function renderProfilePage() {
+  const stored = localStorage.getItem('userProfile');
+  const user = stored ? JSON.parse(stored) : {
+    id: 100, // Default ID if no profile exists
+    name: '',
+    fid: null, // Changed from pid
+    mid: null,
+    pids: [],
+    gender: '',
+    birthYear: '',
+    img: '/assets/avatars/default.svg',
+    gmail: ''
+  };
+
+  // familyData is not directly used in rendering here, but good to be aware of
+  // const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
+
+  return `
+    <div class="container-card">
+      <div class="profile-header">
+        <h2>Votre Profil</h2>
+        <button id="logout-button" class="logout-button">Déconnexion</button>
+      </div>
+      <form id="profile-form">
+        <img src="${user.img}" alt="Photo de profil" style="max-width: 150px; border-radius: 8px; margin-bottom: 15px;" />
+
+        <label>Nom :</label>
+        <input type="text" name="name" value="${user.name}" required />
+
+        <label>Année de naissance :</label>
+        <input type="number" name="birthYear" value="${user.birthYear}" required min="1900" max="2025" />
+
+        <label>Email (Gmail) :</label>
+        <input type="email" name="gmail" value="${user.gmail}" required pattern=".+@gmail\\.com" />
+
+        <label>Genre :</label>
+        <select name="gender" required>
+          <option value="">-- Choisissez --</option>
+          <option value="male" ${user.gender === 'male' ? 'selected' : ''}>Homme</option>
+          <option value="female" ${user.gender === 'female' ? 'selected' : ''}>Femme</option>
+        </select>
+
+        <label>Changer la photo :</label>
+        <input type="file" name="imgFile" accept="image/*" />
+        <input type="url" name="imgUrl" placeholder="ou collez une URL" />
+
+        <button type="submit">Mettre à jour</button>
+      </form>
+
+      <div class="family-relations scrollable-container">
+        <h3>Relations Familiales</h3>
+        <div class="family-selection-menus">
+          <div class="family-selection-menu">
+            <button type="button" id="add-spouse-button" class="sidebar-button">Ajouter un conjoint</button>
+            <div id="add-spouse-form" class="search-form" style="display: none;">
+              <h3 class="sidebar-title">Ajouter un conjoint</h3>
+              <label>Nom du conjoint :</label>
+              <select id="spouse-select"></select>
+              <button id="add-spouse-confirm">Confirmer</button>
+            </div>
+          </div>
+          <div class="family-selection-menu">
+            <button type="button" id="add-father-button" class="sidebar-button">Ajouter un père</button>
+            <div id="add-father-form" class="search-form" style="display: none;">
+              <h3 class="sidebar-title">Ajouter un père</h3>
+              <label>Nom du père :</label>
+              <select id="father-select"></select>
+              <button id="add-father-confirm">Confirmer</button>
+            </div>
+          </div>
+          <div class="family-selection-menu">
+            <button type="button" id="add-mother-button" class="sidebar-button">Ajouter une mère</button>
+            <div id="add-mother-form" class="search-form" style="display: none;">
+              <h3 class="sidebar-title">Ajouter une mère</h3>
+              <label>Nom de la mère :</label>
+              <select id="mother-select"></select>
+              <button id="add-mother-confirm">Confirmer</button>
+            </div>
+          </div>
+          <div class="family-selection-menu">
+            <button type="button" id="add-child-button" class="sidebar-button">Ajouter un enfant</button>
+            <div id="add-child-form" class="search-form" style="display: none;">
+              <h3 class="sidebar-title">Ajouter un enfant</h3>
+              <label>Nombre d'enfants :</label>
+              <input type="number" id="child-count" min="1" max="10" value="1" />
+              <button id="generate-child-menus">Générer les menus</button>
+              <div id="child-menus"></div>
+              <button id="add-child-confirm">Confirmer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="family-relations-container"></div>
+    </div>
+  `;
+}
+
+export function setupProfileFormHandler() {
+  const form = document.getElementById('profile-form');
+  if (!form) return;
+
+  // Load familyData once and keep it in memory for this scope
+  let familyData = JSON.parse(localStorage.getItem('familyData')) || [];
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
+
+    const name = formData.get('name');
+    const birthYear = parseInt(formData.get('birthYear'), 10);
+    const gmail = formData.get('gmail');
+    const gender = formData.get('gender');
+
+    const existingUserProfile = JSON.parse(localStorage.getItem('userProfile')) || {};
+    let img = existingUserProfile.img || '/assets/avatars/default.svg';
+    const imgFile = formData.get('imgFile');
+    const imgUrl = formData.get('imgUrl');
+
+    if (imgFile && imgFile.size > 0) {
+      img = await toBase64(imgFile);
+    } else if (imgUrl) {
+      img = imgUrl;
+    }
+
+    const updatedProfileData = {
+      ...existingUserProfile, // Preserve existing relationships (fid, mid, pids) and ID
+      id: existingUserProfile.id || Date.now(), // Ensure ID is present, fallback to new if none
+      name,
+      gender,
+      birthYear,
+      img,
+      gmail
+    };
+
+    localStorage.setItem('userProfile', JSON.stringify(updatedProfileData));
+    
+    // Update user's representation in familyData as well
+    updateUserInFamilyData(updatedProfileData, familyData);
+    localStorage.setItem('familyData', JSON.stringify(familyData));
+
+    alert('Profil mis à jour avec succès !');
+    location.reload(); // recharger pour voir les changements
+  });
+
+  const logoutButton = document.getElementById('logout-button');
+  if (logoutButton) {
+    logoutButton.addEventListener('click', () => {
+      localStorage.removeItem('userProfile');
+      // Optionally, clear familyData if it's tied to the user session, or leave it.
+      // localStorage.removeItem('familyData'); 
+      window.location.href = '/login';
+    });
+  }
+
+  function populateSelectMenu(selectId, data, excludeId = null) {
+    const selectElement = document.getElementById(selectId);
+    if (!selectElement) return;
+
+    selectElement.innerHTML = '<option value="">-- Choisissez --</option>'; // Clear existing and add default
+    data.forEach(person => {
+      if (person.id === excludeId) return; // Exclude the user themselves if needed
+
+      const option = document.createElement('option');
+      option.value = person.id;
+      option.textContent = `${person.name}`;
+      selectElement.appendChild(option);
+    });
+  }
+  
+  // Helper function to manage the user's representation in familyData
+  // Ensures the user object exists in familyData and is up-to-date.
+  // Returns the reference to the user object within the familyData array.
+  function updateUserInFamilyData(userProfileSource, targetFamilyData) {
+    let userInFamily = targetFamilyData.find(p => p.id === userProfileSource.id);
+    if (!userInFamily) {
+      userInFamily = JSON.parse(JSON.stringify(userProfileSource)); // Add a deep copy
+      targetFamilyData.push(userInFamily);
+    } else {
+      // User exists, update it with properties from userProfileSource
+      Object.assign(userInFamily, userProfileSource);
+    }
+    return userInFamily;
+  }
+
+
+  // Initial population of select menus
+  // The current user (profile being edited) should not be selectable as their own parent/spouse.
+  const currentUserProfileForExclusion = JSON.parse(localStorage.getItem('userProfile'));
+  const currentUserId = currentUserProfileForExclusion ? currentUserProfileForExclusion.id : null;
+
+  populateSelectMenu('spouse-select', familyData, currentUserId);
+  populateSelectMenu('father-select', familyData.filter(p => p.gender === 'male'), currentUserId);
+  populateSelectMenu('mother-select', familyData.filter(p => p.gender === 'female'), currentUserId);
+
+
+  // Add Spouse
+  const addSpouseButton = document.getElementById('add-spouse-button');
+  if (addSpouseButton) {
+    addSpouseButton.addEventListener('click', () => {
+      document.getElementById('add-spouse-form').style.display = 
+        document.getElementById('add-spouse-form').style.display === 'none' ? 'block' : 'none';
+    });
+
+    const addSpouseConfirmButton = document.getElementById('add-spouse-confirm');
+    if (addSpouseConfirmButton) {
+      addSpouseConfirmButton.addEventListener('click', () => {
+        const spouseId = parseInt(document.getElementById('spouse-select').value, 10);
+        if (!spouseId || isNaN(spouseId)) {
+          alert('Veuillez sélectionner un conjoint.');
+          return;
+        }
+
+        const userProfileData = JSON.parse(localStorage.getItem('userProfile'));
+        const userInFamily = updateUserInFamilyData(userProfileData, familyData); // Get/update user in familyData
+        const spouseInFamily = familyData.find(p => p.id === spouseId);
+
+        if (userInFamily && spouseInFamily) {
+          // Update user's pids
+          userInFamily.pids = userInFamily.pids || [];
+          if (!userInFamily.pids.includes(spouseId)) {
+            userInFamily.pids.push(spouseId);
+          }
+
+          // Update spouse's pids
+          spouseInFamily.pids = spouseInFamily.pids || [];
+          if (!spouseInFamily.pids.includes(userInFamily.id)) {
+            spouseInFamily.pids.push(userInFamily.id);
+          }
+
+          localStorage.setItem('userProfile', JSON.stringify(userInFamily)); // Save updated user profile
+          localStorage.setItem('familyData', JSON.stringify(familyData));
+          alert('Conjoint ajouté avec succès !');
+          location.reload();
+        } else {
+          alert('Erreur : conjoint non trouvé.');
+        }
+      });
+    }
+  }
+
+  // Add Father
+  const addFatherButton = document.getElementById('add-father-button');
+  if (addFatherButton) {
+    addFatherButton.addEventListener('click', () => {
+      document.getElementById('add-father-form').style.display =
+        document.getElementById('add-father-form').style.display === 'none' ? 'block' : 'none';
+    });
+
+    const addFatherConfirmButton = document.getElementById('add-father-confirm');
+    if (addFatherConfirmButton) {
+      addFatherConfirmButton.addEventListener('click', () => {
+        const fatherId = parseInt(document.getElementById('father-select').value, 10);
+        if (!fatherId || isNaN(fatherId)) {
+          alert('Veuillez sélectionner un père.');
+          return;
+        }
+        
+        const userProfileData = JSON.parse(localStorage.getItem('userProfile'));
+        const userInFamily = updateUserInFamilyData(userProfileData, familyData);
+        const fatherInFamily = familyData.find(p => p.id === fatherId);
+
+        if (userInFamily && fatherInFamily) {
+          if (fatherInFamily.gender !== 'male') {
+            alert('La personne sélectionnée comme père doit être de genre masculin.');
+            return;
+          }
+          userInFamily.fid = fatherId;
+          // If this person was previously the mother, clear mid to avoid conflict.
+          if (userInFamily.mid === fatherId) userInFamily.mid = null;
+
+
+          localStorage.setItem('userProfile', JSON.stringify(userInFamily));
+          localStorage.setItem('familyData', JSON.stringify(familyData)); // familyData was modified via userInFamily
+          alert('Père ajouté avec succès !');
+          location.reload();
+        } else {
+          alert('Erreur : père non trouvé.');
+        }
+      });
+    }
+  }
+
+  // Add Mother
+  const addMotherButton = document.getElementById('add-mother-button');
+  if (addMotherButton) {
+    addMotherButton.addEventListener('click', () => {
+      document.getElementById('add-mother-form').style.display =
+        document.getElementById('add-mother-form').style.display === 'none' ? 'block' : 'none';
+    });
+    
+    const addMotherConfirmButton = document.getElementById('add-mother-confirm');
+    if (addMotherConfirmButton) {
+      addMotherConfirmButton.addEventListener('click', () => {
+        const motherId = parseInt(document.getElementById('mother-select').value, 10);
+        if (!motherId || isNaN(motherId)) {
+          alert('Veuillez sélectionner une mère.');
+          return;
+        }
+
+        const userProfileData = JSON.parse(localStorage.getItem('userProfile'));
+        const userInFamily = updateUserInFamilyData(userProfileData, familyData);
+        const motherInFamily = familyData.find(p => p.id === motherId);
+
+        if (userInFamily && motherInFamily) {
+          if (motherInFamily.gender !== 'female') {
+            alert('La personne sélectionnée comme mère doit être de genre féminin.');
+            return;
+          }
+          userInFamily.mid = motherId;
+          // If this person was previously the father, clear fid.
+          if (userInFamily.fid === motherId) userInFamily.fid = null;
+
+          localStorage.setItem('userProfile', JSON.stringify(userInFamily));
+          localStorage.setItem('familyData', JSON.stringify(familyData));
+          alert('Mère ajoutée avec succès !');
+          location.reload();
+        } else {
+          alert('Erreur : mère non trouvée.');
+        }
+      });
+    }
+  }
+
+  // Add Child
+  const addChildButton = document.getElementById('add-child-button');
+  if (addChildButton) {
+    addChildButton.addEventListener('click', () => {
+      document.getElementById('add-child-form').style.display =
+        document.getElementById('add-child-form').style.display === 'none' ? 'block' : 'none';
+      // Pre-generate one child menu by default if not already generated
+      if(document.getElementById('child-menus').children.length === 0) {
+        document.getElementById('generate-child-menus').click();
+      }
+    });
+
+    const generateChildMenusButton = document.getElementById('generate-child-menus');
+    if (generateChildMenusButton) {
+      generateChildMenusButton.addEventListener('click', () => {
+        const childCountInput = document.getElementById('child-count');
+        const childCount = parseInt(childCountInput.value, 10);
+        const childMenusContainer = document.getElementById('child-menus');
+        childMenusContainer.innerHTML = ''; // Clear existing menus
+
+        if (isNaN(childCount) || childCount < 1 || childCount > 10) {
+            alert("Veuillez entrer un nombre d'enfants valide (1-10).");
+            childCountInput.value = "1"; // Reset to default
+            return;
+        }
+        
+        const userProfileData = JSON.parse(localStorage.getItem('userProfile'));
+
+        for (let i = 0; i < childCount; i++) {
+          const childMenuDiv = document.createElement('div');
+          childMenuDiv.classList.add('child-menu');
+          childMenuDiv.innerHTML = `
+            <label>Nom de l'enfant ${i + 1} :</label>
+            <select id="child-select-${i}" class="child-select"></select>
+          `;
+          childMenusContainer.appendChild(childMenuDiv);
+          // Populate this specific child select menu, excluding the current user and their existing parents/spouses
+          // to prevent logical impossibilities like being your own child.
+          populateSelectMenu(`child-select-${i}`, familyData, userProfileData.id);
+        }
+      });
+    }
+
+    const addChildConfirmButton = document.getElementById('add-child-confirm');
+    if (addChildConfirmButton) {
+      addChildConfirmButton.addEventListener('click', () => {
+        const userProfileData = JSON.parse(localStorage.getItem('userProfile'));
+        // userInFamily is not directly modified for adding children, but we get it to ensure it's in familyData
+        const userInFamily = updateUserInFamilyData(userProfileData, familyData); 
+        let childrenAdded = 0;
+
+        document.querySelectorAll('.child-select').forEach(select => {
+          const childId = parseInt(select.value, 10);
+          if (childId && !isNaN(childId)) {
+            const childInFamily = familyData.find(p => p.id === childId);
+            if (childInFamily) {
+              if (userInFamily.gender === 'male') {
+                childInFamily.fid = userInFamily.id;
+                // If current user was previously child's mother, clear it
+                if (childInFamily.mid === userInFamily.id) childInFamily.mid = null;
+              } else if (userInFamily.gender === 'female') {
+                childInFamily.mid = userInFamily.id;
+                // If current user was previously child's father, clear it
+                if (childInFamily.fid === userInFamily.id) childInFamily.fid = null;
+              }
+              childrenAdded++;
+            }
+          }
+        });
+
+        if (childrenAdded > 0) {
+          // userProfileData (userInFamily) itself isn't changed when adding children,
+          // but its representation in familyData might have been updated by updateUserInFamilyData.
+          // We save familyData which contains the modified children.
+          localStorage.setItem('userProfile', JSON.stringify(userInFamily)); // Keep userProfile consistent
+          localStorage.setItem('familyData', JSON.stringify(familyData));
+          alert(`${childrenAdded} enfant(s) ajouté(s) avec succès !`);
+          location.reload();
+        } else {
+          alert("Aucun enfant sélectionné ou erreur lors de l'ajout.");
+        }
+      });
+    }
+  }
+
+  function toBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+    });
+  }
+}// END OF FILE: src/components/profile.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/rightsidebar.js
+
+export function renderRightSidebar() {
+  // Récupérer les étapes de l'algorithme depuis localStorage
+  const algorithmSteps = JSON.parse(localStorage.getItem('algorithmSteps') || '[]');
+
+  // Générer la liste des étapes
+  let stepsHtml = '';
+  if (algorithmSteps.length > 0) {
+    stepsHtml = algorithmSteps.map((step, index) =>
+      `<li>${index + 1}. ${step}</li>`
+    ).join('');
+  } else {
+    stepsHtml = '<li>Aucune étape à afficher</li>';
+  }
+
+  return `
+    <div id="right-sidebar">
+      <h3 class="sidebar-title">Processus</h3>
+      <ul class="process-steps">
+        ${stepsHtml}
+      </ul>
+    </div>
+  `;
+}
+// END OF FILE: src/components/rightsidebar.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/counter.ts
+
+export function setupCounter(element: HTMLButtonElement) {
+    let counter = 0
+    const setCounter = (count: number) => {
+      counter = count
+      element.innerHTML = `count is ${counter}`
+    }
+    element.addEventListener('click', () => setCounter(counter + 1))
+    setCounter(0)
+  }// END OF FILE: src/counter.ts
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/css/auth.css
+
+// END OF FILE: src/css/auth.css
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/css/family-tree.css
+
+// END OF FILE: src/css/family-tree.css
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/css/style.css
+
+/* Réinitialisation et styles globaux */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+    color: #2d3748;
+    height: 100vh;
+    overflow: hidden;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+/* Structure principale */
+#app {
+    display: grid;
+    grid-template-areas:
+      "navbar navbar navbar"
+      "left-sidebar main-content right-sidebar";
+    grid-template-columns: 280px 1fr 280px;
+    grid-template-rows: 70px 1fr;
+    height: 100vh;
+}
+
+/* Navigation bar */
+#navbar {
+    grid-area: navbar;
+    background: linear-gradient(90deg, #1a365d 0%, #2d5a88 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    padding: 0 25px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+}
+
+#navbar h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+#navbar-menu {
+    display: flex;
+    margin-left: auto;
+    gap: 8px;
+}
+
+#navbar-menu a {
+    color: white;
+    text-decoration: none;
+    padding: 10px 18px;
+    font-size: 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+#navbar-menu a:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+/* Sidebars */
+#left-sidebar {
+    grid-area: left-sidebar;
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    color: #ffffff;
+    padding: 25px 20px;
+    overflow-y: auto;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.1);
+}
+
+#right-sidebar {
+    grid-area: right-sidebar;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    padding: 25px 20px;
+    overflow-y: auto;
+    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.05);
+    border-left: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Contenu principal */
+#main-content {
+    grid-area: main-content;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    overflow: hidden; /* Évitez les scrollbars */
+    height: calc(100vh - 70px); /* Ajustez la hauteur pour éviter l'espace en bas */
+}
+
+#main-content h2 {
+    font-size: 1.8rem;
+    color: #1a365d;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 3px solid #e2e8f0;
+    position: relative;
+}
+
+#main-content h2::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, #3182ce 0%, #63b3ed 100%);
+}
+
+/* Conteneurs pour l'arbre généalogique et le graphe */
+.container-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    padding: 25px;
+    margin-bottom: 25px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    flex: 1; /* Ajoutez cette ligne pour permettre au conteneur de s'étendre */
+    max-height: calc(100vh - 150px); /* Ajustez la hauteur maximale */
+    overflow-y: auto; /* Permettre le défilement vertical */
+}
+
+.container-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+#family-tree-container,
+#graph-container {
+    height: calc(100% - 50px); /* Ajustez la hauteur pour éviter les scrollbars */
+    overflow: hidden; /* Évitez les scrollbars */
+    border-radius: 12px;
+    background-color: #f9fafb;
+    border: 1px solid #e2e8f0;
+    padding: 15px;
+    transition: all 0.3s ease;
+}
+
+#family-tree-container:hover,
+#graph-container:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Sidebar menu */
+.sidebar-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+    letter-spacing: 0.5px;
+    color: #fbfbfb; /* Change text color to black */
+}
+
+.sidebar-menu {
+    list-style: none;
+}
+
+.sidebar-menu li {
+    margin-bottom: 15px;
+}
+
+.sidebar-menu a {
+    color: #000; /* Change text color to black */
+    text-decoration: none;
+    display: block;
+    padding: 12px 15px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.sidebar-menu a:hover {
+    background: linear-gradient(90deg, #3182ce 0%, #4299e1 100%);
+    color: white;
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+}
+
+/* Right sidebar specific */
+#right-sidebar .sidebar-title {
+    color: #1a365d;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+#right-sidebar .info-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+}
+
+#right-sidebar .info-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Process steps */
+.process-steps {
+    list-style: none;
+    padding: 0;
+}
+
+.process-steps li {
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: #2d3748;
+}
+
+/* Responsive design */
+@media (max-width: 1200px) {
+    #app {
+        grid-template-columns: 240px 1fr 240px;
+    }
+}
+
+@media (max-width: 900px) {
+    #app {
+        grid-template-areas:
+          "navbar navbar navbar"
+          "left-sidebar main-content main-content";
+        grid-template-columns: 280px 1fr;
+    }
+
+    #right-sidebar {
+        display: none;
+    }
+}
+
+@media (max-width: 650px) {
+    #app {
+        grid-template-areas:
+          "navbar navbar"
+          "main-content main-content";
+        grid-template-columns: 1fr;
+    }
+
+    #left-sidebar {
+        display: none;
+    }
+
+    #navbar {
+        padding: 0 20px;
+    }
+}
+
+/* Formulaires */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+form label {
+    font-weight: 600;
+    color: #000; /* Change text color to black */
+    font-size: 1.05rem;
+    margin-bottom: 5px;
+    display: block;
+}
+
+form input,
+form select {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+form input:focus,
+form select:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.25);
+}
+
+form button {
+    padding: 12px 20px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #2b6cb0 0%, #3182ce 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 1.05rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(49, 130, 206, 0.3);
+}
+
+form button:hover {
+    background: linear-gradient(90deg, #1a4a8c 0%, #2b6cb0 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(49, 130, 206, 0.4);
+}
+
+/* Informations utilisateur */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+    padding: 10px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.user-info:hover {
+    background-color: rgba(226, 232, 240, 0.5);
+}
+
+.user-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #4299e1;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.user-info:hover .user-avatar {
+    transform: scale(1.1);
+    border-color: #3182ce;
+}
+
+/* Ajoutez ces styles pour les boutons de vue */
+.view-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.view-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: #4299e1;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.view-button:hover {
+    background-color: #3182ce;
+}
+
+/* Styles pour le bouton de déconnexion */
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.logout-button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
+}
+
+.logout-button:hover {
+    background: linear-gradient(90deg, #c0392b 0%, #9b2c2c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(231, 76, 60, 0.4);
+}
+
+/* Styles pour les boutons dans la sidebar */
+.sidebar-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: #4299e1;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+.sidebar-button:hover {
+    background-color: #3182ce;
+}
+
+/* Styles pour les formulaires dans la sidebar */
+.sidebar-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.sidebar-form label {
+    font-weight: 600;
+    color: #000; /* Change text color to black */
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+.sidebar-form select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    color: #000; /* Change text color to black */
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.sidebar-form select:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.25);
+}
+
+.sidebar-form button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    background-color: #4299e1;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(49, 130, 206, 0.3);
+    margin-top: 20px;
+}
+
+.sidebar-form button:hover {
+    background-color: #3182ce;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(49, 130, 206, 0.4);
+}
+
+/* Style for the "Ajouter un enfant" form container */
+#add-child-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+    background-color: #ffffff; /* White background */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Style for the title within the form */
+#add-child-form .sidebar-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #333333; /* Dark text color */
+    margin-bottom: 15px;
+    border-bottom: 2px solid #e2e8f0; /* Light border */
+    padding-bottom: 10px;
+}
+
+/* Style for labels within the form */
+#add-child-form label {
+    font-weight: 500;
+    color: #333333; /* Dark text color */
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+/* Style for input fields within the form */
+#add-child-form input[type="number"],
+#add-child-form button {
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+/* Style for input fields on focus */
+#add-child-form input[type="number"]:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.25);
+}
+
+/* Style for buttons within the form */
+#add-child-form button {
+    background-color: #4299e1;
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+/* Style for buttons on hover */
+#add-child-form button:hover {
+    background-color: #3182ce;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(49, 130, 206, 0.4);
+}
+
+/* Style for the child menus container */
+#child-menus {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Style for individual child menu items */
+.child-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Style for child menu labels */
+.child-menu label {
+    font-weight: 500;
+    color: #333333; /* Dark text color */
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+/* Style for child menu select fields */
+.child-menu select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    color: #333333; /* Dark text color */
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+/* Style for child menu select fields on focus */
+.child-menu select:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.25);
+}
+
+/* Styles for the formulaires de recherche */
+.search-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.1); /* Fond légèrement translucide */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Ombre pour un effet de profondeur */
+    transition: all 0.3s ease;
+}
+
+/* Style for .sidebar-title within .search-form in the left sidebar */
+#left-sidebar .search-form .sidebar-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #ffffff; /* White text color for left sidebar */
+    margin-bottom: 15px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2); /* White border for left sidebar */
+}
+
+/* Style for .sidebar-title within .search-form in the profile */
+#main-content .search-form .sidebar-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #000000; /* Black text color for profile */
+    margin-bottom: 15px;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.2); /* Black border for profile */
+}
+
+/* Style for .search-form label within the left sidebar */
+#left-sidebar .search-form label {
+    font-weight: 500;
+    color: #ffffff; /* White text color for left sidebar */
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+/* Style for .search-form label within the profile section */
+#main-content .search-form label {
+    font-weight: 500;
+    color: #000000; /* Black text color for profile */
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+.search-form select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    color: #000; /* Change text color to black */
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.search-form select:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.25);
+}
+
+.search-form button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    background-color: #4299e1;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(49, 130, 206, 0.3);
+    margin-top: 20px;
+}
+
+.search-form button:hover {
+    background-color: #3182ce;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(49, 130, 206, 0.4);
+}
+
+/* Highlighted classes for different algorithms */
+.highlighted-dijkstra {
+    background-color: red !important;
+    line-color: red !important;
+    target-arrow-color: red !important;
+    transition: background-color 1s ease, line-color 1s ease, target-arrow-color 1s ease;
+}
+
+.highlighted-bellman-ford {
+    background-color: blue !important;
+    line-color: blue !important;
+    target-arrow-color: blue !important;
+    transition: background-color 1s ease, line-color 1s ease, target-arrow-color 1s ease;
+}
+
+.highlighted-prim {
+    background-color: green !important;
+    line-color: green !important;
+    target-arrow-color: green !important;
+    transition: background-color 1s ease, line-color 1s ease, target-arrow-color 1s ease;
+}
+
+.highlighted-kruskal {
+    background-color: purple !important;
+    line-color: purple !important;
+    target-arrow-color: purple !important;
+    transition: background-color 1s ease, line-color 1s ease, target-arrow-color 1s ease;
+}
+// END OF FILE: src/css/style.css
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/algorithms/bellman-ford.js
+
+import cytoscape from 'cytoscape';
+import { clearAlgorithmSteps } from '../utils/helper';
+
+export function initBellmanFord(cy, startNode, endNode) {
+  clearAlgorithmSteps();
+
+  // Initialiser le suivi des étapes
+  const steps = [];
+  steps.push("Initialisation de l'algorithme de Bellman-Ford");
+  steps.push(`Nœud de départ: ${startNode.data('label')}, Nœud d'arrivée: ${endNode.data('label')}`);
+  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+
+  // Réinitialiser les styles
+  cy.edges().style({
+    'line-color': '#9dbaea',
+    'width': 6
+  });
+
+  // Tous les nœuds et arêtes du graphe
+  const nodes = cy.nodes();
+  const edges = cy.edges();
+
+  // Maps pour suivre les distances et les parents
+  const distances = new Map();
+  const parent = new Map();
+
+  // Initialisation des structures de données
+  nodes.forEach(node => {
+    const id = node.id();
+    distances.set(id, id === startNode.id() ? 0 : Infinity);
+    parent.set(id, null);
+  });
+
+  // Algorithme de Bellman-Ford
+  const V = nodes.length;
+
+  // Relaxation des arêtes V-1 fois
+  for (let i = 0; i < V - 1; i++) {
+    steps.push(`Itération ${i+1}/${V-1} - Relaxation de toutes les arêtes`);
+    localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+
+    edges.forEach(edge => {
+      const source = edge.source().id();
+      const target = edge.target().id();
+      const weight = edge.data('weight') || 1;
+
+      // Relaxation dans les deux sens car le graphe est non dirigé
+      if (distances.get(source) !== Infinity && distances.get(source) + weight < distances.get(target)) {
+        distances.set(target, distances.get(source) + weight);
+        parent.set(target, source);
+        steps.push(`Mise à jour de la distance du nœud ${cy.getElementById(target).data('label')}: ${distances.get(target)} → ${distances.get(source) + weight}`);
+        localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+
+        // Animer le changement de couleur
+        edge.addClass('highlighted-bellman-ford');
+        setTimeout(() => {
+          edge.removeClass('highlighted-bellman-ford');
+        }, 1000); // Durée de l'animation
+      }
+
+      if (distances.get(target) !== Infinity && distances.get(target) + weight < distances.get(source)) {
+        distances.set(source, distances.get(target) + weight);
+        parent.set(source, target);
+        steps.push(`Mise à jour de la distance du nœud ${cy.getElementById(source).data('label')}: ${distances.get(source)} → ${distances.get(target) + weight}`);
+        localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+
+        // Animer le changement de couleur
+        edge.addClass('highlighted-bellman-ford');
+        setTimeout(() => {
+          edge.removeClass('highlighted-bellman-ford');
+        }, 1000); // Durée de l'animation
+      }
+    });
+  }
+
+  // Vérification des cycles négatifs
+  let hasNegativeCycle = false;
+
+  edges.forEach(edge => {
+    const source = edge.source().id();
+    const target = edge.target().id();
+    const weight = edge.data('weight') || 1;
+
+    if (distances.get(source) !== Infinity && distances.get(source) + weight < distances.get(target)) {
+      hasNegativeCycle = true;
+    }
+
+    if (distances.get(target) !== Infinity && distances.get(target) + weight < distances.get(source)) {
+      hasNegativeCycle = true;
+    }
+  });
+
+  if (hasNegativeCycle) {
+    console.warn("Le graphe contient un cycle de poids négatif!");
+    steps.push("Cycle négatif détecté dans le graphe");
+    localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+  }
+
+  // Reconstruire le chemin du nœud de départ au nœud d'arrivée
+  const path = [];
+  let current = endNode.id();
+
+  while (current !== null && current !== startNode.id()) {
+    const parentId = parent.get(current);
+    if (parentId === null) break; // Pas de chemin
+
+    // Ajouter l'arête au chemin
+    const edge = cy.elements().edges(`[source = "${parentId}"][target = "${current}"], [source = "${current}"][target = "${parentId}"]`);
+    path.unshift(edge);
+
+    current = parentId;
+  }
+
+  // Afficher le chemin trouvé
+  if (path.length > 0) {
+    path.forEach(edge => {
+      edge.style({
+        'line-color': 'blue', // Couleur pour Bellman-Ford
+        'width': 5
+      });
+    });
+
+    // Animation facultative
+    let delay = 0;
+    const animationStep = 500;
+
+    path.forEach(edge => {
+      setTimeout(() => {
+        edge.flashClass('highlighted-bellman-ford', 1000);
+      }, delay);
+      delay += animationStep;
+    });
+
+    console.log(`Algorithme de Bellman-Ford: chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')} avec ${path.length} arêtes`);
+    console.log(`Distance totale: ${distances.get(endNode.id())}`);
+    steps.push(`Chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')} avec distance totale ${distances.get(endNode.id())}`);
+  } else {
+    console.log(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
+    steps.push(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
+  }
+  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+
+  return path;
+}
+// END OF FILE: src/js/algorithms/bellman-ford.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/algorithms/dijkstra.js
+
+import cytoscape from 'cytoscape';
+import { clearAlgorithmSteps } from '../utils/helper';
+
+export function initDijkstra(cy, startNode, endNode) {
+  clearAlgorithmSteps();
+
+  // Initialiser le suivi des étapes
+  const steps = [];
+  steps.push("Initialisation de l'algorithme de Dijkstra");
+  steps.push(`Nœud de départ: ${startNode.data('label')}, Nœud d'arrivée: ${endNode.data('label')}`);
+  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+
+  // Réinitialiser les styles
+  cy.edges().style({
+    'line-color': '#9dbaea',
+    'width': 6
+  });
+
+  // Tous les nœuds du graphe
+  const nodes = cy.nodes();
+
+  // Maps pour suivre les distances et les parents
+  const visited = new Map();
+  const distances = new Map();
+  const parent = new Map();
+
+  // Initialisation des structures de données
+  nodes.forEach(node => {
+    const id = node.id();
+    distances.set(id, id === startNode.id() ? 0 : Infinity);
+    parent.set(id, null);
+  });
+
+  // Algorithme de Dijkstra
+  while (true) {
+    // Trouver le nœud non visité avec la distance minimale
+    let minDistance = Infinity;
+    let minNode = null;
+
+    nodes.forEach(node => {
+      const id = node.id();
+      if (!visited.has(id) && distances.get(id) < minDistance) {
+        minDistance = distances.get(id);
+        minNode = node;
+      }
+    });
+
+    // Si aucun nœud n'est accessible ou si nous avons atteint le nœud cible
+    if (minNode === null || minNode.id() === endNode.id()) break;
+
+    // Marquer le nœud comme visité
+    visited.set(minNode.id(), true);
+    steps.push(`Exploration du nœud ${minNode.data('label')} avec distance ${distances.get(minNode.id())}`);
+    localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+
+    // Mettre à jour les distances des nœuds adjacents
+    const neighbors = minNode.neighborhood().nodes().filter(n => !visited.has(n.id()));
+
+    neighbors.forEach(neighbor => {
+      const neighborId = neighbor.id();
+      // Trouver l'arête entre minNode et neighbor
+      const edge = cy.elements().edges(`[source = "${minNode.id()}"][target = "${neighborId}"], [source = "${neighborId}"][target = "${minNode.id()}"]`);
+
+      // Dans un graphe non pondéré, la distance est 1; sinon utiliser le poids de l'arête
+      const weight = edge.data('weight') || 1;
+      const distance = distances.get(minNode.id()) + weight;
+
+      if (distance < distances.get(neighborId)) {
+        distances.set(neighborId, distance);
+        parent.set(neighborId, minNode.id());
+        steps.push(`Mise à jour de la distance du nœud ${neighbor.data('label')}: ${distances.get(neighborId)} → ${distance}`);
+        localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+
+        // Animer le changement de couleur
+        edge.addClass('highlighted-dijkstra');
+        setTimeout(() => {
+          edge.removeClass('highlighted-dijkstra');
+        }, 1000); // Durée de l'animation
+      }
+    });
+  }
+
+  // Reconstruire le chemin du nœud de départ au nœud d'arrivée
+  const path = [];
+  let current = endNode.id();
+
+  while (current !== null && current !== startNode.id()) {
+    const parentId = parent.get(current);
+    if (parentId === null) break; // Pas de chemin
+
+    // Ajouter l'arête au chemin
+    const edge = cy.elements().edges(`[source = "${parentId}"][target = "${current}"], [source = "${current}"][target = "${parentId}"]`);
+    path.unshift(edge);
+
+    current = parentId;
+  }
+
+  // Afficher le chemin trouvé
+  if (path.length > 0) {
+    path.forEach(edge => {
+      edge.style({
+        'line-color': 'red', // Couleur pour Dijkstra
+        'width': 5
+      });
+    });
+
+    // Animation facultative
+    let delay = 0;
+    const animationStep = 500;
+
+    path.forEach(edge => {
+      setTimeout(() => {
+        edge.flashClass('highlighted-dijkstra', 1000);
+      }, delay);
+      delay += animationStep;
+    });
+
+    console.log(`Algorithme de Dijkstra: chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')} avec ${path.length} arêtes`);
+    console.log(`Distance totale: ${distances.get(endNode.id())}`);
+    steps.push(`Chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')} avec distance totale ${distances.get(endNode.id())}`);
+  } else {
+    console.log(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
+    steps.push(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
+  }
+  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+
+  return path;
+}
+// END OF FILE: src/js/algorithms/dijkstra.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/algorithms/kruskal.js
+
+import cytoscape from 'cytoscape';
+import { clearAlgorithmSteps } from '../utils/helper';
+
+export function initKruskal(cy, startNode) {
+  clearAlgorithmSteps();
+
+  // Initialiser le suivi des étapes
+  const steps = [];
+  steps.push("Initialisation de l'algorithme de Kruskal");
+  const edges = cy.edges();
+  steps.push(`${edges.length} arêtes à examiner`);
+  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+
+  // Réinitialiser les styles
+  cy.edges().style({
+    'line-color': '#9dbaea',
+    'width': 6
+  });
+
+  // Structure pour Union-Find
+  const parents = new Map();
+  const ranks = new Map();
+
+  // Fonction Find pour Union-Find
+  function find(node) {
+    if (parents.get(node) !== node) {
+      parents.set(node, find(parents.get(node)));
+    }
+    return parents.get(node);
+  }
+
+  // Fonction Union pour Union-Find
+  function union(x, y) {
+    const rootX = find(x);
+    const rootY = find(y);
+
+    if (rootX === rootY) return false;
+
+    if (ranks.get(rootX) < ranks.get(rootY)) {
+      parents.set(rootX, rootY);
+    } else if (ranks.get(rootX) > ranks.get(rootY)) {
+      parents.set(rootY, rootX);
+    } else {
+      parents.set(rootY, rootX);
+      ranks.set(rootX, ranks.get(rootX) + 1);
+    }
+
+    return true;
+  }
+
+  // Initialiser Union-Find
+  cy.nodes().forEach(node => {
+    const id = node.id();
+    parents.set(id, id);
+    ranks.set(id, 0);
+  });
+
+  // Collecter toutes les arêtes avec leurs poids
+  const edgesArray = [];
+  cy.edges().forEach(edge => {
+    edgesArray.push({
+      edge: edge,
+      source: edge.source().id(),
+      target: edge.target().id(),
+      weight: edge.data('weight') || 1
+    });
+  });
+
+  // Trier les arêtes par poids croissant
+  edgesArray.sort((a, b) => a.weight - b.weight);
+  steps.push("Arêtes triées par poids croissant");
+  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+
+  // Algorithme de Kruskal
+  const mstEdges = [];
+
+  for (const edgeData of edgesArray) {
+    const { edge, source, target } = edgeData;
+
+    // Si l'ajout de cette arête ne crée pas de cycle
+    if (find(source) !== find(target)) {
+      union(source, target);
+      mstEdges.push(edge);
+      steps.push(`Ajout de l'arête ${cy.getElementById(source).data('label')}-${cy.getElementById(target).data('label')} de poids ${edgeData.weight} à l'arbre couvrant minimal`);
+      localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+
+      // Colorer l'arête
+      edge.style({
+        'line-color': 'purple', // Couleur pour Kruskal
+        'width': 5
+      });
+
+      // Animer le changement de couleur
+      edge.addClass('highlighted-kruskal');
+      setTimeout(() => {
+        edge.removeClass('highlighted-kruskal');
+      }, 1000); // Durée de l'animation
+    }
+  }
+
+  // Animation facultative
+  let delay = 0;
+  const animationStep = 500;
+
+  mstEdges.forEach(edge => {
+    setTimeout(() => {
+      edge.flashClass('highlighted-kruskal', 1000);
+    }, delay);
+    delay += animationStep;
+  });
+
+  // Ajouter des logs pour débogage
+  console.log(`Algorithme de Kruskal: ${mstEdges.length} arêtes dans l'arbre couvrant minimal`);
+  steps.push(`Arbre couvrant minimal construit avec ${mstEdges.length} arêtes`);
+  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+
+  return mstEdges;
+}
+// END OF FILE: src/js/algorithms/kruskal.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/algorithms/prim.js
+
+import cytoscape from 'cytoscape';
+import { clearAlgorithmSteps } from '../utils/helper';
+
+export function initPrim(cy, startNode) {
+  clearAlgorithmSteps();
+
+  // Initialiser le suivi des étapes
+  const steps = [];
+  steps.push("Initialisation de l'algorithme de Prim");
+  steps.push(`Nœud de départ: ${startNode.data('label')}`);
+  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+
+  // Réinitialiser les styles
+  cy.edges().style({
+    'line-color': '#9dbaea',
+    'width': 6
+  });
+
+  // Tous les nœuds du graphe
+  const nodes = cy.nodes();
+  const totalNodes = nodes.length;
+
+  // Maps pour suivre les distances et les parents
+  const visited = new Map();
+  const distances = new Map();
+  const parent = new Map();
+
+  // Initialisation des structures de données
+  nodes.forEach(node => {
+    const id = node.id();
+    distances.set(id, id === startNode.id() ? 0 : Infinity);
+    parent.set(id, null);
+  });
+
+  // Algorithme de Prim
+  for (let i = 0; i < totalNodes; i++) {
+    // Trouver le nœud non visité avec la distance minimale
+    let minDistance = Infinity;
+    let minNode = null;
+
+    nodes.forEach(node => {
+      const id = node.id();
+      if (!visited.has(id) && distances.get(id) < minDistance) {
+        minDistance = distances.get(id);
+        minNode = node;
+      }
+    });
+
+    // Si aucun nœud n'est accessible, le graphe n'est pas connecté
+    if (minNode === null) break;
+
+    // Marquer le nœud comme visité
+    visited.set(minNode.id(), true);
+    steps.push(`Ajout du nœud ${minNode.data('label')} à l'arbre couvrant minimal`);
+    localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+
+    // Mettre à jour les distances des nœuds adjacents
+    const neighbors = minNode.neighborhood().nodes().filter(n => !visited.has(n.id()));
+
+    neighbors.forEach(neighbor => {
+      const neighborId = neighbor.id();
+      // Dans un graphe non pondéré, la distance entre deux nœuds adjacents est 1
+      // Dans votre cas, vous pourriez utiliser un attribut weight des arêtes
+      const edge = cy.elements().edges(`[source = "${minNode.id()}"][target = "${neighborId}"], [source = "${neighborId}"][target = "${minNode.id()}"]`);
+      const weight = edge.data('weight') || 1;
+
+      if (weight < distances.get(neighborId)) {
+        distances.set(neighborId, weight);
+        parent.set(neighborId, minNode.id());
+        steps.push(`Mise à jour de la distance du nœud ${neighbor.data('label')}: ${distances.get(neighborId)} → ${weight}`);
+        localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+
+        // Animer le changement de couleur
+        edge.addClass('highlighted-prim');
+        setTimeout(() => {
+          edge.removeClass('highlighted-prim');
+        }, 1000); // Durée de l'animation
+      }
+    });
+  }
+
+  // Colorer les arêtes de l'arbre couvrant minimal
+  nodes.forEach(node => {
+    const nodeId = node.id();
+    const parentId = parent.get(nodeId);
+
+    if (parentId !== null) {
+      const edge = cy.elements().edges(`[source = "${parentId}"][target = "${nodeId}"], [source = "${nodeId}"][target = "${parentId}"]`);
+      edge.style({
+        'line-color': 'green', // Couleur pour Prim
+        'width': 5
+      });
+    }
+  });
+
+  // Animation facultative pour montrer le processus
+  let delay = 0;
+  const animationStep = 500; // 500ms entre chaque étape
+
+  nodes.forEach(node => {
+    const nodeId = node.id();
+    const parentId = parent.get(nodeId);
+
+    if (parentId !== null) {
+      setTimeout(() => {
+        const edge = cy.elements().edges(`[source = "${parentId}"][target = "${nodeId}"], [source = "${nodeId}"][target = "${parentId}"]`);
+        edge.flashClass('highlighted-prim', 1000);
+      }, delay);
+      delay += animationStep;
+    }
+  });
+
+  steps.push(`Arbre couvrant minimal construit avec ${visited.size} nœuds`);
+  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+}
+// END OF FILE: src/js/algorithms/prim.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/app.ts
+
+// END OF FILE: src/js/app.ts
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/auth/auth.js
+
+// END OF FILE: src/js/auth/auth.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/auth/login.js
+
+// END OF FILE: src/js/auth/login.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/auth/register.js
+
+// END OF FILE: src/js/auth/register.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/family-tree/graph-view.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/family-tree/graph-view.js
+import cytoscape from 'cytoscape';
+
+export function initGraph(containerId, graphData) {
+  const cy = cytoscape({
+    container: document.getElementById(containerId),
+    elements: graphData,
+    style: [
+      {
+        selector: 'node',
+        style: {
+          'background-color': '#11479e',
+          'label': 'data(label)',
+          'color': '#fff',
+          'text-valign': 'center',
+          'text-halign': 'center',
+          'width': '150px',
+          'height': '150px',
+          'font-size': '16px',
+          'border-color': '#000',
+          'border-width': '2px',
+          'border-opacity': '0.5'
+        }
+      },
+      {
+        selector: 'edge',
+        style: {
+          'width': 6,
+          'line-color': '#9dbaea',
+          'target-arrow-color': '#9dbaea',
+          'target-arrow-shape': 'triangle',
+          'curve-style': 'bezier'
+        }
+      },
+      {
+        selector: 'edge[relationship = "partner"]',
+        style: {
+          'width': 6,
+          'line-color': '#ff69b4',
+          'line-style': 'dashed',
+          'target-arrow-shape': 'none',
+          'curve-style': 'bezier'
+        }
+      }
+    ],
+    layout: {
+      name: 'breadthfirst', // Consider 'cose' or 'dagre' for more complex family trees
+      directed: true,
+      padding: 30
+    }
+  });
+
+  return cy;
+}
+
+export function transformGraphData(familyData) {
+  // Ensure familyData is an array
+  if (!Array.isArray(familyData)) {
+    console.error("transformGraphData expects an array, received:", familyData);
+    return { nodes: [], edges: [] }; // Return empty graph data
+  }
+
+  const nodes = familyData.map(person => {
+    // Ensure person and person.id are valid before creating a node
+    if (!person || typeof person.id === 'undefined' || person.id === null) {
+      console.warn('Skipping person with invalid or missing ID:', person);
+      return null; // This entry will be filtered out
+    }
+    return {
+      data: {
+        id: person.id.toString(),
+        label: person.name || 'Unnamed', // Fallback for missing name
+        gender: person.gender,
+        birthYear: person.birthYear,
+        img: person.img
+      }
+    };
+  }).filter(node => node !== null); // Filter out any null entries due to invalid persons
+
+  const edges = [];
+
+  familyData.forEach(person => {
+    // Ensure person and person.id are valid before processing edges
+    if (!person || typeof person.id === 'undefined' || person.id === null) {
+      return; // Skip this person if their ID is invalid
+    }
+    const personIdStr = person.id.toString();
+
+    // Father to child edge
+    if (typeof person.fid !== 'undefined' && person.fid !== null) {
+      const fatherIdStr = person.fid.toString();
+      edges.push({
+        data: {
+          id: `${fatherIdStr}-to-child-${personIdStr}`,
+          source: fatherIdStr,
+          target: personIdStr,
+          relationship: 'father-to-child'
+        }
+      });
+    }
+
+    // Mother to child edge
+    if (typeof person.mid !== 'undefined' && person.mid !== null) {
+      const motherIdStr = person.mid.toString();
+      edges.push({
+        data: {
+          id: `${motherIdStr}-to-child-${personIdStr}`,
+          source: motherIdStr,
+          target: personIdStr,
+          relationship: 'mother-to-child'
+        }
+      });
+    }
+
+    // Partner edges
+    // Ensure person.pids exists, is an array, and has elements
+    if (person.pids && Array.isArray(person.pids) && person.pids.length > 0) {
+      person.pids.forEach(partnerId => {
+        // CRITICAL CHECK: Ensure partnerId is valid before using it
+        if (typeof partnerId === 'undefined' || partnerId === null) {
+          console.warn(`Invalid partnerId (value: ${partnerId}) found in pids for person ${person.name || 'Unnamed'} (ID: ${personIdStr}). Skipping this partner edge.`);
+          return; // Skip this iteration for the invalid partnerId
+        }
+        const partnerIdStr = partnerId.toString();
+
+        // Parse IDs as numbers for comparison to ensure correct ordering for unique edge creation
+        const currentPersonIdNum = parseInt(personIdStr, 10);
+        const partnerIdNum = parseInt(partnerIdStr, 10);
+
+        // Create edge only if current person's ID is less than partner's ID
+        // This prevents duplicate partner edges (e.g., A-B and B-A)
+        if (!isNaN(currentPersonIdNum) && !isNaN(partnerIdNum) && currentPersonIdNum < partnerIdNum) {
+          edges.push({
+            data: {
+              id: `${personIdStr}-partner-${partnerIdStr}`,
+              source: personIdStr,
+              target: partnerIdStr,
+              relationship: 'partner'
+            }
+          });
+        }
+      });
+    }
+  });
+
+  return { nodes, edges };
+}
+// END OF FILE: src/js/family-tree/graph-view.js// END OF FILE: src/js/family-tree/graph-view.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/family-tree/person-form.js
+
+// END OF FILE: src/js/family-tree/person-form.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/family-tree/tree-view.js
+
+import FamilyTree from '@balkangraph/familytree.js';
+
+export function initFamilyTree(containerId, familyData) {
+  const chart = new FamilyTree(document.getElementById(containerId), {
+    mode: 'tree',
+    orientation: FamilyTree.orientation.top,
+    nodeBinding: {
+      field_0: 'name',
+      field_1: 'years',
+      img_0: 'img'
+    },
+    template: 'hugo', // Template par défaut qui fonctionne avec FamilyTree.js
+    // Ou utilisez un template personnalisé :
+    // template: FamilyTree.templates.hugo
+    levelSeparation: 60,
+    siblingSeparation: 60,
+    subtreeSeparation: 80,
+    nodes: familyData
+  });
+
+  chart.on('click', function(sender, args) {
+    if (args.node) {
+      const personId = args.node.id;
+      const person = familyData.find(p => p.id.toString() === personId);
+      if (person) {
+        updatePersonDetails(person);
+      }
+    }
+  });
+
+  return chart;
+}
+
+export function transformFamilyData(rawData) {
+  return rawData.map(person => {
+    let years = '';
+    if (person.birthYear) {
+      years = person.birthYear.toString();
+      if (person.deathYear) {
+        years += ` - ${person.deathYear}`;
+      }
+    }
+
+    return {
+      id: person.id.toString(),
+      fid: person.fid ? person.fid.toString() : undefined, // Father ID
+      mid: person.mid ? person.mid.toString() : undefined, // Mother ID
+      pids: person.pids ? person.pids.map(pid => pid.toString()) : [], // Partner IDs
+      name: person.name,
+      gender: person.gender || 'unknown',
+      years: years,
+      img: person.img || getDefaultAvatar(person.gender || 'unknown'),
+      birthYear: person.birthYear,
+      deathYear: person.deathYear,
+      gmail: person.gmail,
+      tags: [person.gender] // Ajouter le genre comme tag pour le styling
+    };
+  });
+}
+
+function getDefaultAvatar(gender) {
+  switch(gender.toLowerCase()) {
+    case 'male':
+      return '/assets/avatars/default-male.svg';
+    case 'female':
+      return '/assets/avatars/default-female.svg';
+    default:
+      return '/assets/avatars/default.svg';
+  }
+}
+
+function updatePersonDetails(person) {
+  const detailsContainer = document.querySelector('#right-sidebar .info-card');
+  if (!detailsContainer) return;
+
+  let status = person.deathYear ? 'Décédé(e)' : 'Vivant(e)';
+  let age = '';
+
+  if (person.birthYear) {
+    if (person.deathYear) {
+      age = person.deathYear - person.birthYear;
+    } else {
+      age = new Date().getFullYear() - person.birthYear;
+    }
+  }
+
+  // Récupérer les données complètes depuis localStorage pour les relations
+  const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
+  
+  // Trouver les partenaires
+  let partners = [];
+  if (person.pids && person.pids.length > 0) {
+    partners = person.pids.map(pid => {
+      const partner = familyData.find(p => p.id.toString() === pid.toString());
+      return partner ? partner.name : 'Inconnu';
+    });
+  }
+
+  // Trouver les enfants
+  const children = familyData.filter(p => 
+    (p.fid && p.fid.toString() === person.id.toString()) || 
+    (p.mid && p.mid.toString() === person.id.toString())
+  );
+
+  // Trouver les parents
+  let father = null, mother = null;
+  if (person.fid) {
+    father = familyData.find(p => p.id.toString() === person.fid.toString());
+  }
+  if (person.mid) {
+    mother = familyData.find(p => p.id.toString() === person.mid.toString());
+  }
+
+  detailsContainer.innerHTML = `
+    <h4>${person.name}</h4>
+    <p><strong>Année de naissance:</strong> ${person.birthYear || 'Inconnue'}</p>
+    ${person.deathYear ? `<p><strong>Année de décès:</strong> ${person.deathYear}</p>` : ''}
+    <p><strong>Âge:</strong> ${age ? age + ' ans' : 'Inconnu'}</p>
+    <p><strong>Genre:</strong> ${person.gender === 'male' ? 'Homme' : person.gender === 'female' ? 'Femme' : 'Non spécifié'}</p>
+    <p><strong>Statut:</strong> ${status}</p>
+    ${person.gmail ? `<p><strong>Email:</strong> ${person.gmail}</p>` : ''}
+    
+    ${father || mother ? `
+      <div class="family-section">
+        <h5>Parents</h5>
+        ${father ? `<p>Père: ${father.name}</p>` : ''}
+        ${mother ? `<p>Mère: ${mother.name}</p>` : ''}
+      </div>
+    ` : ''}
+    
+    ${partners.length > 0 ? `
+      <div class="family-section">
+        <h5>Conjoint(s)</h5>
+        ${partners.map(partner => `<p>${partner}</p>`).join('')}
+      </div>
+    ` : ''}
+    
+    ${children.length > 0 ? `
+      <div class="family-section">
+        <h5>Enfants</h5>
+        ${children.map(child => `<p>${child.name}</p>`).join('')}
+      </div>
+    ` : ''}
+  `;
+}// END OF FILE: src/js/family-tree/tree-view.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/utils/api.js
+
+import axios from 'axios';
+
+const API_URL = 'http://localhost:5000/api'; // Remplacez par l'URL de votre backend
+
+export const registerUser = async (userData) => {
+  try {
+    const response = await axios.post(`${API_URL}/auth/register`, userData);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const loginUser = async (userData) => {
+  try {
+    const response = await axios.post(`${API_URL}/auth/login`, userData);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const getCurrentUser = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await axios.get(`${API_URL}/auth/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const resetPassword = async (userData) => {
+  try {
+    const response = await axios.post(`${API_URL}/auth/reset-password`, userData);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+// END OF FILE: src/js/utils/api.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/utils/dom-utils.js
+
+// END OF FILE: src/js/utils/dom-utils.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/utils/graph-utils.js
+
+// END OF FILE: src/js/utils/graph-utils.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/utils/helper.js
+
+//js/utils/helpers.js
+export function clearAlgorithmSteps() {
+    localStorage.setItem('algorithmSteps', JSON.stringify([]));
+  }
+  // END OF FILE: src/js/utils/helper.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/main.ts
+
+// main.ts
+import './css/style.css';
+import { initRouter } from './router';
+
+// Charger les données dynamiquement
+const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
+initRouter(familyData);
+// END OF FILE: src/main.ts
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/pages/dashboard.html
+
+// END OF FILE: src/pages/dashboard.html
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/pages/index.html
+
+// END OF FILE: src/pages/index.html
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/pages/login.html
+
+// END OF FILE: src/pages/login.html
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/pages/register.html
+
+// END OF FILE: src/pages/register.html
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/router.js
+
+// router.js
+import { renderNavbar } from './components/navbar';
+import { renderLeftSidebar } from './components/leftSidebar';
+import { renderRightSidebar } from './components/rightSidebar';
+import { renderMainContent } from './components/mainContent';
+import { renderProfilePage, setupProfileFormHandler } from './components/profile';
+import { renderLoginPage, setupLoginFormHandler } from './components/login';
+import { initDijkstra } from './js/algorithms/dijkstra';
+import { initBellmanFord } from './js/algorithms/bellman-ford';
+import { initPrim } from './js/algorithms/prim';
+import { initKruskal } from './js/algorithms/kruskal';
+
+export function initRouter() {
+  const app = document.querySelector('#app');
+
+  function navigateTo(path) {
+    history.pushState(null, null, path);
+    renderRoute();
+  }
+
+  function renderRoute() {
+    const path = window.location.pathname;
+    const userProfile = localStorage.getItem('userProfile');
+    const isLoginPage = path === '/login';
+
+    // 🔐 Rediriger vers /login si pas connecté
+    if (!userProfile && !isLoginPage) {
+      history.replaceState(null, null, '/login');
+      return renderRoute();
+    }
+
+    // 🔁 Rediriger vers / si déjà connecté et tente d'aller à /login
+    if (userProfile && isLoginPage) {
+      history.replaceState(null, null, '/');
+      return renderRoute();
+    }
+
+    // Cas normal
+    app.innerHTML = `${renderNavbar()}`;
+
+    // Si pas sur /login ou /profile, on affiche les sidebars
+    if (path === '/') {
+      app.innerHTML += `
+        ${renderLeftSidebar()}
+        ${renderRightSidebar()}
+      `;
+    }
+
+    // Ajout du contenu central
+    const contentContainer = document.createElement('div');
+    contentContainer.id = 'main-content';
+    app.appendChild(contentContainer);
+
+    switch (path) {
+      case '/':
+        contentContainer.innerHTML = renderMainContent();
+        import('./js/family-tree/tree-view').then(({ initFamilyTree, transformFamilyData }) => {
+          const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
+          initFamilyTree('family-tree-container', transformFamilyData(familyData));
+        });
+
+        // Ajouter un gestionnaire d'événements pour les boutons de vue
+        document.querySelectorAll('.view-button').forEach(button => {
+          button.addEventListener('click', (e) => {
+            const view = e.target.getAttribute('data-view');
+            document.getElementById('tree-view').style.display = view === 'tree' ? 'block' : 'none';
+            document.getElementById('graph-view').style.display = view === 'graph' ? 'block' : 'none';
+
+            // Initialiser Cytoscape uniquement si le conteneur est visible
+            if (view === 'graph') {
+              import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
+                const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
+                const graphData = transformGraphData(familyData);
+                initGraph('graph-container', graphData);
+              });
+            }
+          });
+        });
+
+        // Initialiser Cytoscape si le conteneur est visible par défaut
+        if (document.getElementById('graph-view').style.display === 'block') {
+          import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
+            const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
+            const graphData = transformGraphData(familyData);
+            initGraph('graph-container', graphData);
+          });
+        }
+
+        // Ajouter un gestionnaire d'événements pour le bouton "Dijkstra"
+        const dijkstraButton = document.getElementById('dijkstra-button');
+        if (dijkstraButton) {
+          dijkstraButton.addEventListener('click', () => {
+            const dijkstraForm = document.getElementById('dijkstra-form');
+            dijkstraForm.style.display = dijkstraForm.style.display === 'none' ? 'block' : 'none';
+
+            // Remplir les sélections avec les noms des individus
+            const startPersonSelect = document.getElementById('start-person');
+            const endPersonSelect = document.getElementById('end-person');
+            startPersonSelect.innerHTML = '';
+            endPersonSelect.innerHTML = '';
+
+            const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
+            familyData.forEach(person => {
+              const option = document.createElement('option');
+              option.value = person.id;
+              option.textContent = person.name;
+              startPersonSelect.appendChild(option);
+              endPersonSelect.appendChild(option.cloneNode(true));
+            });
+          });
+        }
+
+        // Ajouter un gestionnaire d'événements pour le bouton "Lancer Dijkstra"
+        const runDijkstraButton = document.getElementById('run-dijkstra');
+        if (runDijkstraButton) {
+          runDijkstraButton.addEventListener('click', () => {
+            const startPersonId = document.getElementById('start-person').value;
+            const endPersonId = document.getElementById('end-person').value;
+
+            if (startPersonId && endPersonId) {
+              import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
+                const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
+                const graphData = transformGraphData(familyData);
+                const cy = initGraph('graph-container', graphData);
+
+                const startNode = cy.getElementById(startPersonId);
+                const endNode = cy.getElementById(endPersonId);
+
+                if (startNode && endNode) {
+                  initDijkstra(cy, startNode, endNode);
+                  updateRightSidebar(); // Mettre à jour la barre latérale droite
+                }
+              });
+            }
+          });
+        }
+
+        // Ajouter un gestionnaire d'événements pour le bouton "Bellman-Ford"
+        const bellmanFordButton = document.getElementById('bellman-ford-button');
+        if (bellmanFordButton) {
+          bellmanFordButton.addEventListener('click', () => {
+            const bellmanFordForm = document.getElementById('bellman-ford-form');
+            bellmanFordForm.style.display = bellmanFordForm.style.display === 'none' ? 'block' : 'none';
+
+            // Remplir les sélections avec les noms des individus
+            const startPersonSelect = document.getElementById('bellman-ford-start-person');
+            const endPersonSelect = document.getElementById('bellman-ford-end-person');
+            startPersonSelect.innerHTML = '';
+            endPersonSelect.innerHTML = '';
+
+            const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
+            familyData.forEach(person => {
+              const option = document.createElement('option');
+              option.value = person.id;
+              option.textContent = person.name;
+              startPersonSelect.appendChild(option);
+              endPersonSelect.appendChild(option.cloneNode(true));
+            });
+          });
+        }
+
+        // Ajouter un gestionnaire d'événements pour le bouton "Lancer Bellman-Ford"
+        const runBellmanFordButton = document.getElementById('run-bellman-ford');
+        if (runBellmanFordButton) {
+          runBellmanFordButton.addEventListener('click', () => {
+            const startPersonId = document.getElementById('bellman-ford-start-person').value;
+            const endPersonId = document.getElementById('bellman-ford-end-person').value;
+
+            if (startPersonId && endPersonId) {
+              import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
+                const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
+                const graphData = transformGraphData(familyData);
+                const cy = initGraph('graph-container', graphData);
+
+                const startNode = cy.getElementById(startPersonId);
+                const endNode = cy.getElementById(endPersonId);
+
+                if (startNode && endNode) {
+                  initBellmanFord(cy, startNode, endNode);
+                  updateRightSidebar(); // Mettre à jour la barre latérale droite
+                }
+              });
+            }
+          });
+        }
+
+        // Ajouter un gestionnaire d'événements pour le bouton "Prim"
+        const primButton = document.getElementById('prim-button');
+        if (primButton) {
+          primButton.addEventListener('click', () => {
+            const primForm = document.getElementById('prim-form');
+            primForm.style.display = primForm.style.display === 'none' ? 'block' : 'none';
+
+            // Remplir les sélections avec les noms des individus
+            const startPersonSelect = document.getElementById('prim-start-person');
+            startPersonSelect.innerHTML = '';
+
+            const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
+            familyData.forEach(person => {
+              const option = document.createElement('option');
+              option.value = person.id;
+              option.textContent = person.name;
+              startPersonSelect.appendChild(option);
+            });
+          });
+        }
+
+        // Ajouter un gestionnaire d'événements pour le bouton "Lancer Prim"
+        const runPrimButton = document.getElementById('run-prim');
+        if (runPrimButton) {
+          runPrimButton.addEventListener('click', () => {
+            const startPersonId = document.getElementById('prim-start-person').value;
+
+            if (startPersonId) {
+              import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
+                const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
+                const graphData = transformGraphData(familyData);
+                const cy = initGraph('graph-container', graphData);
+
+                const startNode = cy.getElementById(startPersonId);
+
+                if (startNode) {
+                  initPrim(cy, startNode);
+                  updateRightSidebar(); // Mettre à jour la barre latérale droite
+                }
+              });
+            }
+          });
+        }
+
+        // Ajouter un gestionnaire d'événements pour le bouton "Kruskal"
+        const kruskalButton = document.getElementById('kruskal-button');
+        if (kruskalButton) {
+          kruskalButton.addEventListener('click', () => {
+            const kruskalForm = document.getElementById('kruskal-form');
+            kruskalForm.style.display = kruskalForm.style.display === 'none' ? 'block' : 'none';
+
+            // Remplir les sélections avec les noms des individus
+            const startPersonSelect = document.getElementById('kruskal-start-person');
+            startPersonSelect.innerHTML = '';
+
+            const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
+            familyData.forEach(person => {
+              const option = document.createElement('option');
+              option.value = person.id;
+              option.textContent = person.name;
+              startPersonSelect.appendChild(option);
+            });
+          });
+        }
+
+        // Ajouter un gestionnaire d'événements pour le bouton "Lancer Kruskal"
+        const runKruskalButton = document.getElementById('run-kruskal');
+        if (runKruskalButton) {
+          runKruskalButton.addEventListener('click', () => {
+            const startPersonId = document.getElementById('kruskal-start-person').value;
+
+            if (startPersonId) {
+              import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
+                const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
+                const graphData = transformGraphData(familyData);
+                const cy = initGraph('graph-container', graphData);
+
+                const startNode = cy.getElementById(startPersonId);
+
+                if (startNode) {
+                  initKruskal(cy, startNode);
+                  updateRightSidebar(); // Mettre à jour la barre latérale droite
+                }
+              });
+            }
+          });
+        }
+        break;
+
+      case '/profile':
+        contentContainer.innerHTML = renderProfilePage();
+        setupProfileFormHandler(); // Ajouter le gestionnaire du profil
+        break;
+
+      case '/login':
+        contentContainer.innerHTML = renderLoginPage();
+        setupLoginFormHandler(); // Ajouter le gestionnaire de la page de connexion
+        break;
+
+      default:
+        contentContainer.innerHTML = `
+          <div id="main-content">
+            <h2>404 - Page non trouvée</h2>
+          </div>
+        `;
+    }
+  }
+
+  // Navigation interne
+  document.body.addEventListener('click', e => {
+    if (e.target.matches('a[data-link]')) {
+      e.preventDefault();
+      navigateTo(e.target.getAttribute('href'));
+    }
+  });
+
+  window.addEventListener('popstate', renderRoute); // Back/forward support
+
+  renderRoute(); // Initial load
+}
+
+// Fonction pour mettre à jour la barre latérale droite
+function updateRightSidebar() {
+  const rightSidebar = document.getElementById('right-sidebar');
+  if (rightSidebar) {
+    rightSidebar.innerHTML = renderRightSidebar();
+  }
+}
+// END OF FILE: src/router.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/typescript.svg
+
+[Non-text file (e.g., binary, data, compressed) - Contents omitted]
+// END OF FILE: src/typescript.svg
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/vite-env.d.ts
+
+/// <reference types="vite/client" />
+// END OF FILE: src/vite-env.d.ts
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/tsconfig.json
+
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+  "include": ["src"]
+}
+// END OF FILE: tsconfig.json
+

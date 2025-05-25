@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Custom ignores
+project_context.txt
+prompter.sh

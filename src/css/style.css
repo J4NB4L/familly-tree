@@ -1,3 +1,5 @@
+
+
 /* Réinitialisation et styles globaux */
 * {
     margin: 0;
@@ -20,9 +22,9 @@ body {
     display: grid;
     grid-template-areas:
       "navbar navbar navbar"
-      "left-sidebar main-content right-sidebar";
-    grid-template-columns: 280px 1fr 280px;
-    grid-template-rows: 70px 1fr;
+      "left-sidebar main-content right-sidebar"; /* main-content est la zone pour le contenu central */
+    grid-template-columns: 280px 1fr 280px; /* Colonne centrale flexible */
+    grid-template-rows: 70px 1fr; /* Ligne pour navbar, reste pour contenu */
     height: 100vh;
 }
 
@@ -83,18 +85,96 @@ body {
     border-left: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-/* Contenu principal */
+/* --- MAIN CONTENT AREA --- */
+/* Ce conteneur est toujours dans la grille principale, pour l'accueil, le profil, le login etc. */
 #main-content {
-    grid-area: main-content;
+    grid-area: main-content; /* Placé dans la colonne centrale de la grille #app */
     padding: 30px;
     display: flex;
-    flex-direction: column;
-    gap: 30px;
-    overflow: hidden; /* Évitez les scrollbars */
-    height: calc(100vh - 70px); /* Ajustez la hauteur pour éviter l'espace en bas */
+    flex-direction: column; /* Empile les enfants verticalement (ex: view-controls puis container-card) */
+    gap: 20px; /* Espace entre les enfants directs (ex: entre view-controls et tree-view) */
+    overflow-y: auto; /* Permet le défilement si le contenu de #main-content dépasse la hauteur */
+    height: calc(100vh - 70px); /* Hauteur totale moins la navbar */
+    align-items: center; /* Centre horizontalement les enfants qui sont plus étroits que #main-content */
+                         /* (utile pour le .container-card du profil/login s'il a un max-width) */
 }
 
-#main-content h2 {
+/* Styles for view and scope controls (enfants de #main-content sur la page d'accueil) */
+.view-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0; /* Le gap de #main-content gère l'espacement */
+    flex-wrap: wrap;
+    gap: 15px;
+    width: 100%; /* Prend toute la largeur de #main-content */
+}
+
+.view-buttons, .scope-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.view-button, .scope-button {
+    padding: 10px 20px;
+    border: 1px solid #3182ce;
+    border-radius: 8px;
+    background-color: #f0f4f8;
+    color: #3182ce;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    font-weight: 500;
+}
+
+.view-button:hover, .scope-button:hover {
+    background-color: #e0e8f0;
+    border-color: #2b6cb0;
+}
+
+.view-button.active-view-btn, .scope-button.active-scope-btn {
+    background-color: #4299e1;
+    color: white;
+    border-color: #4299e1;
+}
+
+/* --- CONTAINER CARD (utilisé pour arbre, graphe, profil, login) --- */
+/* Enfant de #main-content OU enfant d'un autre div dans #main-content (ex: #tree-view) */
+.container-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    padding: 25px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 100%; /* Prend toute la largeur disponible dans son parent (colonne de #main-content) */
+}
+
+.container-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+/* Styles spécifiques pour les .container-card de la page d'accueil (tree-view, graph-view) */
+#main-content #tree-view,
+#main-content #graph-view {
+    flex: 1; /* Permet à ces cartes de grandir pour remplir l'espace vertical dans #main-content */
+    /* overflow-y: auto; NON, le défilement est géré par #family-tree-container etc. à l'intérieur */
+    display: flex; /* Pour que h2 et le conteneur interne se comportent bien */
+    flex-direction: column;
+}
+
+/* Styles spécifiques pour le .container-card des pages profil et login */
+/* (quand .container-card est l'enfant direct de #main-content et est le seul contenu principal) */
+/* Exemple: le formulaire de profil ou de connexion */
+#main-content > .container-card:only-child { /* Cible un .container-card s'il est le SEUL enfant de #main-content */
+    max-width: 800px; /* Limite la largeur pour les formulaires, par exemple */
+    /* Centré horizontalement par align-items:center sur #main-content */
+    /* flex: 0 0 auto; /* Ne grandit pas, ne rétrécit pas, taille basée sur le contenu/max-width */
+    margin-top: 0; /* Peut être ajusté si on veut plus d'espace en haut */
+}
+
+
+#main-content h2 { /* Titres à l'intérieur des .container-card ou de #main-content */
     font-size: 1.8rem;
     color: #1a365d;
     margin-bottom: 20px;
@@ -113,29 +193,14 @@ body {
     background: linear-gradient(90deg, #3182ce 0%, #63b3ed 100%);
 }
 
-/* Conteneurs pour l'arbre généalogique et le graphe */
-.container-card {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-    padding: 25px;
-    margin-bottom: 25px;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    flex: 1; /* Ajoutez cette ligne pour permettre au conteneur de s'étendre */
-    max-height: calc(100vh - 150px); /* Ajustez la hauteur maximale */
-    overflow-y: auto; /* Permettre le défilement vertical */
-}
-
-.container-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-}
 
 #family-tree-container,
 #graph-container {
-    height: calc(100% - 50px); /* Ajustez la hauteur pour éviter les scrollbars */
-    overflow: hidden; /* Évitez les scrollbars */
+    flex-grow: 1; /* Prend l'espace restant dans son parent .container-card (#tree-view/#graph-view) */
+    height: 0; /* Base pour flex-grow, ou spécifier une hauteur comme calc(100% - HauteurDuH2) */
+                /* Par exemple: height: calc(100% - 70px); si h2 + padding prend 70px */
+    min-height: 300px; /* Hauteur minimale pour la visibilité */
+    overflow: hidden;
     border-radius: 12px;
     background-color: #f9fafb;
     border: 1px solid #e2e8f0;
@@ -154,9 +219,9 @@ body {
     font-weight: 600;
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1); /* Couleur pour sidebar gauche */
     letter-spacing: 0.5px;
-    color: #fbfbfb; /* Change text color to black */
+    color: #fbfbfb;
 }
 
 .sidebar-menu {
@@ -167,22 +232,28 @@ body {
     margin-bottom: 15px;
 }
 
-.sidebar-menu a {
-    color: #000; /* Change text color to black */
-    text-decoration: none;
+/* Styles pour les boutons dans la sidebar (Dijkstra, Prim, etc.) */
+.sidebar-button { /* S'applique aux boutons principaux des algorithmes */
     display: block;
+    width: 100%;
     padding: 12px 15px;
+    border: none;
     border-radius: 10px;
-    transition: all 0.3s ease;
-    font-weight: 500;
-}
-
-.sidebar-menu a:hover {
     background: linear-gradient(90deg, #3182ce 0%, #4299e1 100%);
     color: white;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: left;
+    transition: all 0.3s ease;
+}
+
+.sidebar-button:hover {
+    background: linear-gradient(90deg, #2b6cb0 0%, #3182ce 100%);
     transform: translateX(5px);
     box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
 }
+
 
 /* Right sidebar specific */
 #right-sidebar .sidebar-title {
@@ -190,7 +261,7 @@ body {
     border-bottom: 2px solid #e2e8f0;
 }
 
-#right-sidebar .info-card {
+#right-sidebar .info-card { /* Pour afficher détails de la personne cliquée */
     background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
     border-radius: 12px;
     padding: 20px;
@@ -217,60 +288,19 @@ body {
     color: #2d3748;
 }
 
-/* Responsive design */
-@media (max-width: 1200px) {
-    #app {
-        grid-template-columns: 240px 1fr 240px;
-    }
-}
-
-@media (max-width: 900px) {
-    #app {
-        grid-template-areas:
-          "navbar navbar navbar"
-          "left-sidebar main-content main-content";
-        grid-template-columns: 280px 1fr;
-    }
-
-    #right-sidebar {
-        display: none;
-    }
-}
-
-@media (max-width: 650px) {
-    #app {
-        grid-template-areas:
-          "navbar navbar"
-          "main-content main-content";
-        grid-template-columns: 1fr;
-    }
-
-    #left-sidebar {
-        display: none;
-    }
-
-    #navbar {
-        padding: 0 20px;
-    }
-}
-
-/* Formulaires */
-form {
+/* Formulaires généraux (login, profile) */
+form { /* Cible les <form> dans .container-card (profil, login) */
     display: flex;
     flex-direction: column;
     gap: 15px;
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    /* Le fond est déjà sur .container-card */
 }
 
 form label {
     font-weight: 600;
-    color: #000; /* Change text color to black */
-    font-size: 1.05rem;
-    margin-bottom: 5px;
+    color: #2d3748;
+    font-size: 1.05rem; /* Augmenté pour la lisibilité */
+    margin-bottom: 3px; /* Réduit pour rapprocher du champ */
     display: block;
 }
 
@@ -278,10 +308,11 @@ form input,
 form select {
     padding: 12px;
     border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    background-color: #f8fafc;
+    border: 1px solid #cbd5e0; /* Couleur de bordure plus douce */
+    background-color: #fdfdfe; /* Fond très clair */
     font-size: 1rem;
     transition: all 0.3s ease;
+    color: #2d3748;
 }
 
 form input:focus,
@@ -289,9 +320,10 @@ form select:focus {
     outline: none;
     border-color: #4299e1;
     box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.25);
+    background-color: #fff;
 }
 
-form button {
+form button[type="submit"] { /* Plus spécifique pour les boutons de soumission de formulaire */
     padding: 12px 20px;
     border-radius: 10px;
     background: linear-gradient(90deg, #2b6cb0 0%, #3182ce 100%);
@@ -302,354 +334,242 @@ form button {
     font-weight: 600;
     transition: all 0.3s ease;
     box-shadow: 0 4px 10px rgba(49, 130, 206, 0.3);
+    margin-top: 10px; /* Espace avant le bouton */
 }
 
-form button:hover {
+form button[type="submit"]:hover {
     background: linear-gradient(90deg, #1a4a8c 0%, #2b6cb0 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(49, 130, 206, 0.4);
 }
 
-/* Informations utilisateur */
+/* Informations utilisateur dans la navbar */
 .user-info {
     display: flex;
     align-items: center;
     gap: 12px;
     text-decoration: none;
-    color: inherit;
-    padding: 10px;
+    color: inherit; /* Hérite la couleur blanche de la navbar */
+    padding: 8px 12px; /* Ajusté */
     border-radius: 10px;
     transition: all 0.3s ease;
 }
 
 .user-info:hover {
-    background-color: rgba(226, 232, 240, 0.5);
+    background-color: rgba(255, 255, 255, 0.1); /* Plus subtil */
 }
 
 .user-avatar {
-    width: 45px;
-    height: 45px;
+    width: 40px; /* Légèrement réduit */
+    height: 40px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #4299e1;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 2px solid #63b3ed; /* Couleur plus claire */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Ombre plus douce */
     transition: all 0.3s ease;
 }
 
 .user-info:hover .user-avatar {
-    transform: scale(1.1);
-    border-color: #3182ce;
+    transform: scale(1.05); /* Effet de zoom plus subtil */
+    border-color: #fff;
 }
 
-/* Ajoutez ces styles pour les boutons de vue */
-.view-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 20px;
-}
 
-.view-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    background-color: #4299e1;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.view-button:hover {
-    background-color: #3182ce;
-}
-
-/* Styles pour le bouton de déconnexion */
+/* Styles pour le bouton de déconnexion (dans la page de profil) */
 .profile-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px; /* Plus d'espace */
 }
 
 .logout-button {
     padding: 10px 20px;
     border-radius: 8px;
-    background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
+    background: linear-gradient(90deg, #e53e3e 0%, #c53030 100%); /* Couleurs de Tailwind pour rouge */
     color: white;
     border: none;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 0.95rem; /* Légèrement réduit */
     font-weight: 600;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
+    box-shadow: 0 4px 10px rgba(229, 62, 62, 0.3);
 }
 
 .logout-button:hover {
-    background: linear-gradient(90deg, #c0392b 0%, #9b2c2c 100%);
+    background: linear-gradient(90deg, #c53030 0%, #9b2c2c 100%);
     transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(231, 76, 60, 0.4);
+    box-shadow: 0 6px 15px rgba(229, 62, 62, 0.4);
 }
 
-/* Styles pour les boutons dans la sidebar */
-.sidebar-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    background-color: #4299e1;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-top: 10px;
-}
 
-.sidebar-button:hover {
-    background-color: #3182ce;
-}
-
-/* Styles pour les formulaires dans la sidebar */
-.sidebar-form {
-    display: flex;
+/* Styles pour les formulaires dans la sidebar (Dijkstra, Prim, etc.) */
+.search-form { /* S'applique aux formulaires sous les .sidebar-button */
+    display: flex; /* Caché par défaut, affiché par JS */
     flex-direction: column;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.sidebar-form label {
-    font-weight: 600;
-    color: #000; /* Change text color to black */
-    font-size: 1rem;
-    margin-bottom: 5px;
-}
-
-.sidebar-form select {
-    padding: 10px;
+    gap: 12px; /* Espace entre label/select et bouton */
+    margin-top: 15px; /* Espace après le .sidebar-button */
+    padding: 18px;
+    background-color: rgba(255, 255, 255, 0.05); /* Fond très subtil pour la sidebar gauche */
     border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    background-color: #ffffff;
-    color: #000; /* Change text color to black */
-    font-size: 1rem;
+    /* box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); Ombre intérieure subtile */
     transition: all 0.3s ease;
 }
 
-.sidebar-form select:focus {
-    outline: none;
-    border-color: #4299e1;
-    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.25);
-}
-
-.sidebar-form button {
-    padding: 10px 20px;
-    border-radius: 8px;
-    background-color: #4299e1;
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(49, 130, 206, 0.3);
-    margin-top: 20px;
-}
-
-.sidebar-form button:hover {
-    background-color: #3182ce;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(49, 130, 206, 0.4);
-}
-
-/* Style for the "Ajouter un enfant" form container */
-#add-child-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
-    background-color: #ffffff; /* White background */
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-/* Style for the title within the form */
-#add-child-form .sidebar-title {
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: #333333; /* Dark text color */
-    margin-bottom: 15px;
-    border-bottom: 2px solid #e2e8f0; /* Light border */
-    padding-bottom: 10px;
-}
-
-/* Style for labels within the form */
-#add-child-form label {
+/* Titre à l'intérieur des .search-form (Dijkstra, Bellman-Ford etc) */
+.search-form .sidebar-title { /* Style spécifique pour les titres DANS les search-form */
+    font-size: 1.1rem; /* Plus petit que le .sidebar-title principal */
     font-weight: 500;
-    color: #333333; /* Dark text color */
-    font-size: 1rem;
-    margin-bottom: 5px;
+    color: #e2e8f0; /* Texte clair pour la sidebar gauche */
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    padding-bottom: 8px;
 }
 
-/* Style for input fields within the form */
-#add-child-form input[type="number"],
-#add-child-form button {
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    background-color: #f8fafc;
-    font-size: 1rem;
+.search-form label {
+    font-weight: 500;
+    color: #cbd5e0; /* Texte plus clair pour la sidebar gauche */
+    font-size: 0.95rem;
+    margin-bottom: 3px;
+}
+
+.search-form select {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #4a5568; /* Bordure plus foncée pour contraste sur sidebar sombre */
+    background-color: #2d3748; /* Fond sombre pour select */
+    color: #e2e8f0; /* Texte clair pour options */
+    font-size: 0.95rem;
     transition: all 0.3s ease;
 }
 
-/* Style for input fields on focus */
-#add-child-form input[type="number"]:focus {
+.search-form select:focus {
     outline: none;
-    border-color: #4299e1;
-    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.25);
+    border-color: #63b3ed; /* Bleu clair pour focus */
+    box-shadow: 0 0 0 2px rgba(99, 179, 237, 0.3);
+    background-color: #1a202c; /* Fond légèrement plus clair au focus */
 }
 
-/* Style for buttons within the form */
-#add-child-form button {
-    background-color: #4299e1;
+.search-form button { /* Bouton "Lancer X" */
+    padding: 10px 15px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #48bb78 0%, #38a169 100%); /* Vert pour action positive */
     color: white;
+    border: none;
     cursor: pointer;
     font-size: 1rem;
     font-weight: 600;
-    transition: background-color 0.3s ease, transform 0.3s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(72, 187, 120, 0.3);
+    margin-top: 10px; /* Espace avant le bouton "Lancer" */
 }
 
-/* Style for buttons on hover */
-#add-child-form button:hover {
-    background-color: #3182ce;
+.search-form button:hover {
+    background: linear-gradient(90deg, #38a169 0%, #2f855a 100%);
     transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(49, 130, 206, 0.4);
+    box-shadow: 0 6px 12px rgba(72, 187, 120, 0.4);
 }
 
-/* Style for the child menus container */
+
+/* Styles pour la section "Relations Familiales" dans la page de profil */
+.family-relations {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+.family-relations h3 {
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+  color: #1a365d;
+}
+.family-selection-menus {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsive columns */
+  gap: 20px;
+}
+.family-selection-menu {
+  /* Chaque menu (Ajouter conjoint, père, etc.) */
+}
+.family-selection-menu > .sidebar-button { /* Boutons "Ajouter X" dans le profil */
+    background: #4299e1; /* Couleur bleue standard */
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: 0.95rem;
+}
+.family-selection-menu > .sidebar-button:hover {
+    background: #3182ce;
+}
+
+/* Formulaires DANS .family-selection-menu (profil) */
+.family-selection-menu .search-form {
+    background-color: #f9fafb; /* Fond clair pour les formulaires dans le profil */
+    padding: 15px;
+    border: 1px solid #e2e8f0;
+}
+.family-selection-menu .search-form .sidebar-title {
+    color: #1a365d; /* Texte sombre pour les titres de formulaire dans le profil */
+    border-bottom-color: #e2e8f0;
+}
+.family-selection-menu .search-form label {
+    color: #2d3748; /* Texte sombre pour les labels dans le profil */
+}
+.family-selection-menu .search-form select {
+    background-color: #fff; /* Fond blanc pour select dans le profil */
+    color: #2d3748; /* Texte sombre pour options */
+    border-color: #cbd5e0;
+}
+.family-selection-menu .search-form select:focus {
+    border-color: #4299e1;
+    background-color: #fff;
+}
+.family-selection-menu .search-form button { /* Bouton "Confirmer" */
+    background: #48bb78; /* Vert */
+}
+.family-selection-menu .search-form button:hover {
+    background: #38a169;
+}
+
+/* Styles pour le formulaire "Ajouter un enfant" spécifique au profil */
+#add-child-form {
+    /* Utilise .search-form, donc hérite de ses styles via .family-selection-menu .search-form */
+}
+#add-child-form input[type="number"] {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e0;
+    background-color: #fff;
+    font-size: 0.95rem;
+    color: #2d3748;
+}
+#add-child-form input[type="number"]:focus {
+    border-color: #4299e1;
+    box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.25);
+}
 #child-menus {
     display: flex;
     flex-direction: column;
     gap: 10px;
     margin-top: 10px;
 }
-
-/* Style for individual child menu items */
-.child-menu {
+.child-menu { /* Conteneur pour chaque select d'enfant */
     display: flex;
     flex-direction: column;
     gap: 5px;
-    padding: 15px;
-    border-radius: 10px;
+    padding: 10px;
+    border-radius: 8px;
     border: 1px solid #e2e8f0;
-    background-color: #ffffff;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background-color: #fdfdfe;
 }
-
-/* Style for child menu labels */
 .child-menu label {
     font-weight: 500;
-    color: #333333; /* Dark text color */
-    font-size: 1rem;
-    margin-bottom: 5px;
+    color: #333333;
+    font-size: 0.9rem;
 }
-
-/* Style for child menu select fields */
 .child-menu select {
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    background-color: #ffffff;
-    color: #333333; /* Dark text color */
-    font-size: 1rem;
-    transition: all 0.3s ease;
+    /* Utilise les styles de .search-form select dans .family-selection-menu */
 }
 
-/* Style for child menu select fields on focus */
-.child-menu select:focus {
-    outline: none;
-    border-color: #4299e1;
-    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.25);
-}
-
-/* Styles for the formulaires de recherche */
-.search-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-top: 20px;
-    padding: 20px;
-    background-color: rgba(255, 255, 255, 0.1); /* Fond légèrement translucide */
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Ombre pour un effet de profondeur */
-    transition: all 0.3s ease;
-}
-
-/* Style for .sidebar-title within .search-form in the left sidebar */
-#left-sidebar .search-form .sidebar-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #ffffff; /* White text color for left sidebar */
-    margin-bottom: 15px;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.2); /* White border for left sidebar */
-}
-
-/* Style for .sidebar-title within .search-form in the profile */
-#main-content .search-form .sidebar-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #000000; /* Black text color for profile */
-    margin-bottom: 15px;
-    border-bottom: 2px solid rgba(0, 0, 0, 0.2); /* Black border for profile */
-}
-
-/* Style for .search-form label within the left sidebar */
-#left-sidebar .search-form label {
-    font-weight: 500;
-    color: #ffffff; /* White text color for left sidebar */
-    font-size: 1rem;
-    margin-bottom: 5px;
-}
-
-/* Style for .search-form label within the profile section */
-#main-content .search-form label {
-    font-weight: 500;
-    color: #000000; /* Black text color for profile */
-    font-size: 1rem;
-    margin-bottom: 5px;
-}
-
-.search-form select {
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    background-color: #ffffff;
-    color: #000; /* Change text color to black */
-    font-size: 1rem;
-    transition: all 0.3s ease;
-}
-
-.search-form select:focus {
-    outline: none;
-    border-color: #4299e1;
-    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.25);
-}
-
-.search-form button {
-    padding: 10px 20px;
-    border-radius: 8px;
-    background-color: #4299e1;
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(49, 130, 206, 0.3);
-    margin-top: 20px;
-}
-
-.search-form button:hover {
-    background-color: #3182ce;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(49, 130, 206, 0.4);
-}
 
 /* Highlighted classes for different algorithms */
 .highlighted-dijkstra {
@@ -678,4 +598,52 @@ form button:hover {
     line-color: purple !important;
     target-arrow-color: purple !important;
     transition: background-color 1s ease, line-color 1s ease, target-arrow-color 1s ease;
+}
+
+/* Responsive design */
+@media (max-width: 1200px) {
+    #app {
+        grid-template-columns: 240px 1fr 240px;
+    }
+}
+
+@media (max-width: 900px) { /* Point de rupture pour cacher la sidebar droite */
+    #app {
+        grid-template-areas:
+          "navbar navbar"
+          "left-sidebar main-content";
+        grid-template-columns: 260px 1fr; /* Ajuster les colonnes */
+    }
+    #right-sidebar {
+        display: none;
+    }
+}
+
+@media (max-width: 650px) { /* Point de rupture pour cacher les deux sidebars */
+    #app {
+        grid-template-areas:
+          "navbar"
+          "main-content";
+        grid-template-columns: 1fr; /* Une seule colonne */
+    }
+    #left-sidebar, #right-sidebar { /* S'assurer que #right-sidebar reste caché */
+        display: none;
+    }
+    #navbar {
+        padding: 0 15px; /* Réduire le padding de la navbar */
+    }
+    #main-content {
+        padding: 20px; /* Réduire le padding du contenu principal */
+    }
+    .view-controls {
+        flex-direction: column; /* Empiler les groupes de boutons sur mobile */
+        align-items: stretch; /* Étirer les groupes de boutons */
+    }
+    .view-buttons, .scope-buttons {
+        flex-direction: column; /* Empiler les boutons dans chaque groupe */
+        width: 100%;
+    }
+    .view-button, .scope-button {
+        text-align: center;
+    }
 }

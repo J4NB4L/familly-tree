@@ -1,14 +1,21 @@
 // router.js
 import { renderNavbar } from './components/navbar';
-import { renderLeftSidebar } from './components/leftSidebar';
-import { renderRightSidebar } from './components/rightSidebar';
-import { renderMainContent } from './components/mainContent';
+import { renderLeftSidebar } from './components/leftSidebar'; // corrected casing
+import { renderRightSidebar } from './components/rightSidebar'; // corrected casing
+import { renderMainContent } from './components/mainContent'; // corrected casing
 import { renderProfilePage, setupProfileFormHandler } from './components/profile';
 import { renderLoginPage, setupLoginFormHandler } from './components/login';
 import { initDijkstra } from './js/algorithms/dijkstra';
 import { initBellmanFord } from './js/algorithms/bellman-ford';
 import { initPrim } from './js/algorithms/prim';
 import { initKruskal } from './js/algorithms/kruskal';
+import { getPersonalFamilyData } from './js/utils/family-data-filter'; // Import new filter
+
+// Module-level state for current view and scope
+let currentActiveView = 'tree'; // 'tree' or 'graph'
+let currentDataScope = 'full'; // 'full' or 'personal'
+let cyInstance = null; // To keep track of cytoscape instance for destroy
+let familyTreeInstance = null; // To keep track of FamilyTree instance
 
 export function initRouter() {
   const app = document.querySelector('#app');
@@ -18,281 +25,277 @@ export function initRouter() {
     renderRoute();
   }
 
+  function getPreparedData() {
+    const fullFamilyData = JSON.parse(localStorage.getItem('familyData')) || [];
+    if (currentDataScope === 'personal') {
+      const userProfile = JSON.parse(localStorage.getItem('userProfile'));
+      if (!userProfile) return fullFamilyData; // Fallback or handle error
+      return getPersonalFamilyData(fullFamilyData, userProfile);
+    }
+    return fullFamilyData;
+  }
+
+  function renderFamilyTree() {
+    if (familyTreeInstance) {
+        // Attempt to destroy or clean up the old instance if the library supports it
+        // For BalkanGraph, re-creating is often the simplest for data changes.
+        // Ensure the container is empty or the library handles replacement.
+        const container = document.getElementById('family-tree-container');
+        if(container) container.innerHTML = ''; // Simple clear
+    }
+    document.getElementById('tree-view').style.display = 'block';
+    document.getElementById('graph-view').style.display = 'none';
+    import('./js/family-tree/tree-view').then(({ initFamilyTree, transformFamilyData }) => {
+      const dataToDisplay = getPreparedData();
+      if (dataToDisplay.length === 0 && currentDataScope === 'personal') {
+        document.getElementById('family-tree-container').innerHTML = 
+          '<p style="text-align:center; padding-top:20px;">Aucune donnée familiale proche à afficher. Vérifiez votre profil et vos relations.</p>';
+        return;
+      }
+      familyTreeInstance = initFamilyTree('family-tree-container', transformFamilyData(dataToDisplay));
+    });
+  }
+
+  function renderGraphView() {
+    if (cyInstance) {
+      cyInstance.destroy();
+      cyInstance = null;
+    }
+    document.getElementById('tree-view').style.display = 'none';
+    document.getElementById('graph-view').style.display = 'block';
+    import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
+      const dataToDisplay = getPreparedData();
+      if (dataToDisplay.length === 0 && currentDataScope === 'personal') {
+         document.getElementById('graph-container').innerHTML = 
+           '<p style="text-align:center; padding-top:20px;">Aucune donnée familiale proche à afficher pour le graphe.</p>';
+        return;
+      }
+      const graphData = transformGraphData(dataToDisplay);
+      cyInstance = initGraph('graph-container', graphData);
+      // Re-attach algorithm button handlers if cyInstance is new
+      setupAlgorithmButtons(cyInstance);
+    });
+  }
+
+  function updateActiveButtons() {
+    document.querySelectorAll('.view-button').forEach(btn => {
+        btn.classList.toggle('active-view-btn', btn.getAttribute('data-view') === currentActiveView);
+    });
+    document.querySelectorAll('.scope-button').forEach(btn => {
+        btn.classList.toggle('active-scope-btn', btn.getAttribute('data-scope') === currentDataScope);
+    });
+  }
+
+  function setupMainViewControls() {
+    document.querySelectorAll('.view-button').forEach(button => {
+      button.addEventListener('click', (e) => {
+        currentActiveView = e.target.getAttribute('data-view');
+        if (currentActiveView === 'tree') {
+          renderFamilyTree();
+        } else if (currentActiveView === 'graph') {
+          renderGraphView();
+        }
+        updateActiveButtons();
+      });
+    });
+
+    document.querySelectorAll('.scope-button').forEach(button => {
+      button.addEventListener('click', (e) => {
+        currentDataScope = e.target.getAttribute('data-scope');
+        if (currentActiveView === 'tree') {
+          renderFamilyTree();
+        } else if (currentActiveView === 'graph') {
+          renderGraphView();
+        }
+        updateActiveButtons();
+      });
+    });
+  }
+  
+  function setupAlgorithmButtons(cy) { // Pass cy instance
+    const runDijkstraButton = document.getElementById('run-dijkstra');
+    if (runDijkstraButton) {
+      runDijkstraButton.onclick = () => { // Use onclick to overwrite previous if any, or manage listeners carefully
+        const startPersonId = document.getElementById('start-person').value;
+        const endPersonId = document.getElementById('end-person').value;
+        if (startPersonId && endPersonId && cy) {
+          const startNode = cy.getElementById(startPersonId);
+          const endNode = cy.getElementById(endPersonId);
+          if (startNode.length && endNode.length) { // Cytoscape returns collections
+            initDijkstra(cy, startNode, endNode);
+            updateRightSidebar();
+          } else {
+            console.warn("Dijkstra: Start or end node not found in current graph view.");
+          }
+        }
+      };
+    }
+
+    const runBellmanFordButton = document.getElementById('run-bellman-ford');
+    if (runBellmanFordButton) {
+      runBellmanFordButton.onclick = () => {
+        const startPersonId = document.getElementById('bellman-ford-start-person').value;
+        const endPersonId = document.getElementById('bellman-ford-end-person').value;
+        if (startPersonId && endPersonId && cy) {
+          const startNode = cy.getElementById(startPersonId);
+          const endNode = cy.getElementById(endPersonId);
+          if (startNode.length && endNode.length) {
+            initBellmanFord(cy, startNode, endNode);
+            updateRightSidebar();
+          } else {
+            console.warn("Bellman-Ford: Start or end node not found.");
+          }
+        }
+      };
+    }
+
+    const runPrimButton = document.getElementById('run-prim');
+    if (runPrimButton) {
+      runPrimButton.onclick = () => {
+        const startPersonId = document.getElementById('prim-start-person').value;
+        if (startPersonId && cy) {
+          const startNode = cy.getElementById(startPersonId);
+          if (startNode.length) {
+            initPrim(cy, startNode);
+            updateRightSidebar();
+          } else {
+            console.warn("Prim: Start node not found.");
+          }
+        }
+      };
+    }
+
+    const runKruskalButton = document.getElementById('run-kruskal');
+    if (runKruskalButton) {
+      runKruskalButton.onclick = () => {
+        // Kruskal doesn't strictly need a start node from UI for its logic, but your UI has one
+        // const startPersonId = document.getElementById('kruskal-start-person').value;
+        if (cy) { // Kruskal operates on the whole graph
+            initKruskal(cy); // Pass full cy, startNode might be optional or handled inside
+            updateRightSidebar();
+        }
+      };
+    }
+  }
+
+
   function renderRoute() {
     const path = window.location.pathname;
     const userProfile = localStorage.getItem('userProfile');
     const isLoginPage = path === '/login';
 
-    // 🔐 Rediriger vers /login si pas connecté
     if (!userProfile && !isLoginPage) {
       history.replaceState(null, null, '/login');
       return renderRoute();
     }
 
-    // 🔁 Rediriger vers / si déjà connecté et tente d'aller à /login
     if (userProfile && isLoginPage) {
       history.replaceState(null, null, '/');
       return renderRoute();
     }
 
-    // Cas normal
     app.innerHTML = `${renderNavbar()}`;
 
-    // Si pas sur /login ou /profile, on affiche les sidebars
+    // Main layout structure
+    let mainLayoutHtml = '';
     if (path === '/') {
-      app.innerHTML += `
-        ${renderLeftSidebar()}
-        ${renderRightSidebar()}
-      `;
+        mainLayoutHtml = `
+            ${renderLeftSidebar()}
+            ${renderMainContent()} {/* This now includes the view/scope buttons */}
+            ${renderRightSidebar()}
+        `;
+    } else if (path === '/profile') {
+        // Profile page might not need sidebars or a different layout
+        mainLayoutHtml = `<div id="main-content-profile" class="profile-container">${renderProfilePage()}</div>`;
+    } else if (path === '/login') {
+        mainLayoutHtml = `<div id="main-content-login" class="login-container">${renderLoginPage()}</div>`;
+    } else {
+        mainLayoutHtml = `<div id="main-content-404"><h2>404 - Page non trouvée</h2></div>`;
     }
+    app.innerHTML += mainLayoutHtml;
 
-    // Ajout du contenu central
-    const contentContainer = document.createElement('div');
-    contentContainer.id = 'main-content';
-    app.appendChild(contentContainer);
 
-    switch (path) {
-      case '/':
-        contentContainer.innerHTML = renderMainContent();
-        import('./js/family-tree/tree-view').then(({ initFamilyTree, transformFamilyData }) => {
-          const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-          initFamilyTree('family-tree-container', transformFamilyData(familyData));
-        });
-
-        // Ajouter un gestionnaire d'événements pour les boutons de vue
-        document.querySelectorAll('.view-button').forEach(button => {
-          button.addEventListener('click', (e) => {
-            const view = e.target.getAttribute('data-view');
-            document.getElementById('tree-view').style.display = view === 'tree' ? 'block' : 'none';
-            document.getElementById('graph-view').style.display = view === 'graph' ? 'block' : 'none';
-
-            // Initialiser Cytoscape uniquement si le conteneur est visible
-            if (view === 'graph') {
-              import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
-                const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-                const graphData = transformGraphData(familyData);
-                initGraph('graph-container', graphData);
-              });
-            }
-          });
-        });
-
-        // Initialiser Cytoscape si le conteneur est visible par défaut
-        if (document.getElementById('graph-view').style.display === 'block') {
-          import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
-            const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-            const graphData = transformGraphData(familyData);
-            initGraph('graph-container', graphData);
-          });
+    // Content-specific initializations
+    if (path === '/') {
+        // Initial view rendering
+        if (currentActiveView === 'tree') {
+            renderFamilyTree();
+        } else {
+            renderGraphView(); // This will also setup algorithm buttons via its callback
         }
+        setupMainViewControls();
+        updateActiveButtons();
 
-        // Ajouter un gestionnaire d'événements pour le bouton "Dijkstra"
+        // Setup algorithm selection forms (populating dropdowns)
+        // These don't depend on cyInstance directly for setup, only for execution
         const dijkstraButton = document.getElementById('dijkstra-button');
         if (dijkstraButton) {
           dijkstraButton.addEventListener('click', () => {
             const dijkstraForm = document.getElementById('dijkstra-form');
             dijkstraForm.style.display = dijkstraForm.style.display === 'none' ? 'block' : 'none';
-
-            // Remplir les sélections avec les noms des individus
-            const startPersonSelect = document.getElementById('start-person');
-            const endPersonSelect = document.getElementById('end-person');
-            startPersonSelect.innerHTML = '';
-            endPersonSelect.innerHTML = '';
-
-            const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-            familyData.forEach(person => {
-              const option = document.createElement('option');
-              option.value = person.id;
-              option.textContent = person.name;
-              startPersonSelect.appendChild(option);
-              endPersonSelect.appendChild(option.cloneNode(true));
-            });
+            const familyDataForSelect = JSON.parse(localStorage.getItem('familyData')) || []; // Always use full data for selection
+            populateAlgorithmSelects(['start-person', 'end-person'], familyDataForSelect);
           });
         }
 
-        // Ajouter un gestionnaire d'événements pour le bouton "Lancer Dijkstra"
-        const runDijkstraButton = document.getElementById('run-dijkstra');
-        if (runDijkstraButton) {
-          runDijkstraButton.addEventListener('click', () => {
-            const startPersonId = document.getElementById('start-person').value;
-            const endPersonId = document.getElementById('end-person').value;
-
-            if (startPersonId && endPersonId) {
-              import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
-                const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-                const graphData = transformGraphData(familyData);
-                const cy = initGraph('graph-container', graphData);
-
-                const startNode = cy.getElementById(startPersonId);
-                const endNode = cy.getElementById(endPersonId);
-
-                if (startNode && endNode) {
-                  initDijkstra(cy, startNode, endNode);
-                  updateRightSidebar(); // Mettre à jour la barre latérale droite
-                }
-              });
-            }
-          });
-        }
-
-        // Ajouter un gestionnaire d'événements pour le bouton "Bellman-Ford"
         const bellmanFordButton = document.getElementById('bellman-ford-button');
         if (bellmanFordButton) {
           bellmanFordButton.addEventListener('click', () => {
             const bellmanFordForm = document.getElementById('bellman-ford-form');
             bellmanFordForm.style.display = bellmanFordForm.style.display === 'none' ? 'block' : 'none';
-
-            // Remplir les sélections avec les noms des individus
-            const startPersonSelect = document.getElementById('bellman-ford-start-person');
-            const endPersonSelect = document.getElementById('bellman-ford-end-person');
-            startPersonSelect.innerHTML = '';
-            endPersonSelect.innerHTML = '';
-
-            const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-            familyData.forEach(person => {
-              const option = document.createElement('option');
-              option.value = person.id;
-              option.textContent = person.name;
-              startPersonSelect.appendChild(option);
-              endPersonSelect.appendChild(option.cloneNode(true));
-            });
+            const familyDataForSelect = JSON.parse(localStorage.getItem('familyData')) || [];
+            populateAlgorithmSelects(['bellman-ford-start-person', 'bellman-ford-end-person'], familyDataForSelect);
           });
         }
 
-        // Ajouter un gestionnaire d'événements pour le bouton "Lancer Bellman-Ford"
-        const runBellmanFordButton = document.getElementById('run-bellman-ford');
-        if (runBellmanFordButton) {
-          runBellmanFordButton.addEventListener('click', () => {
-            const startPersonId = document.getElementById('bellman-ford-start-person').value;
-            const endPersonId = document.getElementById('bellman-ford-end-person').value;
-
-            if (startPersonId && endPersonId) {
-              import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
-                const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-                const graphData = transformGraphData(familyData);
-                const cy = initGraph('graph-container', graphData);
-
-                const startNode = cy.getElementById(startPersonId);
-                const endNode = cy.getElementById(endPersonId);
-
-                if (startNode && endNode) {
-                  initBellmanFord(cy, startNode, endNode);
-                  updateRightSidebar(); // Mettre à jour la barre latérale droite
-                }
-              });
-            }
-          });
-        }
-
-        // Ajouter un gestionnaire d'événements pour le bouton "Prim"
         const primButton = document.getElementById('prim-button');
         if (primButton) {
           primButton.addEventListener('click', () => {
             const primForm = document.getElementById('prim-form');
             primForm.style.display = primForm.style.display === 'none' ? 'block' : 'none';
-
-            // Remplir les sélections avec les noms des individus
-            const startPersonSelect = document.getElementById('prim-start-person');
-            startPersonSelect.innerHTML = '';
-
-            const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-            familyData.forEach(person => {
-              const option = document.createElement('option');
-              option.value = person.id;
-              option.textContent = person.name;
-              startPersonSelect.appendChild(option);
-            });
+            const familyDataForSelect = JSON.parse(localStorage.getItem('familyData')) || [];
+            populateAlgorithmSelects(['prim-start-person'], familyDataForSelect);
           });
         }
-
-        // Ajouter un gestionnaire d'événements pour le bouton "Lancer Prim"
-        const runPrimButton = document.getElementById('run-prim');
-        if (runPrimButton) {
-          runPrimButton.addEventListener('click', () => {
-            const startPersonId = document.getElementById('prim-start-person').value;
-
-            if (startPersonId) {
-              import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
-                const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-                const graphData = transformGraphData(familyData);
-                const cy = initGraph('graph-container', graphData);
-
-                const startNode = cy.getElementById(startPersonId);
-
-                if (startNode) {
-                  initPrim(cy, startNode);
-                  updateRightSidebar(); // Mettre à jour la barre latérale droite
-                }
-              });
-            }
-          });
-        }
-
-        // Ajouter un gestionnaire d'événements pour le bouton "Kruskal"
+        
         const kruskalButton = document.getElementById('kruskal-button');
         if (kruskalButton) {
           kruskalButton.addEventListener('click', () => {
             const kruskalForm = document.getElementById('kruskal-form');
             kruskalForm.style.display = kruskalForm.style.display === 'none' ? 'block' : 'none';
-
-            // Remplir les sélections avec les noms des individus
-            const startPersonSelect = document.getElementById('kruskal-start-person');
-            startPersonSelect.innerHTML = '';
-
-            const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-            familyData.forEach(person => {
-              const option = document.createElement('option');
-              option.value = person.id;
-              option.textContent = person.name;
-              startPersonSelect.appendChild(option);
-            });
+            // Kruskal might not need a select, or if it does, populate it.
+            // const familyDataForSelect = JSON.parse(localStorage.getItem('familyData')) || [];
+            // populateAlgorithmSelects(['kruskal-start-person'], familyDataForSelect); 
           });
         }
-
-        // Ajouter un gestionnaire d'événements pour le bouton "Lancer Kruskal"
-        const runKruskalButton = document.getElementById('run-kruskal');
-        if (runKruskalButton) {
-          runKruskalButton.addEventListener('click', () => {
-            const startPersonId = document.getElementById('kruskal-start-person').value;
-
-            if (startPersonId) {
-              import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
-                const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-                const graphData = transformGraphData(familyData);
-                const cy = initGraph('graph-container', graphData);
-
-                const startNode = cy.getElementById(startPersonId);
-
-                if (startNode) {
-                  initKruskal(cy, startNode);
-                  updateRightSidebar(); // Mettre à jour la barre latérale droite
-                }
-              });
-            }
-          });
+        // Initial setup of algorithm buttons (will be re-attached if graph view re-renders)
+        if (cyInstance) {
+            setupAlgorithmButtons(cyInstance);
         }
-        break;
 
-      case '/profile':
-        contentContainer.innerHTML = renderProfilePage();
-        setupProfileFormHandler(); // Ajouter le gestionnaire du profil
-        break;
 
-      case '/login':
-        contentContainer.innerHTML = renderLoginPage();
-        setupLoginFormHandler(); // Ajouter le gestionnaire de la page de connexion
-        break;
-
-      default:
-        contentContainer.innerHTML = `
-          <div id="main-content">
-            <h2>404 - Page non trouvée</h2>
-          </div>
-        `;
+    } else if (path === '/profile') {
+        setupProfileFormHandler();
+    } else if (path === '/login') {
+        setupLoginFormHandler();
     }
   }
 
-  // Navigation interne
+  function populateAlgorithmSelects(selectIds, data) {
+    selectIds.forEach(selectId => {
+        const selectElement = document.getElementById(selectId);
+        if (selectElement) {
+            selectElement.innerHTML = ''; // Clear previous options
+            data.forEach(person => {
+                const option = document.createElement('option');
+                option.value = person.id;
+                option.textContent = person.name;
+                selectElement.appendChild(option);
+            });
+        }
+    });
+  }
+
   document.body.addEventListener('click', e => {
     if (e.target.matches('a[data-link]')) {
       e.preventDefault();
@@ -300,15 +303,14 @@ export function initRouter() {
     }
   });
 
-  window.addEventListener('popstate', renderRoute); // Back/forward support
-
-  renderRoute(); // Initial load
+  window.addEventListener('popstate', renderRoute);
+  renderRoute();
 }
 
-// Fonction pour mettre à jour la barre latérale droite
 function updateRightSidebar() {
   const rightSidebar = document.getElementById('right-sidebar');
   if (rightSidebar) {
     rightSidebar.innerHTML = renderRightSidebar();
   }
 }
+// END OF FILE: src/router.js
