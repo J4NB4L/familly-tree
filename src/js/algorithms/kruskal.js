@@ -1,15 +1,14 @@
+// src/js/algorithms/kruskal.js
 import cytoscape from 'cytoscape';
 import { uiStateService } from '../../services/uiStateService';
 
-export function initKruskal(cy, startNode) {
+export function initKruskal(cy, startNode) { // startNode is passed but not used by Kruskal's core logic
   uiStateService.clearAlgorithmSteps();
 
-  // Initialiser le suivi des étapes
-  const steps = [];
-  steps.push("Initialisation de l'algorithme de Kruskal");
-  const edges = cy.edges();
-  steps.push(`${edges.length} arêtes à examiner`);
-  uiStateService.setAlgorithmSteps(steps);
+  // Add initial steps
+  uiStateService.addAlgorithmStep("Initialisation de l'algorithme de Kruskal");
+  const edgesInGraph = cy.edges(); // Renamed to avoid conflict with edgesArray later
+  uiStateService.addAlgorithmStep(`${edgesInGraph.length} arêtes à examiner`);
 
   // Réinitialiser les styles
   cy.edges().style({
@@ -21,18 +20,16 @@ export function initKruskal(cy, startNode) {
   const parents = new Map();
   const ranks = new Map();
 
-  // Fonction Find pour Union-Find
-  function find(node) {
-    if (parents.get(node) !== node) {
-      parents.set(node, find(parents.get(node)));
+  function find(nodeId) { // Parameter is nodeId
+    if (parents.get(nodeId) !== nodeId) {
+      parents.set(nodeId, find(parents.get(nodeId)));
     }
-    return parents.get(node);
+    return parents.get(nodeId);
   }
 
-  // Fonction Union pour Union-Find
-  function union(x, y) {
-    const rootX = find(x);
-    const rootY = find(y);
+  function union(xId, yId) { // Parameters are node IDs
+    const rootX = find(xId);
+    const rootY = find(yId);
 
     if (rootX === rootY) return false;
 
@@ -44,7 +41,6 @@ export function initKruskal(cy, startNode) {
       parents.set(rootY, rootX);
       ranks.set(rootX, ranks.get(rootX) + 1);
     }
-
     return true;
   }
 
@@ -59,49 +55,46 @@ export function initKruskal(cy, startNode) {
   const edgesArray = [];
   cy.edges().forEach(edge => {
     edgesArray.push({
-      edge: edge,
-      source: edge.source().id(),
-      target: edge.target().id(),
-      weight: edge.data('weight') || 1
+      edgeElement: edge, // Store the Cytoscape edge element
+      sourceId: edge.source().id(),
+      targetId: edge.target().id(),
+      weight: edge.data('weight') || 1 // Default weight if none specified
     });
   });
 
   // Trier les arêtes par poids croissant
   edgesArray.sort((a, b) => a.weight - b.weight);
-  steps.push("Arêtes triées par poids croissant");
-  uiStateService.setAlgorithmSteps(steps);
+  uiStateService.addAlgorithmStep("Arêtes triées par poids croissant");
 
   // Algorithme de Kruskal
-  const mstEdges = [];
+  const mstEdges = []; // Array to store Cytoscape edge elements of the MST
 
   for (const edgeData of edgesArray) {
-    const { edge, source, target } = edgeData;
+    const { edgeElement, sourceId, targetId, weight } = edgeData;
 
     // Si l'ajout de cette arête ne crée pas de cycle
-    if (find(source) !== find(target)) {
-      union(source, target);
-      mstEdges.push(edge);
-      steps.push(`Ajout de l'arête ${cy.getElementById(source).data('label')}-${cy.getElementById(target).data('label')} de poids ${edgeData.weight} à l'arbre couvrant minimal`);
-      uiStateService.setAlgorithmSteps(steps);
+    if (find(sourceId) !== find(targetId)) {
+      union(sourceId, targetId);
+      mstEdges.push(edgeElement);
+      uiStateService.addAlgorithmStep(`Ajout de l'arête ${cy.getElementById(sourceId).data('label')}-${cy.getElementById(targetId).data('label')} (poids ${weight}) à l'arbre couvrant minimal`);
 
       // Colorer l'arête
-      edge.style({
-        'line-color': 'purple', // Couleur pour Kruskal
+      edgeElement.style({
+        'line-color': 'purple',
         'width': 5
       });
 
       // Animer le changement de couleur
-      edge.addClass('highlighted-kruskal');
+      edgeElement.addClass('highlighted-kruskal');
       setTimeout(() => {
-        edge.removeClass('highlighted-kruskal');
-      }, 1000); // Durée de l'animation
+        edgeElement.removeClass('highlighted-kruskal');
+      }, 1000);
     }
   }
 
   // Animation facultative
   let delay = 0;
   const animationStep = 500;
-
   mstEdges.forEach(edge => {
     setTimeout(() => {
       edge.flashClass('highlighted-kruskal', 1000);
@@ -111,8 +104,7 @@ export function initKruskal(cy, startNode) {
 
   // Ajouter des logs pour débogage
   console.log(`Algorithme de Kruskal: ${mstEdges.length} arêtes dans l'arbre couvrant minimal`);
-  steps.push(`Arbre couvrant minimal construit avec ${mstEdges.length} arêtes`);
-  uiStateService.setAlgorithmSteps(steps);
+  uiStateService.addAlgorithmStep(`Arbre couvrant minimal construit avec ${mstEdges.length} arêtes`);
 
-  return mstEdges;
+  return mstEdges; // Return the array of Cytoscape edge elements forming the MST
 }

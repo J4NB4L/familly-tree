@@ -1,14 +1,13 @@
+// src/js/algorithms/prim.js
 import cytoscape from 'cytoscape';
 import { uiStateService } from '../../services/uiStateService';
 
 export function initPrim(cy, startNode) {
   uiStateService.clearAlgorithmSteps();
 
-  // Initialiser le suivi des étapes
-  const steps = [];
-  steps.push("Initialisation de l'algorithme de Prim");
-  steps.push(`Nœud de départ: ${startNode.data('label')}`);
-  uiStateService.setAlgorithmSteps(steps);
+  // Add initial steps
+  uiStateService.addAlgorithmStep("Initialisation de l'algorithme de Prim");
+  uiStateService.addAlgorithmStep(`Nœud de départ: ${startNode.data('label')}`);
 
   // Réinitialiser les styles
   cy.edges().style({
@@ -17,99 +16,89 @@ export function initPrim(cy, startNode) {
   });
 
   // Tous les nœuds du graphe
-  const nodes = cy.nodes();
-  const totalNodes = nodes.length;
+  const allNodes = cy.nodes(); // Renamed to avoid confusion
+  const totalNodes = allNodes.length;
 
-  // Maps pour suivre les distances et les parents
-  const visited = new Map();
-  const distances = new Map();
-  const parent = new Map();
+  // Maps pour suivre les "keys" (min weight to connect to MST) et les parents in MST
+  const inMST = new Map();    // Tracks if a node is already in the MST
+  const key = new Map();      // Min weight to connect this node to the MST
+  const parentEdge = new Map(); // Stores the edge used to connect the node to its parent in MST
 
   // Initialisation des structures de données
-  nodes.forEach(node => {
+  allNodes.forEach(node => {
     const id = node.id();
-    distances.set(id, id === startNode.id() ? 0 : Infinity);
-    parent.set(id, null);
+    key.set(id, Infinity);
+    inMST.set(id, false);
+    parentEdge.set(id, null);
   });
 
-  // Algorithme de Prim
-  for (let i = 0; i < totalNodes; i++) {
-    // Trouver le nœud non visité avec la distance minimale
-    let minDistance = Infinity;
-    let minNode = null;
+  // Start with the given startNode
+  key.set(startNode.id(), 0);
 
-    nodes.forEach(node => {
+  // Algorithme de Prim
+  for (let count = 0; count < totalNodes; count++) {
+    // Trouver le nœud non dans MST avec la clé (key) minimale
+    let minKey = Infinity;
+    let uNode = null; // The node to be added to MST
+
+    allNodes.forEach(node => {
       const id = node.id();
-      if (!visited.has(id) && distances.get(id) < minDistance) {
-        minDistance = distances.get(id);
-        minNode = node;
+      if (!inMST.get(id) && key.get(id) < minKey) {
+        minKey = key.get(id);
+        uNode = node;
       }
     });
 
-    // Si aucun nœud n'est accessible, le graphe n'est pas connecté
-    if (minNode === null) break;
+    // Si aucun nœud n'est accessible ou tous les nœuds sont dans MST
+    if (uNode === null) break;
 
-    // Marquer le nœud comme visité
-    visited.set(minNode.id(), true);
-    steps.push(`Ajout du nœud ${minNode.data('label')} à l'arbre couvrant minimal`);
-    uiStateService.setAlgorithmSteps(steps);
+    // Marquer le nœud comme faisant partie du MST
+    inMST.set(uNode.id(), true);
+    uiStateService.addAlgorithmStep(`Ajout du nœud ${uNode.data('label')} à l'arbre couvrant minimal`);
 
-    // Mettre à jour les distances des nœuds adjacents
-    const neighbors = minNode.neighborhood().nodes().filter(n => !visited.has(n.id()));
+    // Mettre à jour les valeurs de clé des nœuds adjacents au nœud choisi
+    const neighbors = uNode.neighborhood().filter(el => el.isNode() && !inMST.get(el.id()));
 
-    neighbors.forEach(neighbor => {
-      const neighborId = neighbor.id();
-      // Dans un graphe non pondéré, la distance entre deux nœuds adjacents est 1
-      // Dans votre cas, vous pourriez utiliser un attribut weight des arêtes
-      const edge = cy.elements().edges(`[source = "${minNode.id()}"][target = "${neighborId}"], [source = "${neighborId}"][target = "${minNode.id()}"]`);
-      const weight = edge.data('weight') || 1;
+    neighbors.forEach(vNode => { // vNode is an adjacent node
+      const vNodeId = vNode.id();
+      // Trouver l'arête entre uNode et vNode
+      const edgeConnecting = uNode.edgesWith(vNode).filter(e => e.source().id() === uNode.id() && e.target().id() === vNodeId || e.source().id() === vNodeId && e.target().id() === uNode.id());
+      
+      if (edgeConnecting.length > 0) {
+        const weight = edgeConnecting.first().data('weight') || 1;
 
-      if (weight < distances.get(neighborId)) {
-        distances.set(neighborId, weight);
-        parent.set(neighborId, minNode.id());
-        steps.push(`Mise à jour de la distance du nœud ${neighbor.data('label')}: ${distances.get(neighborId)} → ${weight}`);
-        uiStateService.setAlgorithmSteps(steps);
-
-        // Animer le changement de couleur
-        edge.addClass('highlighted-prim');
-        setTimeout(() => {
-          edge.removeClass('highlighted-prim');
-        }, 1000); // Durée de l'animation
+        if (weight < key.get(vNodeId)) {
+          key.set(vNodeId, weight);
+          parentEdge.set(vNodeId, edgeConnecting.first()); // Store the edge itself
+          uiStateService.addAlgorithmStep(`Mise à jour de la clé du nœud ${vNode.data('label')} à ${weight} via ${uNode.data('label')}`);
+          
+          // Animer le changement de couleur (de l'arête qui est maintenant le meilleur candidat)
+          // This animation might be too noisy if edges are reconsidered often.
+          // For Prim, typically edges are highlighted when *chosen* for the MST.
+        }
       }
     });
   }
 
-  // Colorer les arêtes de l'arbre couvrant minimal
-  nodes.forEach(node => {
-    const nodeId = node.id();
-    const parentId = parent.get(nodeId);
+  // Colorer les arêtes de l'arbre couvrant minimal et animer
+  let delay = 0;
+  const animationStep = 500;
+  const mstEdgesCollected = [];
 
-    if (parentId !== null) {
-      const edge = cy.elements().edges(`[source = "${parentId}"][target = "${nodeId}"], [source = "${nodeId}"][target = "${parentId}"]`);
+  parentEdge.forEach((edge, nodeId) => {
+    if (edge !== null) { // Edges that are part of the MST
+      mstEdgesCollected.push(edge);
       edge.style({
-        'line-color': 'green', // Couleur pour Prim
+        'line-color': 'green',
         'width': 5
       });
-    }
-  });
-
-  // Animation facultative pour montrer le processus
-  let delay = 0;
-  const animationStep = 500; // 500ms entre chaque étape
-
-  nodes.forEach(node => {
-    const nodeId = node.id();
-    const parentId = parent.get(nodeId);
-
-    if (parentId !== null) {
       setTimeout(() => {
-        const edge = cy.elements().edges(`[source = "${parentId}"][target = "${nodeId}"], [source = "${nodeId}"][target = "${parentId}"]`);
         edge.flashClass('highlighted-prim', 1000);
       }, delay);
       delay += animationStep;
     }
   });
-
-  steps.push(`Arbre couvrant minimal construit avec ${visited.size} nœuds`);
-  uiStateService.setAlgorithmSteps(steps);
+  
+  uiStateService.addAlgorithmStep(`Arbre couvrant minimal construit avec ${mstEdgesCollected.length} arêtes (et ${Array.from(inMST.values()).filter(Boolean).length} nœuds).`);
+  // Note: For a connected graph, mstEdgesCollected.length should be totalNodes - 1 if totalNodes > 0.
 }
