@@ -31,8 +31,9 @@ export function initRouter() {
     const fullFamilyData = await familyDataService.getAllFamilyData(); 
     if (currentDataScope === 'personal') {
       const userProfile = authService.getCurrentUserProfile();
-      if (!userProfile) return fullFamilyData; // Fallback or handle error
-      return familyDataService.getPersonalFamilyData(fullFamilyData, userProfile);
+      if (!userProfile || typeof userProfile.id === 'undefined') { /* ... error handling ... */ return []; }
+      console.log("Router - User profile being used for personal scope:", userProfile);
+      return await familyDataService.getPersonalFamilyData(userProfile);
     }
     return fullFamilyData;
   }

@@ -1,5 +1,5 @@
 Project Context From: /c/Users/PC/School/RO/TP/TP1/frontend
-Generated On: Sun May 25 08:23:42     2025
+Generated On: Sun May 25 11:27:30     2025
 ===============================================
 Ignored Directory Patterns: .* node_modules vendor build dist target __pycache__ .next cache target venv storage
 Ignored File Patterns: *.log *.jar *.pdf *.png *.jpg *.class *.sqlite *.csv project_context.txt package-lock.json yarn.lock composer.lock *.ico pnpm-lock.yaml
@@ -611,7 +611,9 @@ export function renderLeftSidebar() {
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/login.js
 
-// login.js
+// src/components/login.js
+import { authService } from '../services/authService';
+import { familyDataService } from '../services/familyDataService'; // Import familyDataService
 
 export function renderLoginPage() {
   return `
@@ -650,56 +652,47 @@ export function setupLoginFormHandler() {
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-
-    const formData = new FormData(form);
+    const formData = new FormData(e.target);
+    // ... (formData retrieval as before) ...
     const name = formData.get('name');
     const birthYear = parseInt(formData.get('birthYear'), 10);
-    const gmail = formData.get('email'); // renommé pour cohérence
+    const gmail = formData.get('email');
     const gender = formData.get('gender');
-
-    // Gestion image
-    let img = '/assets/avatars/default.svg'; // Fallback
+    let img = '/assets/avatars/default.svg';
+    // ... (imgFile and imgUrl logic as before to set img) ...
     const imgFile = formData.get('imgFile');
     const imgUrl = formData.get('imgUrl');
-
     if (imgFile && imgFile.size > 0) {
-      img = await toBase64(imgFile);
-    } else if (imgUrl) {
-      img = imgUrl;
+        img = await toBase64(imgFile);
+      } else if (imgUrl) {
+        img = imgUrl;
+      }
+
+    try {
+      const userProfile = await authService.login(name, birthYear, gmail, gender, img);
+      // Ensure the new user profile is also reflected in the main familyData
+      // This is important if the user is "new" to the dataset
+      await familyDataService.updatePersonInFamilyData(userProfile);
+      
+      // Ensure dummy data is loaded if this is the first time (or handled by getAllFamilyData)
+      await familyDataService.getAllFamilyData(); // This ensures it's loaded/initialized
+
+      window.location.href = '/profile'; // Or use router navigateTo
+    } catch (error) {
+      console.error("Login failed:", error);
+      // Handle login error display
     }
-
-    const userData = {
-      id: Date.now(),
-      name,
-      pid: null,
-      mid: null,
-      pids: [],
-      gender,
-      birthYear,
-      img,
-      gmail // <-- ajouté ici
-    };
-
-    // Initialiser les données de la famille dans le localStorage
-    const response = await fetch('/data/dummydata.json');
-    const initialFamilyData = await response.json();
-
-
-    localStorage.setItem('userProfile', JSON.stringify(userData));
-    localStorage.setItem('familyData', JSON.stringify(initialFamilyData));
-    window.location.href = '/profile';
   });
 
   function toBase64(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
+      reader.onload = () => resolve(reader.result.split(',')[1]);
       reader.onerror = reject;
     });
   }
-}
-// END OF FILE: src/components/login.js
+}// END OF FILE: src/components/login.js
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/maincontent.js
 
@@ -732,9 +725,11 @@ export function renderMainContent() {
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/navbar.js
 
+import { authService } from '../services/authService';
+
+
 export function renderNavbar() {
-  const stored = localStorage.getItem('userProfile');
-  const user = stored ? JSON.parse(stored) : null;
+  const user = authService.getCurrentUserProfile();
 
   const userSection = user
     ? `
@@ -759,24 +754,14 @@ export function renderNavbar() {
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/profile.js
 
-//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/profile.js
+// src/components/profile.js
+import { authService } from '../services/authService';
+import { familyDataService } from '../services/familyDataService';
+
 export function renderProfilePage() {
-  const stored = localStorage.getItem('userProfile');
-  const user = stored ? JSON.parse(stored) : {
-    id: 100, // Default ID if no profile exists
-    name: '',
-    fid: null, // Changed from pid
-    mid: null,
-    pids: [],
-    gender: '',
-    birthYear: '',
-    img: '/assets/avatars/default.svg',
-    gmail: ''
-  };
-
-  // familyData is not directly used in rendering here, but good to be aware of
-  // const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-
+  const user = authService.getCurrentUserProfile() || { /* default structure */ };
+  // ... rest of render logic using 'user' ...
+  // The familyData for select menus will be fetched asynchronously in setupProfileFormHandler
   return `
     <div class="container-card">
       <div class="profile-header">
@@ -862,20 +847,32 @@ export function setupProfileFormHandler() {
   const form = document.getElementById('profile-form');
   if (!form) return;
 
-  // Load familyData once and keep it in memory for this scope
-  let familyData = JSON.parse(localStorage.getItem('familyData')) || [];
+  // Load initial data for select menus
+  (async () => {
+    const allFamilyData = await familyDataService.getAllFamilyData();
+    const currentUserProfile = authService.getCurrentUserProfile();
+    const currentUserId = currentUserProfile ? currentUserProfile.id : null;
+
+    populateSelectMenu('spouse-select', allFamilyData, currentUserId);
+    populateSelectMenu('father-select', allFamilyData.filter(p => p.gender === 'male'), currentUserId);
+    populateSelectMenu('mother-select', allFamilyData.filter(p => p.gender === 'female'), currentUserId);
+    // For child select, it's often populated when 'generate child menus' is clicked.
+    // If needed on load, do it here or ensure generate-child-menus click handler does it.
+  })();
+
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(form);
-
+    // ... (get form data: name, birthYear, gmail, gender) ...
     const name = formData.get('name');
     const birthYear = parseInt(formData.get('birthYear'), 10);
     const gmail = formData.get('gmail');
     const gender = formData.get('gender');
 
-    const existingUserProfile = JSON.parse(localStorage.getItem('userProfile')) || {};
+    let existingUserProfile = authService.getCurrentUserProfile() || {};
     let img = existingUserProfile.img || '/assets/avatars/default.svg';
+    // ... (imgFile, imgUrl logic) ...
     const imgFile = formData.get('imgFile');
     const imgUrl = formData.get('imgUrl');
 
@@ -886,8 +883,8 @@ export function setupProfileFormHandler() {
     }
 
     const updatedProfileData = {
-      ...existingUserProfile, // Preserve existing relationships (fid, mid, pids) and ID
-      id: existingUserProfile.id || Date.now(), // Ensure ID is present, fallback to new if none
+      ...existingUserProfile,
+      id: existingUserProfile.id || Date.now(),
       name,
       gender,
       birthYear,
@@ -895,271 +892,121 @@ export function setupProfileFormHandler() {
       gmail
     };
 
-    localStorage.setItem('userProfile', JSON.stringify(updatedProfileData));
-    
-    // Update user's representation in familyData as well
-    updateUserInFamilyData(updatedProfileData, familyData);
-    localStorage.setItem('familyData', JSON.stringify(familyData));
+    authService.updateCurrentUserProfile(updatedProfileData);
+    // Also update this person's entry in the main familyData store
+    await familyDataService.updatePersonInFamilyData(updatedProfileData);
 
     alert('Profil mis à jour avec succès !');
-    location.reload(); // recharger pour voir les changements
+    location.reload();
   });
 
   const logoutButton = document.getElementById('logout-button');
   if (logoutButton) {
     logoutButton.addEventListener('click', () => {
-      localStorage.removeItem('userProfile');
-      // Optionally, clear familyData if it's tied to the user session, or leave it.
-      // localStorage.removeItem('familyData'); 
+      authService.logout();
       window.location.href = '/login';
     });
   }
 
-  function populateSelectMenu(selectId, data, excludeId = null) {
-    const selectElement = document.getElementById(selectId);
-    if (!selectElement) return;
+  function populateSelectMenu(selectId, data, excludeId = null) { /* ... no change ... */ }
+  // updateUserInFamilyData is now handled by familyDataService._ensureUserInFamilyData or updatePersonInFamilyData
 
-    selectElement.innerHTML = '<option value="">-- Choisissez --</option>'; // Clear existing and add default
-    data.forEach(person => {
-      if (person.id === excludeId) return; // Exclude the user themselves if needed
+  // --- Relation Handlers ---
+  // Example for Add Spouse:
+  const addSpouseConfirmButton = document.getElementById('add-spouse-confirm');
+  if (addSpouseConfirmButton) {
+    addSpouseConfirmButton.addEventListener('click', async () => {
+      const spouseId = parseInt(document.getElementById('spouse-select').value, 10);
+      if (!spouseId || isNaN(spouseId)) { /* alert */ return; }
 
-      const option = document.createElement('option');
-      option.value = person.id;
-      option.textContent = `${person.name}`;
-      selectElement.appendChild(option);
+      let userProfile = authService.getCurrentUserProfile();
+      const updatedUserProfileAfterSpouse = await familyDataService.addSpouse(userProfile, spouseId);
+      
+      if (updatedUserProfileAfterSpouse) {
+        // Sync userProfile in authService with changes from familyDataService
+        authService.updateCurrentUserProfile(updatedUserProfileAfterSpouse);
+        alert('Conjoint ajouté avec succès !');
+        location.reload();
+      } else { /* alert error */ }
     });
   }
-  
-  // Helper function to manage the user's representation in familyData
-  // Ensures the user object exists in familyData and is up-to-date.
-  // Returns the reference to the user object within the familyData array.
-  function updateUserInFamilyData(userProfileSource, targetFamilyData) {
-    let userInFamily = targetFamilyData.find(p => p.id === userProfileSource.id);
-    if (!userInFamily) {
-      userInFamily = JSON.parse(JSON.stringify(userProfileSource)); // Add a deep copy
-      targetFamilyData.push(userInFamily);
-    } else {
-      // User exists, update it with properties from userProfileSource
-      Object.assign(userInFamily, userProfileSource);
-    }
-    return userInFamily;
-  }
+  // Similarly refactor addFather, addMother, addChild to use:
+  // 1. `authService.getCurrentUserProfile()`
+  // 2. `familyDataService.setFather(userProfile, fatherId)`, etc.
+  // 3. `authService.updateCurrentUserProfile(updatedProfile)` with the result from step 2.
 
-
-  // Initial population of select menus
-  // The current user (profile being edited) should not be selectable as their own parent/spouse.
-  const currentUserProfileForExclusion = JSON.parse(localStorage.getItem('userProfile'));
-  const currentUserId = currentUserProfileForExclusion ? currentUserProfileForExclusion.id : null;
-
-  populateSelectMenu('spouse-select', familyData, currentUserId);
-  populateSelectMenu('father-select', familyData.filter(p => p.gender === 'male'), currentUserId);
-  populateSelectMenu('mother-select', familyData.filter(p => p.gender === 'female'), currentUserId);
-
-
-  // Add Spouse
-  const addSpouseButton = document.getElementById('add-spouse-button');
-  if (addSpouseButton) {
-    addSpouseButton.addEventListener('click', () => {
-      document.getElementById('add-spouse-form').style.display = 
-        document.getElementById('add-spouse-form').style.display === 'none' ? 'block' : 'none';
-    });
-
-    const addSpouseConfirmButton = document.getElementById('add-spouse-confirm');
-    if (addSpouseConfirmButton) {
-      addSpouseConfirmButton.addEventListener('click', () => {
-        const spouseId = parseInt(document.getElementById('spouse-select').value, 10);
-        if (!spouseId || isNaN(spouseId)) {
-          alert('Veuillez sélectionner un conjoint.');
-          return;
-        }
-
-        const userProfileData = JSON.parse(localStorage.getItem('userProfile'));
-        const userInFamily = updateUserInFamilyData(userProfileData, familyData); // Get/update user in familyData
-        const spouseInFamily = familyData.find(p => p.id === spouseId);
-
-        if (userInFamily && spouseInFamily) {
-          // Update user's pids
-          userInFamily.pids = userInFamily.pids || [];
-          if (!userInFamily.pids.includes(spouseId)) {
-            userInFamily.pids.push(spouseId);
-          }
-
-          // Update spouse's pids
-          spouseInFamily.pids = spouseInFamily.pids || [];
-          if (!spouseInFamily.pids.includes(userInFamily.id)) {
-            spouseInFamily.pids.push(userInFamily.id);
-          }
-
-          localStorage.setItem('userProfile', JSON.stringify(userInFamily)); // Save updated user profile
-          localStorage.setItem('familyData', JSON.stringify(familyData));
-          alert('Conjoint ajouté avec succès !');
-          location.reload();
-        } else {
-          alert('Erreur : conjoint non trouvé.');
-        }
-      });
-    }
-  }
-
-  // Add Father
-  const addFatherButton = document.getElementById('add-father-button');
-  if (addFatherButton) {
-    addFatherButton.addEventListener('click', () => {
-      document.getElementById('add-father-form').style.display =
-        document.getElementById('add-father-form').style.display === 'none' ? 'block' : 'none';
-    });
-
+  // Add Father confirm
     const addFatherConfirmButton = document.getElementById('add-father-confirm');
     if (addFatherConfirmButton) {
-      addFatherConfirmButton.addEventListener('click', () => {
+      addFatherConfirmButton.addEventListener('click', async () => {
         const fatherId = parseInt(document.getElementById('father-select').value, 10);
-        if (!fatherId || isNaN(fatherId)) {
-          alert('Veuillez sélectionner un père.');
-          return;
-        }
+        if (!fatherId || isNaN(fatherId)) { alert('Veuillez sélectionner un père.'); return; }
         
-        const userProfileData = JSON.parse(localStorage.getItem('userProfile'));
-        const userInFamily = updateUserInFamilyData(userProfileData, familyData);
-        const fatherInFamily = familyData.find(p => p.id === fatherId);
+        let userProfile = authService.getCurrentUserProfile();
+        const fatherNode = await familyDataService.getPersonById(fatherId);
 
-        if (userInFamily && fatherInFamily) {
-          if (fatherInFamily.gender !== 'male') {
+        if (!fatherNode || fatherNode.gender !== 'male') {
             alert('La personne sélectionnée comme père doit être de genre masculin.');
             return;
-          }
-          userInFamily.fid = fatherId;
-          // If this person was previously the mother, clear mid to avoid conflict.
-          if (userInFamily.mid === fatherId) userInFamily.mid = null;
+        }
 
-
-          localStorage.setItem('userProfile', JSON.stringify(userInFamily));
-          localStorage.setItem('familyData', JSON.stringify(familyData)); // familyData was modified via userInFamily
+        const updatedUserProfile = await familyDataService.setFather(userProfile, fatherId);
+        if (updatedUserProfile) {
+          authService.updateCurrentUserProfile(updatedUserProfile);
           alert('Père ajouté avec succès !');
           location.reload();
-        } else {
-          alert('Erreur : père non trouvé.');
-        }
+        } else { alert('Erreur : père non trouvé ou invalide.'); }
       });
     }
-  }
 
-  // Add Mother
-  const addMotherButton = document.getElementById('add-mother-button');
-  if (addMotherButton) {
-    addMotherButton.addEventListener('click', () => {
-      document.getElementById('add-mother-form').style.display =
-        document.getElementById('add-mother-form').style.display === 'none' ? 'block' : 'none';
-    });
-    
+  // Add Mother confirm
     const addMotherConfirmButton = document.getElementById('add-mother-confirm');
     if (addMotherConfirmButton) {
-      addMotherConfirmButton.addEventListener('click', () => {
+      addMotherConfirmButton.addEventListener('click', async () => {
         const motherId = parseInt(document.getElementById('mother-select').value, 10);
-        if (!motherId || isNaN(motherId)) {
-          alert('Veuillez sélectionner une mère.');
-          return;
-        }
+        if (!motherId || isNaN(motherId)) { alert('Veuillez sélectionner une mère.'); return; }
 
-        const userProfileData = JSON.parse(localStorage.getItem('userProfile'));
-        const userInFamily = updateUserInFamilyData(userProfileData, familyData);
-        const motherInFamily = familyData.find(p => p.id === motherId);
+        let userProfile = authService.getCurrentUserProfile();
+        const motherNode = await familyDataService.getPersonById(motherId);
 
-        if (userInFamily && motherInFamily) {
-          if (motherInFamily.gender !== 'female') {
+        if (!motherNode || motherNode.gender !== 'female') {
             alert('La personne sélectionnée comme mère doit être de genre féminin.');
-            return;
-          }
-          userInFamily.mid = motherId;
-          // If this person was previously the father, clear fid.
-          if (userInFamily.fid === motherId) userInFamily.fid = null;
-
-          localStorage.setItem('userProfile', JSON.stringify(userInFamily));
-          localStorage.setItem('familyData', JSON.stringify(familyData));
-          alert('Mère ajoutée avec succès !');
-          location.reload();
-        } else {
-          alert('Erreur : mère non trouvée.');
-        }
-      });
-    }
-  }
-
-  // Add Child
-  const addChildButton = document.getElementById('add-child-button');
-  if (addChildButton) {
-    addChildButton.addEventListener('click', () => {
-      document.getElementById('add-child-form').style.display =
-        document.getElementById('add-child-form').style.display === 'none' ? 'block' : 'none';
-      // Pre-generate one child menu by default if not already generated
-      if(document.getElementById('child-menus').children.length === 0) {
-        document.getElementById('generate-child-menus').click();
-      }
-    });
-
-    const generateChildMenusButton = document.getElementById('generate-child-menus');
-    if (generateChildMenusButton) {
-      generateChildMenusButton.addEventListener('click', () => {
-        const childCountInput = document.getElementById('child-count');
-        const childCount = parseInt(childCountInput.value, 10);
-        const childMenusContainer = document.getElementById('child-menus');
-        childMenusContainer.innerHTML = ''; // Clear existing menus
-
-        if (isNaN(childCount) || childCount < 1 || childCount > 10) {
-            alert("Veuillez entrer un nombre d'enfants valide (1-10).");
-            childCountInput.value = "1"; // Reset to default
             return;
         }
         
-        const userProfileData = JSON.parse(localStorage.getItem('userProfile'));
-
-        for (let i = 0; i < childCount; i++) {
-          const childMenuDiv = document.createElement('div');
-          childMenuDiv.classList.add('child-menu');
-          childMenuDiv.innerHTML = `
-            <label>Nom de l'enfant ${i + 1} :</label>
-            <select id="child-select-${i}" class="child-select"></select>
-          `;
-          childMenusContainer.appendChild(childMenuDiv);
-          // Populate this specific child select menu, excluding the current user and their existing parents/spouses
-          // to prevent logical impossibilities like being your own child.
-          populateSelectMenu(`child-select-${i}`, familyData, userProfileData.id);
-        }
+        const updatedUserProfile = await familyDataService.setMother(userProfile, motherId);
+        if (updatedUserProfile) {
+          authService.updateCurrentUserProfile(updatedUserProfile);
+          alert('Mère ajoutée avec succès !');
+          location.reload();
+        } else { alert('Erreur : mère non trouvée ou invalide.'); }
       });
     }
 
+  // Add Child confirm
     const addChildConfirmButton = document.getElementById('add-child-confirm');
     if (addChildConfirmButton) {
-      addChildConfirmButton.addEventListener('click', () => {
-        const userProfileData = JSON.parse(localStorage.getItem('userProfile'));
-        // userInFamily is not directly modified for adding children, but we get it to ensure it's in familyData
-        const userInFamily = updateUserInFamilyData(userProfileData, familyData); 
+      addChildConfirmButton.addEventListener('click', async () => {
+        let userProfile = authService.getCurrentUserProfile();
         let childrenAdded = 0;
+        const childSelects = document.querySelectorAll('.child-select');
 
-        document.querySelectorAll('.child-select').forEach(select => {
-          const childId = parseInt(select.value, 10);
-          if (childId && !isNaN(childId)) {
-            const childInFamily = familyData.find(p => p.id === childId);
-            if (childInFamily) {
-              if (userInFamily.gender === 'male') {
-                childInFamily.fid = userInFamily.id;
-                // If current user was previously child's mother, clear it
-                if (childInFamily.mid === userInFamily.id) childInFamily.mid = null;
-              } else if (userInFamily.gender === 'female') {
-                childInFamily.mid = userInFamily.id;
-                // If current user was previously child's father, clear it
-                if (childInFamily.fid === userInFamily.id) childInFamily.fid = null;
-              }
-              childrenAdded++;
+        for (const select of childSelects) {
+            const childId = parseInt(select.value, 10);
+            if (childId && !isNaN(childId)) {
+                // familyDataService.addChild will handle linking child to parent
+                // The parent's profile (userProfile) isn't directly changed by adding a child to them,
+                // but the child's record in familyData is.
+                const parentProfileAfterAddingChild = await familyDataService.addChild(userProfile, childId);
+                if(parentProfileAfterAddingChild){ // if successful
+                    childrenAdded++;
+                }
             }
-          }
-        });
+        }
 
         if (childrenAdded > 0) {
-          // userProfileData (userInFamily) itself isn't changed when adding children,
-          // but its representation in familyData might have been updated by updateUserInFamilyData.
-          // We save familyData which contains the modified children.
-          localStorage.setItem('userProfile', JSON.stringify(userInFamily)); // Keep userProfile consistent
-          localStorage.setItem('familyData', JSON.stringify(familyData));
+          // No need to update userProfile here as it's the parent, not directly modified
+          // familyDataService already saved changes to children.
           alert(`${childrenAdded} enfant(s) ajouté(s) avec succès !`);
           location.reload();
         } else {
@@ -1167,23 +1014,41 @@ export function setupProfileFormHandler() {
         }
       });
     }
-  }
+  
+  // generate-child-menus button handler:
+  // Needs to fetch allFamilyData for populating select menus
+    const generateChildMenusButton = document.getElementById('generate-child-menus');
+    if (generateChildMenusButton) {
+      generateChildMenusButton.addEventListener('click', async () => {
+        // ... (get childCount)
+        const childCountInput = document.getElementById('child-count');
+        const childCount = parseInt(childCountInput.value, 10);
+        const childMenusContainer = document.getElementById('child-menus');
+        childMenusContainer.innerHTML = '';
 
-  function toBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-    });
-  }
+        if (isNaN(childCount) || childCount < 1 || childCount > 10) { /* alert */ return; }
+        
+        const allFamilyData = await familyDataService.getAllFamilyData();
+        const currentUserProfile = authService.getCurrentUserProfile();
+
+        for (let i = 0; i < childCount; i++) {
+          // ... (create childMenuDiv HTML as before) ...
+          childMenusContainer.appendChild(childMenuDiv);
+          populateSelectMenu(`child-select-${i}`, allFamilyData, currentUserProfile.id);
+        }
+      });
+    }
+
+
+  function toBase64(file) { /* ... no change ... */ }
 }// END OF FILE: src/components/profile.js
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/rightsidebar.js
 
+import { uiStateService } from '../services/uiStateService';
+
 export function renderRightSidebar() {
-  // Récupérer les étapes de l'algorithme depuis localStorage
-  const algorithmSteps = JSON.parse(localStorage.getItem('algorithmSteps') || '[]');
+  const algorithmSteps = uiStateService.getAlgorithmSteps();
 
   // Générer la liste des étapes
   let stepsHtml = '';
@@ -2047,6 +1912,18 @@ form button:hover {
     overflow-y: auto; 
 }
 
+/* Style principal pour la page de connexion */
+.login-container {
+    grid-area: main-content;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 70px);
+    width: 100%;
+    overflow: auto;
+    padding: 30px;
+}
+
 /* Style principal pour la page de profil */
 .profile-container {
     grid-area: main-content;
@@ -2226,16 +2103,16 @@ form button:hover {
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/algorithms/bellman-ford.js
 
 import cytoscape from 'cytoscape';
-import { clearAlgorithmSteps } from '../utils/helper';
+import { uiStateService } from '../../services/uiStateService';
 
 export function initBellmanFord(cy, startNode, endNode) {
-  clearAlgorithmSteps();
+  uiStateService.clearAlgorithmSteps();
 
   // Initialiser le suivi des étapes
   const steps = [];
   steps.push("Initialisation de l'algorithme de Bellman-Ford");
   steps.push(`Nœud de départ: ${startNode.data('label')}, Nœud d'arrivée: ${endNode.data('label')}`);
-  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+  uiStateService.setAlgorithmSteps(steps);
 
   // Réinitialiser les styles
   cy.edges().style({
@@ -2264,7 +2141,7 @@ export function initBellmanFord(cy, startNode, endNode) {
   // Relaxation des arêtes V-1 fois
   for (let i = 0; i < V - 1; i++) {
     steps.push(`Itération ${i+1}/${V-1} - Relaxation de toutes les arêtes`);
-    localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+    uiStateService.setAlgorithmSteps(steps);
 
     edges.forEach(edge => {
       const source = edge.source().id();
@@ -2276,7 +2153,7 @@ export function initBellmanFord(cy, startNode, endNode) {
         distances.set(target, distances.get(source) + weight);
         parent.set(target, source);
         steps.push(`Mise à jour de la distance du nœud ${cy.getElementById(target).data('label')}: ${distances.get(target)} → ${distances.get(source) + weight}`);
-        localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+        uiStateService.setAlgorithmSteps(steps);
 
         // Animer le changement de couleur
         edge.addClass('highlighted-bellman-ford');
@@ -2289,7 +2166,7 @@ export function initBellmanFord(cy, startNode, endNode) {
         distances.set(source, distances.get(target) + weight);
         parent.set(source, target);
         steps.push(`Mise à jour de la distance du nœud ${cy.getElementById(source).data('label')}: ${distances.get(source)} → ${distances.get(target) + weight}`);
-        localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+        uiStateService.setAlgorithmSteps(steps);
 
         // Animer le changement de couleur
         edge.addClass('highlighted-bellman-ford');
@@ -2320,7 +2197,7 @@ export function initBellmanFord(cy, startNode, endNode) {
   if (hasNegativeCycle) {
     console.warn("Le graphe contient un cycle de poids négatif!");
     steps.push("Cycle négatif détecté dans le graphe");
-    localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+    uiStateService.setAlgorithmSteps(steps);
   }
 
   // Reconstruire le chemin du nœud de départ au nœud d'arrivée
@@ -2365,7 +2242,7 @@ export function initBellmanFord(cy, startNode, endNode) {
     console.log(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
     steps.push(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
   }
-  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+  uiStateService.setAlgorithmSteps(steps);
 
   return path;
 }
@@ -2374,16 +2251,16 @@ export function initBellmanFord(cy, startNode, endNode) {
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/algorithms/dijkstra.js
 
 import cytoscape from 'cytoscape';
-import { clearAlgorithmSteps } from '../utils/helper';
+import { uiStateService } from '../../services/uiStateService';
 
 export function initDijkstra(cy, startNode, endNode) {
-  clearAlgorithmSteps();
+  uiStateService.clearAlgorithmSteps();
 
   // Initialiser le suivi des étapes
   const steps = [];
   steps.push("Initialisation de l'algorithme de Dijkstra");
   steps.push(`Nœud de départ: ${startNode.data('label')}, Nœud d'arrivée: ${endNode.data('label')}`);
-  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+  uiStateService.setAlgorithmSteps(steps);
 
   // Réinitialiser les styles
   cy.edges().style({
@@ -2426,7 +2303,7 @@ export function initDijkstra(cy, startNode, endNode) {
     // Marquer le nœud comme visité
     visited.set(minNode.id(), true);
     steps.push(`Exploration du nœud ${minNode.data('label')} avec distance ${distances.get(minNode.id())}`);
-    localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+    uiStateService.setAlgorithmSteps(steps);
 
     // Mettre à jour les distances des nœuds adjacents
     const neighbors = minNode.neighborhood().nodes().filter(n => !visited.has(n.id()));
@@ -2444,7 +2321,7 @@ export function initDijkstra(cy, startNode, endNode) {
         distances.set(neighborId, distance);
         parent.set(neighborId, minNode.id());
         steps.push(`Mise à jour de la distance du nœud ${neighbor.data('label')}: ${distances.get(neighborId)} → ${distance}`);
-        localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+        uiStateService.setAlgorithmSteps(steps);
 
         // Animer le changement de couleur
         edge.addClass('highlighted-dijkstra');
@@ -2497,7 +2374,7 @@ export function initDijkstra(cy, startNode, endNode) {
     console.log(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
     steps.push(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
   }
-  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+  uiStateService.setAlgorithmSteps(steps);
 
   return path;
 }
@@ -2506,17 +2383,17 @@ export function initDijkstra(cy, startNode, endNode) {
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/algorithms/kruskal.js
 
 import cytoscape from 'cytoscape';
-import { clearAlgorithmSteps } from '../utils/helper';
+import { uiStateService } from '../../services/uiStateService';
 
 export function initKruskal(cy, startNode) {
-  clearAlgorithmSteps();
+  uiStateService.clearAlgorithmSteps();
 
   // Initialiser le suivi des étapes
   const steps = [];
   steps.push("Initialisation de l'algorithme de Kruskal");
   const edges = cy.edges();
   steps.push(`${edges.length} arêtes à examiner`);
-  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+  uiStateService.setAlgorithmSteps(steps);
 
   // Réinitialiser les styles
   cy.edges().style({
@@ -2576,7 +2453,7 @@ export function initKruskal(cy, startNode) {
   // Trier les arêtes par poids croissant
   edgesArray.sort((a, b) => a.weight - b.weight);
   steps.push("Arêtes triées par poids croissant");
-  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+  uiStateService.setAlgorithmSteps(steps);
 
   // Algorithme de Kruskal
   const mstEdges = [];
@@ -2589,7 +2466,7 @@ export function initKruskal(cy, startNode) {
       union(source, target);
       mstEdges.push(edge);
       steps.push(`Ajout de l'arête ${cy.getElementById(source).data('label')}-${cy.getElementById(target).data('label')} de poids ${edgeData.weight} à l'arbre couvrant minimal`);
-      localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+      uiStateService.setAlgorithmSteps(steps);
 
       // Colorer l'arête
       edge.style({
@@ -2619,7 +2496,7 @@ export function initKruskal(cy, startNode) {
   // Ajouter des logs pour débogage
   console.log(`Algorithme de Kruskal: ${mstEdges.length} arêtes dans l'arbre couvrant minimal`);
   steps.push(`Arbre couvrant minimal construit avec ${mstEdges.length} arêtes`);
-  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+  uiStateService.setAlgorithmSteps(steps);
 
   return mstEdges;
 }
@@ -2628,16 +2505,16 @@ export function initKruskal(cy, startNode) {
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/algorithms/prim.js
 
 import cytoscape from 'cytoscape';
-import { clearAlgorithmSteps } from '../utils/helper';
+import { uiStateService } from '../../services/uiStateService';
 
 export function initPrim(cy, startNode) {
-  clearAlgorithmSteps();
+  uiStateService.clearAlgorithmSteps();
 
   // Initialiser le suivi des étapes
   const steps = [];
   steps.push("Initialisation de l'algorithme de Prim");
   steps.push(`Nœud de départ: ${startNode.data('label')}`);
-  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+  uiStateService.setAlgorithmSteps(steps);
 
   // Réinitialiser les styles
   cy.edges().style({
@@ -2681,7 +2558,7 @@ export function initPrim(cy, startNode) {
     // Marquer le nœud comme visité
     visited.set(minNode.id(), true);
     steps.push(`Ajout du nœud ${minNode.data('label')} à l'arbre couvrant minimal`);
-    localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+    uiStateService.setAlgorithmSteps(steps);
 
     // Mettre à jour les distances des nœuds adjacents
     const neighbors = minNode.neighborhood().nodes().filter(n => !visited.has(n.id()));
@@ -2697,7 +2574,7 @@ export function initPrim(cy, startNode) {
         distances.set(neighborId, weight);
         parent.set(neighborId, minNode.id());
         steps.push(`Mise à jour de la distance du nœud ${neighbor.data('label')}: ${distances.get(neighborId)} → ${weight}`);
-        localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+        uiStateService.setAlgorithmSteps(steps);
 
         // Animer le changement de couleur
         edge.addClass('highlighted-prim');
@@ -2740,7 +2617,7 @@ export function initPrim(cy, startNode) {
   });
 
   steps.push(`Arbre couvrant minimal construit avec ${visited.size} nœuds`);
-  localStorage.setItem('algorithmSteps', JSON.stringify(steps));
+  uiStateService.setAlgorithmSteps(steps);
 }
 // END OF FILE: src/js/algorithms/prim.js
 
@@ -2918,6 +2795,7 @@ export function transformGraphData(familyData) {
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/family-tree/tree-view.js
 
 import FamilyTree from '@balkangraph/familytree.js';
+import { familyDataService } from '../../services/familyDataService';
 
 export function initFamilyTree(containerId, familyData) {
   const chart = new FamilyTree(document.getElementById(containerId), {
@@ -3004,7 +2882,7 @@ function updatePersonDetails(person) {
   }
 
   // Récupérer les données complètes depuis localStorage pour les relations
-  const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
+  const familyData = familyDataService.getRawFamilyDataSync();
   
   // Trouver les partenaires
   let partners = [];
@@ -3194,11 +3072,17 @@ export function clearAlgorithmSteps() {
 // main.ts
 import './css/style.css';
 import { initRouter } from './router';
+import { familyDataService } from './services/familyDataService'; // Import service
 
-// Charger les données dynamiquement
-const familyData = JSON.parse(localStorage.getItem('familyData')) || [];
-initRouter(familyData);
-// END OF FILE: src/main.ts
+async function main() {
+  // Ensure family data is initialized once when the app loads, if necessary.
+  // This can be called by any component/service that needs it first.
+  // Or explicitly here.
+  await familyDataService.getAllFamilyData(); // This will trigger initialization if needed.
+  initRouter();
+}
+
+main();// END OF FILE: src/main.ts
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/pages/dashboard.html
 
@@ -3225,11 +3109,13 @@ import { renderRightSidebar } from './components/rightSidebar'; // corrected cas
 import { renderMainContent } from './components/mainContent'; // corrected casing
 import { renderProfilePage, setupProfileFormHandler } from './components/profile';
 import { renderLoginPage, setupLoginFormHandler } from './components/login';
+import { authService } from './services/authService';
+import { familyDataService } from './services/familyDataService';
+import { uiStateService } from './services/uiStateService';
 import { initDijkstra } from './js/algorithms/dijkstra';
 import { initBellmanFord } from './js/algorithms/bellman-ford';
 import { initPrim } from './js/algorithms/prim';
-import { initKruskal } from './js/algorithms/kruskal';
-import { getPersonalFamilyData } from './js/utils/family-data-filter'; // Import new filter
+import { initKruskal } from './js/algorithms/kruskal'; 
 
 // Module-level state for current view and scope
 let currentActiveView = 'tree'; // 'tree' or 'graph'
@@ -3245,17 +3131,17 @@ export function initRouter() {
     renderRoute();
   }
 
-  function getPreparedData() {
-    const fullFamilyData = JSON.parse(localStorage.getItem('familyData')) || [];
+  async function getPreparedData() {
+    const fullFamilyData = await familyDataService.getAllFamilyData(); 
     if (currentDataScope === 'personal') {
-      const userProfile = JSON.parse(localStorage.getItem('userProfile'));
+      const userProfile = authService.getCurrentUserProfile();
       if (!userProfile) return fullFamilyData; // Fallback or handle error
-      return getPersonalFamilyData(fullFamilyData, userProfile);
+      return familyDataService.getPersonalFamilyData(fullFamilyData, userProfile);
     }
     return fullFamilyData;
   }
 
-  function renderFamilyTree() {
+  async function renderFamilyTree() {
     if (familyTreeInstance) {
         // Attempt to destroy or clean up the old instance if the library supports it
         // For BalkanGraph, re-creating is often the simplest for data changes.
@@ -3265,8 +3151,8 @@ export function initRouter() {
     }
     document.getElementById('tree-view').style.display = 'block';
     document.getElementById('graph-view').style.display = 'none';
-    import('./js/family-tree/tree-view').then(({ initFamilyTree, transformFamilyData }) => {
-      const dataToDisplay = getPreparedData();
+    import('./js/family-tree/tree-view').then(async ({ initFamilyTree, transformFamilyData }) => {
+      const dataToDisplay = await getPreparedData();
       if (dataToDisplay.length === 0 && currentDataScope === 'personal') {
         document.getElementById('family-tree-container').innerHTML = 
           '<p style="text-align:center; padding-top:20px;">Aucune donnée familiale proche à afficher. Vérifiez votre profil et vos relations.</p>';
@@ -3276,15 +3162,15 @@ export function initRouter() {
     });
   }
 
-  function renderGraphView() {
+  async function renderGraphView() {
     if (cyInstance) {
       cyInstance.destroy();
       cyInstance = null;
     }
     document.getElementById('tree-view').style.display = 'none';
     document.getElementById('graph-view').style.display = 'block';
-    import('./js/family-tree/graph-view').then(({ initGraph, transformGraphData }) => {
-      const dataToDisplay = getPreparedData();
+    import('./js/family-tree/graph-view').then(async ({ initGraph, transformGraphData }) => {
+      const dataToDisplay = await getPreparedData();
       if (dataToDisplay.length === 0 && currentDataScope === 'personal') {
          document.getElementById('graph-container').innerHTML = 
            '<p style="text-align:center; padding-top:20px;">Aucune donnée familiale proche à afficher pour le graphe.</p>';
@@ -3399,19 +3285,20 @@ export function initRouter() {
   }
 
 
-  function renderRoute() {
+  async function renderRoute() { // Now async
     const path = window.location.pathname;
-    const userProfile = localStorage.getItem('userProfile');
+    // const userProfile = authService.getCurrentUserProfile(); // Use service
+    const isAuthenticated = authService.isAuthenticated(); // Use service
     const isLoginPage = path === '/login';
 
-    if (!userProfile && !isLoginPage) {
+    if (!isAuthenticated && !isLoginPage) {
       history.replaceState(null, null, '/login');
-      return renderRoute();
+      return renderRoute(); // Recursive call to re-evaluate
     }
 
-    if (userProfile && isLoginPage) {
+    if (isAuthenticated && isLoginPage) {
       history.replaceState(null, null, '/');
-      return renderRoute();
+      return renderRoute(); // Recursive call
     }
 
     app.innerHTML = `${renderNavbar()}`;
@@ -3439,12 +3326,14 @@ export function initRouter() {
     if (path === '/') {
         // Initial view rendering
         if (currentActiveView === 'tree') {
-            renderFamilyTree();
+            await renderFamilyTree();
         } else {
-            renderGraphView(); // This will also setup algorithm buttons via its callback
+            await renderGraphView(); // This will also setup algorithm buttons via its callback
         }
         setupMainViewControls();
         updateActiveButtons();
+
+        const familyDataForSelect = await familyDataService.getAllFamilyData();
 
         // Setup algorithm selection forms (populating dropdowns)
         // These don't depend on cyInstance directly for setup, only for execution
@@ -3453,7 +3342,6 @@ export function initRouter() {
           dijkstraButton.addEventListener('click', () => {
             const dijkstraForm = document.getElementById('dijkstra-form');
             dijkstraForm.style.display = dijkstraForm.style.display === 'none' ? 'block' : 'none';
-            const familyDataForSelect = JSON.parse(localStorage.getItem('familyData')) || []; // Always use full data for selection
             populateAlgorithmSelects(['start-person', 'end-person'], familyDataForSelect);
           });
         }
@@ -3463,7 +3351,6 @@ export function initRouter() {
           bellmanFordButton.addEventListener('click', () => {
             const bellmanFordForm = document.getElementById('bellman-ford-form');
             bellmanFordForm.style.display = bellmanFordForm.style.display === 'none' ? 'block' : 'none';
-            const familyDataForSelect = JSON.parse(localStorage.getItem('familyData')) || [];
             populateAlgorithmSelects(['bellman-ford-start-person', 'bellman-ford-end-person'], familyDataForSelect);
           });
         }
@@ -3473,7 +3360,6 @@ export function initRouter() {
           primButton.addEventListener('click', () => {
             const primForm = document.getElementById('prim-form');
             primForm.style.display = primForm.style.display === 'none' ? 'block' : 'none';
-            const familyDataForSelect = JSON.parse(localStorage.getItem('familyData')) || [];
             populateAlgorithmSelects(['prim-start-person'], familyDataForSelect);
           });
         }
@@ -3483,9 +3369,7 @@ export function initRouter() {
           kruskalButton.addEventListener('click', () => {
             const kruskalForm = document.getElementById('kruskal-form');
             kruskalForm.style.display = kruskalForm.style.display === 'none' ? 'block' : 'none';
-            // Kruskal might not need a select, or if it does, populate it.
-            // const familyDataForSelect = JSON.parse(localStorage.getItem('familyData')) || [];
-            // populateAlgorithmSelects(['kruskal-start-person'], familyDataForSelect); 
+            populateAlgorithmSelects(['kruskal-start-person'], familyDataForSelect); 
           });
         }
         // Initial setup of algorithm buttons (will be re-attached if graph view re-renders)
@@ -3534,6 +3418,265 @@ function updateRightSidebar() {
   }
 }
 // END OF FILE: src/router.js// END OF FILE: src/router.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/services/authService.js
+
+// src/services/authService.js
+const USER_PROFILE_KEY = 'userProfile';
+
+export const authService = {
+  login: async (name, birthYear, gmail, gender, img) => {
+    // Simulating ID generation as in original login.js
+    const userData = {
+      id: Date.now(), 
+      name,
+      fid: null, // Use fid/mid consistently
+      mid: null,
+      pids: [],
+      gender,
+      birthYear,
+      img,
+      gmail
+    };
+    localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(userData));
+    return userData; // Return the created user profile
+  },
+
+  logout: () => {
+    localStorage.removeItem(USER_PROFILE_KEY);
+    // Optionally clear other session-related data if needed
+    // localStorage.removeItem('familyData'); // Or handle this in familyDataService
+  },
+
+  getCurrentUserProfile: () => {
+    const stored = localStorage.getItem(USER_PROFILE_KEY);
+    return stored ? JSON.parse(stored) : null;
+  },
+
+  updateCurrentUserProfile: (profileData) => {
+    const currentUser = authService.getCurrentUserProfile();
+    if (!currentUser) {
+        console.error("No user profile found to update.");
+        // Potentially create a new one if that's desired behavior, or throw error
+        // For now, let's assume an ID must exist or be assigned from profileData
+    }
+    
+    const updatedProfile = {
+        ...currentUser, // Spread existing data first
+        ...profileData, // Then overwrite with new data
+        id: profileData.id || (currentUser ? currentUser.id : Date.now()) // Ensure ID is preserved or assigned
+    };
+
+    localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(updatedProfile));
+    return updatedProfile;
+  },
+
+  isAuthenticated: () => {
+    return !!localStorage.getItem(USER_PROFILE_KEY);
+  }
+};// END OF FILE: src/services/authService.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/services/familyDataService.js
+
+// src/services/familyDataService.js
+import { getPersonalFamilyData as filterPersonalFamilyData } from '../js/utils/family-data-filter'; // Keep utility separate
+
+const FAMILY_DATA_KEY = 'familyData';
+
+// Private helper to ensure data is initialized
+async function ensureFamilyDataInitialized() {
+  if (!localStorage.getItem(FAMILY_DATA_KEY)) {
+    try {
+      const response = await fetch('/data/dummydata.json');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const initialFamilyData = await response.json();
+      localStorage.setItem(FAMILY_DATA_KEY, JSON.stringify(initialFamilyData));
+      console.log("Family data initialized from dummydata.json");
+      return initialFamilyData;
+    } catch (error) {
+      console.error("Failed to fetch or initialize family data:", error);
+      localStorage.setItem(FAMILY_DATA_KEY, JSON.stringify([])); // Initialize with empty on error
+      return [];
+    }
+  }
+  return JSON.parse(localStorage.getItem(FAMILY_DATA_KEY));
+}
+
+
+export const familyDataService = {
+  getAllFamilyData: async () => {
+    return await ensureFamilyDataInitialized();
+  },
+
+  getRawFamilyDataSync: () => { // For cases where async is problematic and data is known to be there
+    const data = localStorage.getItem(FAMILY_DATA_KEY);
+    return data ? JSON.parse(data) : [];
+  },
+  
+  saveAllFamilyData: (data) => {
+    localStorage.setItem(FAMILY_DATA_KEY, JSON.stringify(data));
+  },
+
+  // Gets the user's representation *within* the familyData array,
+  // ensuring it exists and is up-to-date with the profile.
+  // This is crucial for consistency.
+  _ensureUserInFamilyData: (userProfile, currentFamilyData) => {
+    let familyData = [...currentFamilyData]; // Work on a copy
+    let userInFamily = familyData.find(p => p.id === userProfile.id);
+    
+    const profileToSync = {
+        id: userProfile.id,
+        name: userProfile.name,
+        mid: userProfile.mid,
+        fid: userProfile.fid,
+        pids: userProfile.pids || [],
+        gender: userProfile.gender,
+        birthYear: userProfile.birthYear,
+        deathYear: userProfile.deathYear, // Ensure all relevant fields are synced
+        img: userProfile.img,
+        gmail: userProfile.gmail
+    };
+
+    if (!userInFamily) {
+      userInFamily = { ...profileToSync }; // Create new from profile
+      familyData.push(userInFamily);
+    } else {
+      // User exists, update it with properties from userProfileSource
+      Object.assign(userInFamily, profileToSync);
+    }
+    familyDataService.saveAllFamilyData(familyData); // Persist change
+    return { updatedFamilyData: familyData, userNodeInFamilyData: userInFamily };
+  },
+
+  getPersonById: async (id) => {
+    const data = await familyDataService.getAllFamilyData();
+    return data.find(p => p.id === id);
+  },
+
+  updatePersonInFamilyData: async (personToUpdate) => {
+    let data = await familyDataService.getAllFamilyData();
+    const personIndex = data.findIndex(p => p.id === personToUpdate.id);
+    if (personIndex > -1) {
+      data[personIndex] = { ...data[personIndex], ...personToUpdate };
+    } else {
+      // If person doesn't exist, decide whether to add them or throw an error
+      // For now, let's assume update means they should exist or it's an error.
+      // Or, if it's the current user, it's fine to add.
+      console.warn(`Person with ID ${personToUpdate.id} not found in familyData for update. Adding them.`);
+      data.push({...personToUpdate}); // Add if not found - useful for new user from profile
+    }
+    familyDataService.saveAllFamilyData(data);
+    return personToUpdate;
+  },
+
+  addSpouse: async (userProfile, spouseId) => {
+    let allData = await familyDataService.getAllFamilyData();
+    const { updatedFamilyData, userNodeInFamilyData } = familyDataService._ensureUserInFamilyData(userProfile, allData);
+    allData = updatedFamilyData; // Use the potentially updated array
+
+    const spouseNode = allData.find(p => p.id === spouseId);
+
+    if (userNodeInFamilyData && spouseNode) {
+      userNodeInFamilyData.pids = userNodeInFamilyData.pids || [];
+      if (!userNodeInFamilyData.pids.includes(spouseId)) {
+        userNodeInFamilyData.pids.push(spouseId);
+      }
+      spouseNode.pids = spouseNode.pids || [];
+      if (!spouseNode.pids.includes(userNodeInFamilyData.id)) {
+        spouseNode.pids.push(userNodeInFamilyData.id);
+      }
+      familyDataService.saveAllFamilyData(allData);
+      // The userProfile itself might also need to reflect this change for consistency
+      // So, return the updated userNode which should be used to update userProfile in localStorage
+      return userNodeInFamilyData; 
+    }
+    return null; // Or throw error
+  },
+
+  setFather: async (userProfile, fatherId) => {
+    let allData = await familyDataService.getAllFamilyData();
+    const { updatedFamilyData, userNodeInFamilyData } = familyDataService._ensureUserInFamilyData(userProfile, allData);
+    allData = updatedFamilyData;
+
+    const fatherNode = allData.find(p => p.id === fatherId);
+    if (userNodeInFamilyData && fatherNode && fatherNode.gender === 'male') {
+      userNodeInFamilyData.fid = fatherId;
+      if (userNodeInFamilyData.mid === fatherId) userNodeInFamilyData.mid = null;
+      familyDataService.saveAllFamilyData(allData);
+      return userNodeInFamilyData;
+    }
+    return null;
+  },
+
+  setMother: async (userProfile, motherId) => {
+    let allData = await familyDataService.getAllFamilyData();
+    const { updatedFamilyData, userNodeInFamilyData } = familyDataService._ensureUserInFamilyData(userProfile, allData);
+    allData = updatedFamilyData;
+
+    const motherNode = allData.find(p => p.id === motherId);
+    if (userNodeInFamilyData && motherNode && motherNode.gender === 'female') {
+      userNodeInFamilyData.mid = motherId;
+      if (userNodeInFamilyData.fid === motherId) userNodeInFamilyData.fid = null;
+      familyDataService.saveAllFamilyData(allData);
+      return userNodeInFamilyData;
+    }
+    return null;
+  },
+
+  addChild: async (userProfile, childId) => {
+    let allData = await familyDataService.getAllFamilyData();
+    // Ensure parent (userProfile) is synced in familyData
+    const { updatedFamilyData, userNodeInFamilyData: parentNode } = familyDataService._ensureUserInFamilyData(userProfile, allData);
+    allData = updatedFamilyData;
+
+    const childNode = allData.find(p => p.id === childId);
+
+    if (parentNode && childNode) {
+      if (parentNode.gender === 'male') {
+        childNode.fid = parentNode.id;
+        if (childNode.mid === parentNode.id) childNode.mid = null;
+      } else if (parentNode.gender === 'female') {
+        childNode.mid = parentNode.id;
+        if (childNode.fid === parentNode.id) childNode.fid = null;
+      }
+      familyDataService.saveAllFamilyData(allData);
+      // Parent profile (userNodeInFamilyData) itself isn't changed when adding children,
+      // but the child in allData is.
+      return parentNode; // Return parent for consistency, though it's not modified here
+    }
+    return null;
+  },
+  
+  getPersonalFamilyData: async (userProfile) => {
+    if (!userProfile) return [];
+    const fullFamilyData = await familyDataService.getAllFamilyData();
+    return filterPersonalFamilyData(fullFamilyData, userProfile);
+  }
+};// END OF FILE: src/services/familyDataService.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/services/uiStateService.js
+
+// src/services/uiStateService.js
+const ALGORITHM_STEPS_KEY = 'algorithmSteps';
+
+export const uiStateService = {
+  clearAlgorithmSteps: () => {
+    localStorage.setItem(ALGORITHM_STEPS_KEY, JSON.stringify([]));
+  },
+
+  addAlgorithmStep: (stepMessage) => {
+    const steps = uiStateService.getAlgorithmSteps();
+    steps.push(stepMessage);
+    localStorage.setItem(ALGORITHM_STEPS_KEY, JSON.stringify(steps));
+  },
+
+  getAlgorithmSteps: () => {
+    const stored = localStorage.getItem(ALGORITHM_STEPS_KEY);
+    return stored ? JSON.parse(stored) : [];
+  }
+};// END OF FILE: src/services/uiStateService.js
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/typescript.svg
 

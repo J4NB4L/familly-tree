@@ -1,5 +1,5 @@
 // src/services/familyDataService.js
-import { getPersonalFamilyData as filterPersonalFamilyData } from '../js/utils/family-data-filter'; // Keep utility separate
+import { filterDataForPersonalView } from '../js/utils/family-data-filter';
 
 const FAMILY_DATA_KEY = 'familyData';
 
@@ -170,8 +170,12 @@ export const familyDataService = {
   },
   
   getPersonalFamilyData: async (userProfile) => {
-    if (!userProfile) return [];
+    if (!userProfile || typeof userProfile.id === 'undefined' || userProfile.id === null) {
+      console.error("familyDataService.getPersonalFamilyData: Called with invalid userProfile or userProfile.id is missing/undefined.", userProfile);
+      return [];
+    }
+    console.log("familyDataService.getPersonalFamilyData - Calling utility. UserProfile:", userProfile.name, userProfile.id);
     const fullFamilyData = await familyDataService.getAllFamilyData();
-    return filterPersonalFamilyData(fullFamilyData, userProfile);
+    return filterDataForPersonalView(fullFamilyData, userProfile);
   }
 };
