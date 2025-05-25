@@ -1,5 +1,5 @@
 Project Context From: /c/Users/PC/School/RO/TP/TP1/frontend
-Generated On: Sun May 25 11:27:30     2025
+Generated On: Sun May 25 20:39:41     2025
 ===============================================
 Ignored Directory Patterns: .* node_modules vendor build dist target __pycache__ .next cache target venv storage
 Ignored File Patterns: *.log *.jar *.pdf *.png *.jpg *.class *.sqlite *.csv project_context.txt package-lock.json yarn.lock composer.lock *.ico pnpm-lock.yaml
@@ -759,9 +759,19 @@ import { authService } from '../services/authService';
 import { familyDataService } from '../services/familyDataService';
 
 export function renderProfilePage() {
-  const user = authService.getCurrentUserProfile() || { /* default structure */ };
-  // ... rest of render logic using 'user' ...
-  // The familyData for select menus will be fetched asynchronously in setupProfileFormHandler
+  const user = authService.getCurrentUserProfile() || {
+    // Default structure if no profile exists, to prevent render errors
+    id: null,
+    name: '',
+    fid: null,
+    mid: null,
+    pids: [],
+    gender: '',
+    birthYear: '',
+    img: '/assets/avatars/default.svg',
+    gmail: ''
+  };
+
   return `
     <div class="container-card">
       <div class="profile-header">
@@ -769,16 +779,16 @@ export function renderProfilePage() {
         <button id="logout-button" class="logout-button">Déconnexion</button>
       </div>
       <form id="profile-form">
-        <img src="${user.img}" alt="Photo de profil" style="max-width: 150px; border-radius: 8px; margin-bottom: 15px;" />
+        <img src="${user.img}" alt="Photo de profil" style="max-width: 150px; border-radius: 50%; margin-bottom: 15px; object-fit: cover; border: 3px solid #4299e1;" />
 
         <label>Nom :</label>
-        <input type="text" name="name" value="${user.name}" required />
+        <input type="text" name="name" value="${user.name || ''}" required />
 
         <label>Année de naissance :</label>
-        <input type="number" name="birthYear" value="${user.birthYear}" required min="1900" max="2025" />
+        <input type="number" name="birthYear" value="${user.birthYear || ''}" required min="1900" max="${new Date().getFullYear()}" />
 
         <label>Email (Gmail) :</label>
-        <input type="email" name="gmail" value="${user.gmail}" required pattern=".+@gmail\\.com" />
+        <input type="email" name="gmail" value="${user.gmail || ''}" required pattern=".+@gmail\\.com" />
 
         <label>Genre :</label>
         <select name="gender" required>
@@ -832,7 +842,7 @@ export function renderProfilePage() {
               <input type="number" id="child-count" min="1" max="10" value="1" />
               <button id="generate-child-menus">Générer les menus</button>
               <div id="child-menus"></div>
-              <button id="add-child-confirm">Confirmer</button>
+              <button id="add-child-confirm" style="display: none;">Confirmer l'ajout des enfants</button>
             </div>
           </div>
         </div>
@@ -847,53 +857,86 @@ export function setupProfileFormHandler() {
   const form = document.getElementById('profile-form');
   if (!form) return;
 
+  function toBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result); // Keep the full data URI
+      reader.onerror = reject;
+    });
+  }
+
+  function populateSelectMenu(selectId, data, excludeId = null, filterGender = null) {
+    const selectElement = document.getElementById(selectId);
+    if (!selectElement) return;
+
+    selectElement.innerHTML = '<option value="">-- Choisissez --</option>';
+    let filteredData = data;
+    if (filterGender) {
+        filteredData = data.filter(p => p.gender === filterGender);
+    }
+
+    filteredData.forEach(person => {
+      if (person.id === excludeId) return;
+
+      const option = document.createElement('option');
+      option.value = person.id;
+      option.textContent = `${person.name} (né en ${person.birthYear || 'N/A'})`;
+      selectElement.appendChild(option);
+    });
+  }
+
   // Load initial data for select menus
   (async () => {
     const allFamilyData = await familyDataService.getAllFamilyData();
     const currentUserProfile = authService.getCurrentUserProfile();
     const currentUserId = currentUserProfile ? currentUserProfile.id : null;
 
+    if (!currentUserProfile) {
+        console.error("Profile setup: No current user profile found. Cannot populate relation selects.");
+        return;
+    }
+
     populateSelectMenu('spouse-select', allFamilyData, currentUserId);
-    populateSelectMenu('father-select', allFamilyData.filter(p => p.gender === 'male'), currentUserId);
-    populateSelectMenu('mother-select', allFamilyData.filter(p => p.gender === 'female'), currentUserId);
-    // For child select, it's often populated when 'generate child menus' is clicked.
-    // If needed on load, do it here or ensure generate-child-menus click handler does it.
+    populateSelectMenu('father-select', allFamilyData, currentUserId, 'male');
+    populateSelectMenu('mother-select', allFamilyData, currentUserId, 'female');
+    // Child select menus are populated dynamically by 'generate-child-menus' button
   })();
 
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(form);
-    // ... (get form data: name, birthYear, gmail, gender) ...
+    
     const name = formData.get('name');
     const birthYear = parseInt(formData.get('birthYear'), 10);
     const gmail = formData.get('gmail');
     const gender = formData.get('gender');
 
-    let existingUserProfile = authService.getCurrentUserProfile() || {};
+    let existingUserProfile = authService.getCurrentUserProfile() || {}; // Ensure there's a base
     let img = existingUserProfile.img || '/assets/avatars/default.svg';
-    // ... (imgFile, imgUrl logic) ...
+    
     const imgFile = formData.get('imgFile');
     const imgUrl = formData.get('imgUrl');
 
     if (imgFile && imgFile.size > 0) {
       img = await toBase64(imgFile);
-    } else if (imgUrl) {
-      img = imgUrl;
+    } else if (imgUrl && imgUrl.trim() !== '') {
+      img = imgUrl.trim();
     }
 
     const updatedProfileData = {
-      ...existingUserProfile,
-      id: existingUserProfile.id || Date.now(),
+      ...existingUserProfile, // Preserve existing IDs and relationship fields (fid, mid, pids)
+      id: existingUserProfile.id || Date.now(), // Ensure ID exists
       name,
       gender,
       birthYear,
       img,
       gmail
+      // Note: fid, mid, pids are managed by relation handlers, not this form directly
     };
 
     authService.updateCurrentUserProfile(updatedProfileData);
-    // Also update this person's entry in the main familyData store
     await familyDataService.updatePersonInFamilyData(updatedProfileData);
 
     alert('Profil mis à jour avec succès !');
@@ -908,139 +951,204 @@ export function setupProfileFormHandler() {
     });
   }
 
-  function populateSelectMenu(selectId, data, excludeId = null) { /* ... no change ... */ }
-  // updateUserInFamilyData is now handled by familyDataService._ensureUserInFamilyData or updatePersonInFamilyData
+  // --- Relation Section Toggles & Handlers ---
 
-  // --- Relation Handlers ---
-  // Example for Add Spouse:
+  // Add Spouse
+  const addSpouseButton = document.getElementById('add-spouse-button');
+  const addSpouseForm = document.getElementById('add-spouse-form');
   const addSpouseConfirmButton = document.getElementById('add-spouse-confirm');
+
+  if (addSpouseButton && addSpouseForm) {
+    addSpouseButton.addEventListener('click', () => {
+      addSpouseForm.style.display = addSpouseForm.style.display === 'none' ? 'block' : 'none';
+    });
+  }
   if (addSpouseConfirmButton) {
     addSpouseConfirmButton.addEventListener('click', async () => {
       const spouseId = parseInt(document.getElementById('spouse-select').value, 10);
-      if (!spouseId || isNaN(spouseId)) { /* alert */ return; }
+      if (!spouseId || isNaN(spouseId)) { 
+        alert('Veuillez sélectionner un conjoint.');
+        return;
+      }
+      const userProfile = authService.getCurrentUserProfile();
+      if (!userProfile) { alert("Utilisateur non connecté."); return; }
 
-      let userProfile = authService.getCurrentUserProfile();
-      const updatedUserProfileAfterSpouse = await familyDataService.addSpouse(userProfile, spouseId);
-      
-      if (updatedUserProfileAfterSpouse) {
-        // Sync userProfile in authService with changes from familyDataService
-        authService.updateCurrentUserProfile(updatedUserProfileAfterSpouse);
+      const updatedUserProfile = await familyDataService.addSpouse(userProfile, spouseId);
+      if (updatedUserProfile) {
+        authService.updateCurrentUserProfile(updatedUserProfile); // Update profile in localStorage
         alert('Conjoint ajouté avec succès !');
         location.reload();
-      } else { /* alert error */ }
+      } else { 
+        alert('Erreur lors de l\'ajout du conjoint. Vérifiez que la personne sélectionnée existe.');
+      }
     });
   }
-  // Similarly refactor addFather, addMother, addChild to use:
-  // 1. `authService.getCurrentUserProfile()`
-  // 2. `familyDataService.setFather(userProfile, fatherId)`, etc.
-  // 3. `authService.updateCurrentUserProfile(updatedProfile)` with the result from step 2.
 
-  // Add Father confirm
-    const addFatherConfirmButton = document.getElementById('add-father-confirm');
-    if (addFatherConfirmButton) {
-      addFatherConfirmButton.addEventListener('click', async () => {
-        const fatherId = parseInt(document.getElementById('father-select').value, 10);
-        if (!fatherId || isNaN(fatherId)) { alert('Veuillez sélectionner un père.'); return; }
-        
-        let userProfile = authService.getCurrentUserProfile();
-        const fatherNode = await familyDataService.getPersonById(fatherId);
+  // Add Father
+  const addFatherButton = document.getElementById('add-father-button');
+  const addFatherForm = document.getElementById('add-father-form');
+  const addFatherConfirmButton = document.getElementById('add-father-confirm');
 
-        if (!fatherNode || fatherNode.gender !== 'male') {
-            alert('La personne sélectionnée comme père doit être de genre masculin.');
-            return;
-        }
+  if (addFatherButton && addFatherForm) {
+    addFatherButton.addEventListener('click', () => {
+      addFatherForm.style.display = addFatherForm.style.display === 'none' ? 'block' : 'none';
+    });
+  }
+  if (addFatherConfirmButton) {
+    addFatherConfirmButton.addEventListener('click', async () => {
+      const fatherId = parseInt(document.getElementById('father-select').value, 10);
+      if (!fatherId || isNaN(fatherId)) { alert('Veuillez sélectionner un père.'); return; }
+      
+      const userProfile = authService.getCurrentUserProfile();
+      if (!userProfile) { alert("Utilisateur non connecté."); return; }
 
-        const updatedUserProfile = await familyDataService.setFather(userProfile, fatherId);
-        if (updatedUserProfile) {
-          authService.updateCurrentUserProfile(updatedUserProfile);
-          alert('Père ajouté avec succès !');
-          location.reload();
-        } else { alert('Erreur : père non trouvé ou invalide.'); }
-      });
-    }
+      const fatherNode = await familyDataService.getPersonById(fatherId);
+      if (!fatherNode || fatherNode.gender !== 'male') {
+        alert('La personne sélectionnée comme père doit être de genre masculin et exister.');
+        return;
+      }
 
-  // Add Mother confirm
-    const addMotherConfirmButton = document.getElementById('add-mother-confirm');
-    if (addMotherConfirmButton) {
-      addMotherConfirmButton.addEventListener('click', async () => {
-        const motherId = parseInt(document.getElementById('mother-select').value, 10);
-        if (!motherId || isNaN(motherId)) { alert('Veuillez sélectionner une mère.'); return; }
+      const updatedUserProfile = await familyDataService.setFather(userProfile, fatherId);
+      if (updatedUserProfile) {
+        authService.updateCurrentUserProfile(updatedUserProfile);
+        alert('Père ajouté avec succès !');
+        location.reload();
+      } else { alert('Erreur lors de l\'ajout du père.'); }
+    });
+  }
 
-        let userProfile = authService.getCurrentUserProfile();
-        const motherNode = await familyDataService.getPersonById(motherId);
-
-        if (!motherNode || motherNode.gender !== 'female') {
-            alert('La personne sélectionnée comme mère doit être de genre féminin.');
-            return;
-        }
-        
-        const updatedUserProfile = await familyDataService.setMother(userProfile, motherId);
-        if (updatedUserProfile) {
-          authService.updateCurrentUserProfile(updatedUserProfile);
-          alert('Mère ajoutée avec succès !');
-          location.reload();
-        } else { alert('Erreur : mère non trouvée ou invalide.'); }
-      });
-    }
-
-  // Add Child confirm
-    const addChildConfirmButton = document.getElementById('add-child-confirm');
-    if (addChildConfirmButton) {
-      addChildConfirmButton.addEventListener('click', async () => {
-        let userProfile = authService.getCurrentUserProfile();
-        let childrenAdded = 0;
-        const childSelects = document.querySelectorAll('.child-select');
-
-        for (const select of childSelects) {
-            const childId = parseInt(select.value, 10);
-            if (childId && !isNaN(childId)) {
-                // familyDataService.addChild will handle linking child to parent
-                // The parent's profile (userProfile) isn't directly changed by adding a child to them,
-                // but the child's record in familyData is.
-                const parentProfileAfterAddingChild = await familyDataService.addChild(userProfile, childId);
-                if(parentProfileAfterAddingChild){ // if successful
-                    childrenAdded++;
-                }
-            }
-        }
-
-        if (childrenAdded > 0) {
-          // No need to update userProfile here as it's the parent, not directly modified
-          // familyDataService already saved changes to children.
-          alert(`${childrenAdded} enfant(s) ajouté(s) avec succès !`);
-          location.reload();
-        } else {
-          alert("Aucun enfant sélectionné ou erreur lors de l'ajout.");
-        }
-      });
-    }
+  // Add Mother
+  const addMotherButton = document.getElementById('add-mother-button');
+  const addMotherForm = document.getElementById('add-mother-form');
+  const addMotherConfirmButton = document.getElementById('add-mother-confirm');
   
-  // generate-child-menus button handler:
-  // Needs to fetch allFamilyData for populating select menus
-    const generateChildMenusButton = document.getElementById('generate-child-menus');
-    if (generateChildMenusButton) {
-      generateChildMenusButton.addEventListener('click', async () => {
-        // ... (get childCount)
-        const childCountInput = document.getElementById('child-count');
-        const childCount = parseInt(childCountInput.value, 10);
-        const childMenusContainer = document.getElementById('child-menus');
-        childMenusContainer.innerHTML = '';
+  if (addMotherButton && addMotherForm) {
+    addMotherButton.addEventListener('click', () => {
+      addMotherForm.style.display = addMotherForm.style.display === 'none' ? 'block' : 'none';
+    });
+  }
+  if (addMotherConfirmButton) {
+    addMotherConfirmButton.addEventListener('click', async () => {
+      const motherId = parseInt(document.getElementById('mother-select').value, 10);
+      if (!motherId || isNaN(motherId)) { alert('Veuillez sélectionner une mère.'); return; }
 
-        if (isNaN(childCount) || childCount < 1 || childCount > 10) { /* alert */ return; }
-        
-        const allFamilyData = await familyDataService.getAllFamilyData();
-        const currentUserProfile = authService.getCurrentUserProfile();
+      const userProfile = authService.getCurrentUserProfile();
+      if (!userProfile) { alert("Utilisateur non connecté."); return; }
 
-        for (let i = 0; i < childCount; i++) {
-          // ... (create childMenuDiv HTML as before) ...
-          childMenusContainer.appendChild(childMenuDiv);
-          populateSelectMenu(`child-select-${i}`, allFamilyData, currentUserProfile.id);
+      const motherNode = await familyDataService.getPersonById(motherId);
+      if (!motherNode || motherNode.gender !== 'female') {
+        alert('La personne sélectionnée comme mère doit être de genre féminin et exister.');
+        return;
+      }
+      
+      const updatedUserProfile = await familyDataService.setMother(userProfile, motherId);
+      if (updatedUserProfile) {
+        authService.updateCurrentUserProfile(updatedUserProfile);
+        alert('Mère ajoutée avec succès !');
+        location.reload();
+      } else { alert('Erreur lors de l\'ajout de la mère.'); }
+    });
+  }
+
+  // Add Child(ren)
+  const addChildButton = document.getElementById('add-child-button');
+  const addChildForm = document.getElementById('add-child-form');
+  const generateChildMenusButton = document.getElementById('generate-child-menus');
+  const childMenusContainer = document.getElementById('child-menus');
+  const addChildConfirmButton = document.getElementById('add-child-confirm');
+
+  if (addChildButton && addChildForm) {
+    addChildButton.addEventListener('click', () => {
+      addChildForm.style.display = addChildForm.style.display === 'none' ? 'block' : 'none';
+      // Pre-generate one child menu if not already generated
+      if (addChildForm.style.display === 'block' && childMenusContainer.children.length === 0) {
+        document.getElementById('child-count').value = "1"; // Reset to 1
+        generateChildMenusButton.click(); // Trigger menu generation
+      }
+    });
+  }
+
+  if (generateChildMenusButton && childMenusContainer && addChildConfirmButton) {
+    generateChildMenusButton.addEventListener('click', async () => {
+      const childCountInput = document.getElementById('child-count');
+      const childCount = parseInt(childCountInput.value, 10);
+      childMenusContainer.innerHTML = ''; // Clear existing menus
+
+      if (isNaN(childCount) || childCount < 1 || childCount > 10) {
+          alert("Veuillez entrer un nombre d'enfants valide (1-10).");
+          childCountInput.value = "1"; 
+          addChildConfirmButton.style.display = 'none';
+          return;
+      }
+      
+      const allFamilyData = await familyDataService.getAllFamilyData();
+      const currentUserProfile = authService.getCurrentUserProfile();
+      if (!currentUserProfile) { alert("Utilisateur non connecté."); return; }
+
+
+      for (let i = 0; i < childCount; i++) {
+        const childMenuDiv = document.createElement('div');
+        childMenuDiv.classList.add('child-menu');
+        // Note: IDs for selects should be unique if this is ever inside a loop generating multiple similar forms.
+        // Here, `child-select-${i}` makes them unique.
+        childMenuDiv.innerHTML = `
+          <label>Enfant ${i + 1} :</label>
+          <select id="child-select-${i}" class="child-select"></select>
+        `;
+        childMenusContainer.appendChild(childMenuDiv);
+        // Populate this specific child select menu, excluding current user and their parents/spouses.
+        // A child cannot be the user themselves, their parent, or their spouse.
+        const existingRelations = [
+            currentUserProfile.id, 
+            ...(currentUserProfile.pids || []),
+            currentUserProfile.fid,
+            currentUserProfile.mid
+        ].filter(id => id != null); // Filter out nulls
+
+        const eligibleChildrenData = allFamilyData.filter(p => !existingRelations.includes(p.id));
+        populateSelectMenu(`child-select-${i}`, eligibleChildrenData, null); // No need to exclude current user again
+      }
+      addChildConfirmButton.style.display = childCount > 0 ? 'block' : 'none';
+    });
+  }
+
+  if (addChildConfirmButton) {
+    addChildConfirmButton.addEventListener('click', async () => {
+      const userProfile = authService.getCurrentUserProfile();
+      if (!userProfile) { alert("Utilisateur non connecté."); return; }
+
+      let childrenAddedSuccessfully = 0;
+      const childSelects = document.querySelectorAll('.child-select');
+
+      for (const select of childSelects) {
+        const childId = parseInt(select.value, 10);
+        if (childId && !isNaN(childId)) {
+          const result = await familyDataService.addChild(userProfile, childId);
+          if (result) {
+            childrenAddedSuccessfully++;
+          } else {
+            alert(`Erreur lors de l'ajout de l'enfant avec ID ${childId}. Vérifiez qu'il existe et n'est pas déjà un parent/conjoint.`);
+          }
         }
-      });
-    }
+      }
 
-
-  function toBase64(file) { /* ... no change ... */ }
+      if (childrenAddedSuccessfully > 0) {
+        // The userProfile itself (parent) isn't directly modified by adding a child,
+        // but the child's record in familyData is.
+        // We might want to re-fetch userProfile if `addChild` could modify it (e.g., pids with other parent),
+        // but current `addChild` in service only modifies child's fid/mid.
+        // authService.updateCurrentUserProfile(userProfile); // Not strictly necessary if userProfile object itself didn't change
+        alert(`${childrenAddedSuccessfully} enfant(s) ajouté(s) avec succès !`);
+        location.reload();
+      } else if (childSelects.length > 0) {
+        alert("Aucun enfant valide sélectionné ou erreur lors de l'ajout.");
+      }
+      // Optionally hide the form again
+      // addChildForm.style.display = 'none';
+      // childMenusContainer.innerHTML = '';
+      // addChildConfirmButton.style.display = 'none';
+    });
+  }
 }// END OF FILE: src/components/profile.js
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/rightsidebar.js
@@ -2102,17 +2210,16 @@ form button:hover {
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/algorithms/bellman-ford.js
 
+// src/js/algorithms/bellman-ford.js
 import cytoscape from 'cytoscape';
 import { uiStateService } from '../../services/uiStateService';
 
 export function initBellmanFord(cy, startNode, endNode) {
   uiStateService.clearAlgorithmSteps();
 
-  // Initialiser le suivi des étapes
-  const steps = [];
-  steps.push("Initialisation de l'algorithme de Bellman-Ford");
-  steps.push(`Nœud de départ: ${startNode.data('label')}, Nœud d'arrivée: ${endNode.data('label')}`);
-  uiStateService.setAlgorithmSteps(steps);
+  // Add initial steps one by one
+  uiStateService.addAlgorithmStep("Initialisation de l'algorithme de Bellman-Ford");
+  uiStateService.addAlgorithmStep(`Nœud de départ: ${startNode.data('label')}, Nœud d'arrivée: ${endNode.data('label')}`);
 
   // Réinitialiser les styles
   cy.edges().style({
@@ -2140,8 +2247,7 @@ export function initBellmanFord(cy, startNode, endNode) {
 
   // Relaxation des arêtes V-1 fois
   for (let i = 0; i < V - 1; i++) {
-    steps.push(`Itération ${i+1}/${V-1} - Relaxation de toutes les arêtes`);
-    uiStateService.setAlgorithmSteps(steps);
+    uiStateService.addAlgorithmStep(`Itération ${i + 1}/${V - 1} - Relaxation de toutes les arêtes`);
 
     edges.forEach(edge => {
       const source = edge.source().id();
@@ -2152,34 +2258,29 @@ export function initBellmanFord(cy, startNode, endNode) {
       if (distances.get(source) !== Infinity && distances.get(source) + weight < distances.get(target)) {
         distances.set(target, distances.get(source) + weight);
         parent.set(target, source);
-        steps.push(`Mise à jour de la distance du nœud ${cy.getElementById(target).data('label')}: ${distances.get(target)} → ${distances.get(source) + weight}`);
-        uiStateService.setAlgorithmSteps(steps);
+        uiStateService.addAlgorithmStep(`Mise à jour de la distance du nœud ${cy.getElementById(target).data('label')}: ${distances.get(source) + weight}`); // Corrected: Displaying the new distance
 
-        // Animer le changement de couleur
         edge.addClass('highlighted-bellman-ford');
         setTimeout(() => {
           edge.removeClass('highlighted-bellman-ford');
-        }, 1000); // Durée de l'animation
+        }, 1000);
       }
 
       if (distances.get(target) !== Infinity && distances.get(target) + weight < distances.get(source)) {
         distances.set(source, distances.get(target) + weight);
         parent.set(source, target);
-        steps.push(`Mise à jour de la distance du nœud ${cy.getElementById(source).data('label')}: ${distances.get(source)} → ${distances.get(target) + weight}`);
-        uiStateService.setAlgorithmSteps(steps);
-
-        // Animer le changement de couleur
+        uiStateService.addAlgorithmStep(`Mise à jour de la distance du nœud ${cy.getElementById(source).data('label')}: ${distances.get(target) + weight}`); // Corrected: Displaying the new distance
+        
         edge.addClass('highlighted-bellman-ford');
         setTimeout(() => {
           edge.removeClass('highlighted-bellman-ford');
-        }, 1000); // Durée de l'animation
+        }, 1000);
       }
     });
   }
 
   // Vérification des cycles négatifs
   let hasNegativeCycle = false;
-
   edges.forEach(edge => {
     const source = edge.source().id();
     const target = edge.target().id();
@@ -2188,7 +2289,6 @@ export function initBellmanFord(cy, startNode, endNode) {
     if (distances.get(source) !== Infinity && distances.get(source) + weight < distances.get(target)) {
       hasNegativeCycle = true;
     }
-
     if (distances.get(target) !== Infinity && distances.get(target) + weight < distances.get(source)) {
       hasNegativeCycle = true;
     }
@@ -2196,22 +2296,18 @@ export function initBellmanFord(cy, startNode, endNode) {
 
   if (hasNegativeCycle) {
     console.warn("Le graphe contient un cycle de poids négatif!");
-    steps.push("Cycle négatif détecté dans le graphe");
-    uiStateService.setAlgorithmSteps(steps);
+    uiStateService.addAlgorithmStep("Cycle négatif détecté dans le graphe");
   }
 
   // Reconstruire le chemin du nœud de départ au nœud d'arrivée
   const path = [];
   let current = endNode.id();
-
   while (current !== null && current !== startNode.id()) {
     const parentId = parent.get(current);
-    if (parentId === null) break; // Pas de chemin
+    if (parentId === null) break; 
 
-    // Ajouter l'arête au chemin
     const edge = cy.elements().edges(`[source = "${parentId}"][target = "${current}"], [source = "${current}"][target = "${parentId}"]`);
     path.unshift(edge);
-
     current = parentId;
   }
 
@@ -2219,15 +2315,13 @@ export function initBellmanFord(cy, startNode, endNode) {
   if (path.length > 0) {
     path.forEach(edge => {
       edge.style({
-        'line-color': 'blue', // Couleur pour Bellman-Ford
+        'line-color': 'blue', 
         'width': 5
       });
     });
 
-    // Animation facultative
     let delay = 0;
     const animationStep = 500;
-
     path.forEach(edge => {
       setTimeout(() => {
         edge.flashClass('highlighted-bellman-ford', 1000);
@@ -2237,30 +2331,27 @@ export function initBellmanFord(cy, startNode, endNode) {
 
     console.log(`Algorithme de Bellman-Ford: chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')} avec ${path.length} arêtes`);
     console.log(`Distance totale: ${distances.get(endNode.id())}`);
-    steps.push(`Chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')} avec distance totale ${distances.get(endNode.id())}`);
+    uiStateService.addAlgorithmStep(`Chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')} avec distance totale ${distances.get(endNode.id())}`);
   } else {
     console.log(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
-    steps.push(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
+    uiStateService.addAlgorithmStep(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
   }
-  uiStateService.setAlgorithmSteps(steps);
 
   return path;
-}
-// END OF FILE: src/js/algorithms/bellman-ford.js
+}// END OF FILE: src/js/algorithms/bellman-ford.js
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/algorithms/dijkstra.js
 
+// src/js/algorithms/dijkstra.js
 import cytoscape from 'cytoscape';
 import { uiStateService } from '../../services/uiStateService';
 
 export function initDijkstra(cy, startNode, endNode) {
-  uiStateService.clearAlgorithmSteps();
+  uiStateService.clearAlgorithmSteps(); // This is correct
 
-  // Initialiser le suivi des étapes
-  const steps = [];
-  steps.push("Initialisation de l'algorithme de Dijkstra");
-  steps.push(`Nœud de départ: ${startNode.data('label')}, Nœud d'arrivée: ${endNode.data('label')}`);
-  uiStateService.setAlgorithmSteps(steps);
+  // Add initial steps one by one
+  uiStateService.addAlgorithmStep("Initialisation de l'algorithme de Dijkstra");
+  uiStateService.addAlgorithmStep(`Nœud de départ: ${startNode.data('label')}, Nœud d'arrivée: ${endNode.data('label')}`);
 
   // Réinitialiser les styles
   cy.edges().style({
@@ -2302,32 +2393,26 @@ export function initDijkstra(cy, startNode, endNode) {
 
     // Marquer le nœud comme visité
     visited.set(minNode.id(), true);
-    steps.push(`Exploration du nœud ${minNode.data('label')} avec distance ${distances.get(minNode.id())}`);
-    uiStateService.setAlgorithmSteps(steps);
+    uiStateService.addAlgorithmStep(`Exploration du nœud ${minNode.data('label')} avec distance ${distances.get(minNode.id())}`);
 
     // Mettre à jour les distances des nœuds adjacents
     const neighbors = minNode.neighborhood().nodes().filter(n => !visited.has(n.id()));
 
     neighbors.forEach(neighbor => {
       const neighborId = neighbor.id();
-      // Trouver l'arête entre minNode et neighbor
       const edge = cy.elements().edges(`[source = "${minNode.id()}"][target = "${neighborId}"], [source = "${neighborId}"][target = "${minNode.id()}"]`);
-
-      // Dans un graphe non pondéré, la distance est 1; sinon utiliser le poids de l'arête
       const weight = edge.data('weight') || 1;
       const distance = distances.get(minNode.id()) + weight;
 
       if (distance < distances.get(neighborId)) {
         distances.set(neighborId, distance);
         parent.set(neighborId, minNode.id());
-        steps.push(`Mise à jour de la distance du nœud ${neighbor.data('label')}: ${distances.get(neighborId)} → ${distance}`);
-        uiStateService.setAlgorithmSteps(steps);
+        uiStateService.addAlgorithmStep(`Mise à jour de la distance du nœud ${neighbor.data('label')}: ${distances.get(neighborId)} → ${distance}`);
 
-        // Animer le changement de couleur
         edge.addClass('highlighted-dijkstra');
         setTimeout(() => {
           edge.removeClass('highlighted-dijkstra');
-        }, 1000); // Durée de l'animation
+        }, 1000);
       }
     });
   }
@@ -2338,12 +2423,10 @@ export function initDijkstra(cy, startNode, endNode) {
 
   while (current !== null && current !== startNode.id()) {
     const parentId = parent.get(current);
-    if (parentId === null) break; // Pas de chemin
+    if (parentId === null) break;
 
-    // Ajouter l'arête au chemin
     const edge = cy.elements().edges(`[source = "${parentId}"][target = "${current}"], [source = "${current}"][target = "${parentId}"]`);
     path.unshift(edge);
-
     current = parentId;
   }
 
@@ -2351,15 +2434,13 @@ export function initDijkstra(cy, startNode, endNode) {
   if (path.length > 0) {
     path.forEach(edge => {
       edge.style({
-        'line-color': 'red', // Couleur pour Dijkstra
+        'line-color': 'red',
         'width': 5
       });
     });
 
-    // Animation facultative
     let delay = 0;
     const animationStep = 500;
-
     path.forEach(edge => {
       setTimeout(() => {
         edge.flashClass('highlighted-dijkstra', 1000);
@@ -2369,31 +2450,29 @@ export function initDijkstra(cy, startNode, endNode) {
 
     console.log(`Algorithme de Dijkstra: chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')} avec ${path.length} arêtes`);
     console.log(`Distance totale: ${distances.get(endNode.id())}`);
-    steps.push(`Chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')} avec distance totale ${distances.get(endNode.id())}`);
+    uiStateService.addAlgorithmStep(`Chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')} avec distance totale ${distances.get(endNode.id())}`);
   } else {
     console.log(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
-    steps.push(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
+    uiStateService.addAlgorithmStep(`Aucun chemin trouvé de ${startNode.data('label')} à ${endNode.data('label')}`);
   }
-  uiStateService.setAlgorithmSteps(steps);
+  // No longer need to set all steps at the end, as they are added incrementally.
 
   return path;
-}
-// END OF FILE: src/js/algorithms/dijkstra.js
+}// END OF FILE: src/js/algorithms/dijkstra.js
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/algorithms/kruskal.js
 
+// src/js/algorithms/kruskal.js
 import cytoscape from 'cytoscape';
 import { uiStateService } from '../../services/uiStateService';
 
-export function initKruskal(cy, startNode) {
+export function initKruskal(cy, startNode) { // startNode is passed but not used by Kruskal's core logic
   uiStateService.clearAlgorithmSteps();
 
-  // Initialiser le suivi des étapes
-  const steps = [];
-  steps.push("Initialisation de l'algorithme de Kruskal");
-  const edges = cy.edges();
-  steps.push(`${edges.length} arêtes à examiner`);
-  uiStateService.setAlgorithmSteps(steps);
+  // Add initial steps
+  uiStateService.addAlgorithmStep("Initialisation de l'algorithme de Kruskal");
+  const edgesInGraph = cy.edges(); // Renamed to avoid conflict with edgesArray later
+  uiStateService.addAlgorithmStep(`${edgesInGraph.length} arêtes à examiner`);
 
   // Réinitialiser les styles
   cy.edges().style({
@@ -2405,18 +2484,16 @@ export function initKruskal(cy, startNode) {
   const parents = new Map();
   const ranks = new Map();
 
-  // Fonction Find pour Union-Find
-  function find(node) {
-    if (parents.get(node) !== node) {
-      parents.set(node, find(parents.get(node)));
+  function find(nodeId) { // Parameter is nodeId
+    if (parents.get(nodeId) !== nodeId) {
+      parents.set(nodeId, find(parents.get(nodeId)));
     }
-    return parents.get(node);
+    return parents.get(nodeId);
   }
 
-  // Fonction Union pour Union-Find
-  function union(x, y) {
-    const rootX = find(x);
-    const rootY = find(y);
+  function union(xId, yId) { // Parameters are node IDs
+    const rootX = find(xId);
+    const rootY = find(yId);
 
     if (rootX === rootY) return false;
 
@@ -2428,7 +2505,6 @@ export function initKruskal(cy, startNode) {
       parents.set(rootY, rootX);
       ranks.set(rootX, ranks.get(rootX) + 1);
     }
-
     return true;
   }
 
@@ -2443,49 +2519,46 @@ export function initKruskal(cy, startNode) {
   const edgesArray = [];
   cy.edges().forEach(edge => {
     edgesArray.push({
-      edge: edge,
-      source: edge.source().id(),
-      target: edge.target().id(),
-      weight: edge.data('weight') || 1
+      edgeElement: edge, // Store the Cytoscape edge element
+      sourceId: edge.source().id(),
+      targetId: edge.target().id(),
+      weight: edge.data('weight') || 1 // Default weight if none specified
     });
   });
 
   // Trier les arêtes par poids croissant
   edgesArray.sort((a, b) => a.weight - b.weight);
-  steps.push("Arêtes triées par poids croissant");
-  uiStateService.setAlgorithmSteps(steps);
+  uiStateService.addAlgorithmStep("Arêtes triées par poids croissant");
 
   // Algorithme de Kruskal
-  const mstEdges = [];
+  const mstEdges = []; // Array to store Cytoscape edge elements of the MST
 
   for (const edgeData of edgesArray) {
-    const { edge, source, target } = edgeData;
+    const { edgeElement, sourceId, targetId, weight } = edgeData;
 
     // Si l'ajout de cette arête ne crée pas de cycle
-    if (find(source) !== find(target)) {
-      union(source, target);
-      mstEdges.push(edge);
-      steps.push(`Ajout de l'arête ${cy.getElementById(source).data('label')}-${cy.getElementById(target).data('label')} de poids ${edgeData.weight} à l'arbre couvrant minimal`);
-      uiStateService.setAlgorithmSteps(steps);
+    if (find(sourceId) !== find(targetId)) {
+      union(sourceId, targetId);
+      mstEdges.push(edgeElement);
+      uiStateService.addAlgorithmStep(`Ajout de l'arête ${cy.getElementById(sourceId).data('label')}-${cy.getElementById(targetId).data('label')} (poids ${weight}) à l'arbre couvrant minimal`);
 
       // Colorer l'arête
-      edge.style({
-        'line-color': 'purple', // Couleur pour Kruskal
+      edgeElement.style({
+        'line-color': 'purple',
         'width': 5
       });
 
       // Animer le changement de couleur
-      edge.addClass('highlighted-kruskal');
+      edgeElement.addClass('highlighted-kruskal');
       setTimeout(() => {
-        edge.removeClass('highlighted-kruskal');
-      }, 1000); // Durée de l'animation
+        edgeElement.removeClass('highlighted-kruskal');
+      }, 1000);
     }
   }
 
   // Animation facultative
   let delay = 0;
   const animationStep = 500;
-
   mstEdges.forEach(edge => {
     setTimeout(() => {
       edge.flashClass('highlighted-kruskal', 1000);
@@ -2495,26 +2568,23 @@ export function initKruskal(cy, startNode) {
 
   // Ajouter des logs pour débogage
   console.log(`Algorithme de Kruskal: ${mstEdges.length} arêtes dans l'arbre couvrant minimal`);
-  steps.push(`Arbre couvrant minimal construit avec ${mstEdges.length} arêtes`);
-  uiStateService.setAlgorithmSteps(steps);
+  uiStateService.addAlgorithmStep(`Arbre couvrant minimal construit avec ${mstEdges.length} arêtes`);
 
-  return mstEdges;
-}
-// END OF FILE: src/js/algorithms/kruskal.js
+  return mstEdges; // Return the array of Cytoscape edge elements forming the MST
+}// END OF FILE: src/js/algorithms/kruskal.js
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/algorithms/prim.js
 
+// src/js/algorithms/prim.js
 import cytoscape from 'cytoscape';
 import { uiStateService } from '../../services/uiStateService';
 
 export function initPrim(cy, startNode) {
   uiStateService.clearAlgorithmSteps();
 
-  // Initialiser le suivi des étapes
-  const steps = [];
-  steps.push("Initialisation de l'algorithme de Prim");
-  steps.push(`Nœud de départ: ${startNode.data('label')}`);
-  uiStateService.setAlgorithmSteps(steps);
+  // Add initial steps
+  uiStateService.addAlgorithmStep("Initialisation de l'algorithme de Prim");
+  uiStateService.addAlgorithmStep(`Nœud de départ: ${startNode.data('label')}`);
 
   // Réinitialiser les styles
   cy.edges().style({
@@ -2523,103 +2593,92 @@ export function initPrim(cy, startNode) {
   });
 
   // Tous les nœuds du graphe
-  const nodes = cy.nodes();
-  const totalNodes = nodes.length;
+  const allNodes = cy.nodes(); // Renamed to avoid confusion
+  const totalNodes = allNodes.length;
 
-  // Maps pour suivre les distances et les parents
-  const visited = new Map();
-  const distances = new Map();
-  const parent = new Map();
+  // Maps pour suivre les "keys" (min weight to connect to MST) et les parents in MST
+  const inMST = new Map();    // Tracks if a node is already in the MST
+  const key = new Map();      // Min weight to connect this node to the MST
+  const parentEdge = new Map(); // Stores the edge used to connect the node to its parent in MST
 
   // Initialisation des structures de données
-  nodes.forEach(node => {
+  allNodes.forEach(node => {
     const id = node.id();
-    distances.set(id, id === startNode.id() ? 0 : Infinity);
-    parent.set(id, null);
+    key.set(id, Infinity);
+    inMST.set(id, false);
+    parentEdge.set(id, null);
   });
 
-  // Algorithme de Prim
-  for (let i = 0; i < totalNodes; i++) {
-    // Trouver le nœud non visité avec la distance minimale
-    let minDistance = Infinity;
-    let minNode = null;
+  // Start with the given startNode
+  key.set(startNode.id(), 0);
 
-    nodes.forEach(node => {
+  // Algorithme de Prim
+  for (let count = 0; count < totalNodes; count++) {
+    // Trouver le nœud non dans MST avec la clé (key) minimale
+    let minKey = Infinity;
+    let uNode = null; // The node to be added to MST
+
+    allNodes.forEach(node => {
       const id = node.id();
-      if (!visited.has(id) && distances.get(id) < minDistance) {
-        minDistance = distances.get(id);
-        minNode = node;
+      if (!inMST.get(id) && key.get(id) < minKey) {
+        minKey = key.get(id);
+        uNode = node;
       }
     });
 
-    // Si aucun nœud n'est accessible, le graphe n'est pas connecté
-    if (minNode === null) break;
+    // Si aucun nœud n'est accessible ou tous les nœuds sont dans MST
+    if (uNode === null) break;
 
-    // Marquer le nœud comme visité
-    visited.set(minNode.id(), true);
-    steps.push(`Ajout du nœud ${minNode.data('label')} à l'arbre couvrant minimal`);
-    uiStateService.setAlgorithmSteps(steps);
+    // Marquer le nœud comme faisant partie du MST
+    inMST.set(uNode.id(), true);
+    uiStateService.addAlgorithmStep(`Ajout du nœud ${uNode.data('label')} à l'arbre couvrant minimal`);
 
-    // Mettre à jour les distances des nœuds adjacents
-    const neighbors = minNode.neighborhood().nodes().filter(n => !visited.has(n.id()));
+    // Mettre à jour les valeurs de clé des nœuds adjacents au nœud choisi
+    const neighbors = uNode.neighborhood().filter(el => el.isNode() && !inMST.get(el.id()));
 
-    neighbors.forEach(neighbor => {
-      const neighborId = neighbor.id();
-      // Dans un graphe non pondéré, la distance entre deux nœuds adjacents est 1
-      // Dans votre cas, vous pourriez utiliser un attribut weight des arêtes
-      const edge = cy.elements().edges(`[source = "${minNode.id()}"][target = "${neighborId}"], [source = "${neighborId}"][target = "${minNode.id()}"]`);
-      const weight = edge.data('weight') || 1;
+    neighbors.forEach(vNode => { // vNode is an adjacent node
+      const vNodeId = vNode.id();
+      // Trouver l'arête entre uNode et vNode
+      const edgeConnecting = uNode.edgesWith(vNode).filter(e => e.source().id() === uNode.id() && e.target().id() === vNodeId || e.source().id() === vNodeId && e.target().id() === uNode.id());
+      
+      if (edgeConnecting.length > 0) {
+        const weight = edgeConnecting.first().data('weight') || 1;
 
-      if (weight < distances.get(neighborId)) {
-        distances.set(neighborId, weight);
-        parent.set(neighborId, minNode.id());
-        steps.push(`Mise à jour de la distance du nœud ${neighbor.data('label')}: ${distances.get(neighborId)} → ${weight}`);
-        uiStateService.setAlgorithmSteps(steps);
-
-        // Animer le changement de couleur
-        edge.addClass('highlighted-prim');
-        setTimeout(() => {
-          edge.removeClass('highlighted-prim');
-        }, 1000); // Durée de l'animation
+        if (weight < key.get(vNodeId)) {
+          key.set(vNodeId, weight);
+          parentEdge.set(vNodeId, edgeConnecting.first()); // Store the edge itself
+          uiStateService.addAlgorithmStep(`Mise à jour de la clé du nœud ${vNode.data('label')} à ${weight} via ${uNode.data('label')}`);
+          
+          // Animer le changement de couleur (de l'arête qui est maintenant le meilleur candidat)
+          // This animation might be too noisy if edges are reconsidered often.
+          // For Prim, typically edges are highlighted when *chosen* for the MST.
+        }
       }
     });
   }
 
-  // Colorer les arêtes de l'arbre couvrant minimal
-  nodes.forEach(node => {
-    const nodeId = node.id();
-    const parentId = parent.get(nodeId);
+  // Colorer les arêtes de l'arbre couvrant minimal et animer
+  let delay = 0;
+  const animationStep = 500;
+  const mstEdgesCollected = [];
 
-    if (parentId !== null) {
-      const edge = cy.elements().edges(`[source = "${parentId}"][target = "${nodeId}"], [source = "${nodeId}"][target = "${parentId}"]`);
+  parentEdge.forEach((edge, nodeId) => {
+    if (edge !== null) { // Edges that are part of the MST
+      mstEdgesCollected.push(edge);
       edge.style({
-        'line-color': 'green', // Couleur pour Prim
+        'line-color': 'green',
         'width': 5
       });
-    }
-  });
-
-  // Animation facultative pour montrer le processus
-  let delay = 0;
-  const animationStep = 500; // 500ms entre chaque étape
-
-  nodes.forEach(node => {
-    const nodeId = node.id();
-    const parentId = parent.get(nodeId);
-
-    if (parentId !== null) {
       setTimeout(() => {
-        const edge = cy.elements().edges(`[source = "${parentId}"][target = "${nodeId}"], [source = "${nodeId}"][target = "${parentId}"]`);
         edge.flashClass('highlighted-prim', 1000);
       }, delay);
       delay += animationStep;
     }
   });
-
-  steps.push(`Arbre couvrant minimal construit avec ${visited.size} nœuds`);
-  uiStateService.setAlgorithmSteps(steps);
-}
-// END OF FILE: src/js/algorithms/prim.js
+  
+  uiStateService.addAlgorithmStep(`Arbre couvrant minimal construit avec ${mstEdgesCollected.length} arêtes (et ${Array.from(inMST.values()).filter(Boolean).length} nœuds).`);
+  // Note: For a connected graph, mstEdgesCollected.length should be totalNodes - 1 if totalNodes > 0.
+}// END OF FILE: src/js/algorithms/prim.js
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/app.ts
 
@@ -2995,23 +3054,35 @@ export const resetPassword = async (userData) => {
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/utils/family-data-filter.js
 
-//---> PATH: src/js/utils/family-data-filter.js
-export function getPersonalFamilyData(fullFamilyData, userProfile) {
-    if (!userProfile || !fullFamilyData || fullFamilyData.length === 0) {
+// src/js/utils/family-data-filter.js
+export function filterDataForPersonalView(fullFamilyData, userProfile) { 
+    console.log("--- Inside filterDataForPersonalView (util) ---");
+    console.log("Argument 'fullFamilyData':", fullFamilyData); // Should be an array
+    console.log("Argument 'userProfile':", userProfile);       // Should be a single 
+    // Initial guard clauses
+    if (!userProfile || typeof userProfile.id === 'undefined' || userProfile.id === null) {
+      console.error("filterDataForPersonalView (util): Called with invalid userProfile (or its ID is missing).", userProfile);
       return [];
     }
-  
-    const personalDataMap = new Map();
-    const userId = userProfile.id;
-  
-    // 1. Add the user
-    const user = fullFamilyData.find(p => p.id === userId);
-    if (user) {
-      personalDataMap.set(userId, { ...user }); // Store a copy
-    } else {
-      // If user is not in familyData (e.g., new user not yet fully integrated)
-      // Add the profile directly. Ensure it has the necessary fields.
-      personalDataMap.set(userId, { 
+    if (!fullFamilyData || !Array.isArray(fullFamilyData)) { // Check if fullFamilyData is actually an array
+      console.error("filterDataForPersonalView (util): fullFamilyData is not a valid array.", fullFamilyData);
+      // If we have a valid user profile but no family data, we should still return the user.
+      return [{
+        id: userProfile.id,
+        name: userProfile.name,
+        mid: userProfile.mid,
+        fid: userProfile.fid,
+        pids: [],
+        gender: userProfile.gender,
+        birthYear: userProfile.birthYear,
+        deathYear: userProfile.deathYear,
+        img: userProfile.img,
+        gmail: userProfile.gmail
+      }];
+    }
+    if (fullFamilyData.length === 0) {
+        console.warn("filterDataForPersonalView (util): fullFamilyData is empty. Returning only the user profile.");
+        return [{
           id: userProfile.id,
           name: userProfile.name,
           mid: userProfile.mid,
@@ -3019,41 +3090,105 @@ export function getPersonalFamilyData(fullFamilyData, userProfile) {
           pids: userProfile.pids || [],
           gender: userProfile.gender,
           birthYear: userProfile.birthYear,
+          deathYear: userProfile.deathYear,
           img: userProfile.img,
           gmail: userProfile.gmail
-       });
-    }
+        }];
+      }
+    console.log("filterDataForPersonalView (util) - Received fullFamilyData (length):", fullFamilyData.length, "Received userProfile:", userProfile.name, userProfile.id);
   
-    const currentUserInMap = personalDataMap.get(userId);
+    const personalDataMap = new Map();
+    const userId = userProfile.id; // userId is from the (hopefully) single userProfile object
   
-    // 2. Add parents
-    if (currentUserInMap && currentUserInMap.fid) {
-      const father = fullFamilyData.find(p => p.id === currentUserInMap.fid);
-      if (father) personalDataMap.set(father.id, { ...father });
-    }
-    if (currentUserInMap && currentUserInMap.mid) {
-      const mother = fullFamilyData.find(p => p.id === currentUserInMap.mid);
-      if (mother) personalDataMap.set(mother.id, { ...mother });
-    }
+    function addPersonToMapById(personId) {
+      if (personId === null || typeof personId === 'undefined') return;
+      if (personalDataMap.has(personId)) return;
   
-    // 3. Add spouses (pids)
-    if (currentUserInMap && currentUserInMap.pids && currentUserInMap.pids.length > 0) {
-      currentUserInMap.pids.forEach(partnerId => {
-        const spouse = fullFamilyData.find(p => p.id === partnerId);
-        if (spouse) personalDataMap.set(spouse.id, { ...spouse });
-      });
-    }
-  
-    // 4. Add children (where user is fid or mid)
-    fullFamilyData.forEach(person => {
-      if (person.fid === userId || person.mid === userId) {
+      const person = fullFamilyData.find(p => p.id === personId);
+      if (person) {
         personalDataMap.set(person.id, { ...person });
+      } else {
+        console.warn(`filterDataForPersonalView (util): Person with ID ${personId} not found in fullFamilyData.`);
+      }
+    }
+  
+    // 1. Add the user themselves
+    let userInSourceArray = fullFamilyData.find(p => p.id === userId);
+    if (userInSourceArray) {
+      console.log(`filterDataForPersonalView (util): Found user ${userId} in fullFamilyData. Adding to map.`);
+      personalDataMap.set(userInSourceArray.id, { ...userInSourceArray });
+    } else {
+        console.warn(`User ID ${userId} not found in fullFamilyData. Using userProfile object directly.`);
+        personalDataMap.set(userProfile.id, { 
+          id: userProfile.id,
+          name: userProfile.name,
+          mid: userProfile.mid,
+          fid: userProfile.fid,
+          pids: userProfile.pids || [],
+          gender: userProfile.gender,
+          birthYear: userProfile.birthYear,
+          deathYear: userProfile.deathYear,
+          img: userProfile.img,
+          gmail: userProfile.gmail
+        });
+      }
+  
+    if (!personalDataMap.has(userId)) {
+      console.error("filterDataForPersonalView (util): User could not be added to the map. This should not happen if userProfile was valid.");
+      return [];
+    }
+    const currentUser = personalDataMap.get(userId);
+    console.log("Current user from map:", currentUser);
+
+    // 2. Ajouter le père de l'utilisateur
+    if (currentUser.fid) {
+      console.log(`Looking for father with ID: ${currentUser.fid}`);
+      addPersonToMapById(currentUser.fid);
+    } else {
+      console.log("User has no father ID (fid)");
+    }
+
+    // 3. Ajouter la mère de l'utilisateur
+    if (currentUser.mid) {
+      console.log(`Looking for mother with ID: ${currentUser.mid}`);
+      addPersonToMapById(currentUser.mid);
+    } else {
+      console.log("User has no mother ID (mid)");
+    }
+  
+    // 4. Ajouter les enfants de l'utilisateur
+    console.log("Looking for children of user...");
+    let childrenFound = 0;
+    fullFamilyData.forEach(personInFullData => {
+      // Vérifier si cette personne est un enfant de l'utilisateur
+      if (personInFullData.fid === userId || personInFullData.mid === userId) {
+        console.log(`Found child: ${personInFullData.name} (ID: ${personInFullData.id})`);
+        if (!personalDataMap.has(personInFullData.id)) {
+          personalDataMap.set(personInFullData.id, { ...personInFullData });
+          childrenFound++;
+        }
       }
     });
+    console.log(`Total children found: ${childrenFound}`);
   
-    return Array.from(personalDataMap.values());
-  }
-  // END OF FILE: src/js/utils/family-data-filter.js// END OF FILE: src/js/utils/family-data-filter.js
+    // 5. Nettoyer les pids pour ne garder que ceux qui sont dans notre map
+    const finalPersonalData = Array.from(personalDataMap.values()).map(personInMap => {
+        const updatedPids = (personInMap.pids || []).filter(pid => personalDataMap.has(pid));
+        return { ...personInMap, pids: updatedPids };
+      });
+  
+      if (finalPersonalData.length === 0) {
+        console.error("finalPersonalData is unexpectedly empty.");
+        return [];
+      }
+  
+      console.log("filterDataForPersonalView (util): Filtered data for personal view:");
+      finalPersonalData.forEach(person => {
+        console.log(`- ${person.name} (ID: ${person.id})`);
+      });
+      
+      return finalPersonalData;
+  }// END OF FILE: src/js/utils/family-data-filter.js
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/utils/graph-utils.js
 
@@ -3135,8 +3270,9 @@ export function initRouter() {
     const fullFamilyData = await familyDataService.getAllFamilyData(); 
     if (currentDataScope === 'personal') {
       const userProfile = authService.getCurrentUserProfile();
-      if (!userProfile) return fullFamilyData; // Fallback or handle error
-      return familyDataService.getPersonalFamilyData(fullFamilyData, userProfile);
+      if (!userProfile || typeof userProfile.id === 'undefined') { /* ... error handling ... */ return []; }
+      console.log("Router - User profile being used for personal scope:", userProfile);
+      return await familyDataService.getPersonalFamilyData(userProfile);
     }
     return fullFamilyData;
   }
@@ -3479,7 +3615,7 @@ export const authService = {
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/services/familyDataService.js
 
 // src/services/familyDataService.js
-import { getPersonalFamilyData as filterPersonalFamilyData } from '../js/utils/family-data-filter'; // Keep utility separate
+import { filterDataForPersonalView } from '../js/utils/family-data-filter';
 
 const FAMILY_DATA_KEY = 'familyData';
 
@@ -3650,9 +3786,13 @@ export const familyDataService = {
   },
   
   getPersonalFamilyData: async (userProfile) => {
-    if (!userProfile) return [];
+    if (!userProfile || typeof userProfile.id === 'undefined' || userProfile.id === null) {
+      console.error("familyDataService.getPersonalFamilyData: Called with invalid userProfile or userProfile.id is missing/undefined.", userProfile);
+      return [];
+    }
+    console.log("familyDataService.getPersonalFamilyData - Calling utility. UserProfile:", userProfile.name, userProfile.id);
     const fullFamilyData = await familyDataService.getAllFamilyData();
-    return filterPersonalFamilyData(fullFamilyData, userProfile);
+    return filterDataForPersonalView(fullFamilyData, userProfile);
   }
 };// END OF FILE: src/services/familyDataService.js
 

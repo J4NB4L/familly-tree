@@ -1,13 +1,12 @@
-// main.ts
+// frontend/src/main.ts
 import './css/style.css';
 import { initRouter } from './router';
-import { familyDataService } from './services/familyDataService'; // Import service
+// familyDataService.getAllFamilyData(); // Plus besoin ici, le router et les services s'en chargent
 
 async function main() {
-  // Ensure family data is initialized once when the app loads, if necessary.
-  // This can be called by any component/service that needs it first.
-  // Or explicitly here.
-  await familyDataService.getAllFamilyData(); // This will trigger initialization if needed.
+  // La logique d'initialisation des données est maintenant gérée par les services
+  // et les composants eux-mêmes lorsqu'ils en ont besoin.
+  // Le router s'assurera que l'utilisateur est authentifié avant d'afficher les pages protégées.
   initRouter();
 }
 

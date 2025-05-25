@@ -2,18 +2,63 @@
 import { authService } from '../services/authService';
 import { familyDataService } from '../services/familyDataService';
 
+// Helper pour peupler les menus déroulants des relations
+// `data` est la liste complète des personnes (FamilyPerson[])
+// `currentValue` est l'ID (UUID string) actuellement sélectionné pour ce champ
+// `excludeIds` est un tableau d'IDs (UUID strings) à exclure des options (ex: soi-même)
+async function populateRelationSelect(selectElementId, data, currentValue, excludeIds = [], filterGender = null) {
+  const selectElement = document.getElementById(selectElementId);
+  if (!selectElement) return;
+
+  selectElement.innerHTML = '<option value="">-- Aucun(e) --</option>'; // Option pour ne rien sélectionner
+
+  let filteredData = data;
+  if (filterGender) {
+    filteredData = data.filter(p => p.gender === filterGender);
+  }
+
+  filteredData.forEach(person => {
+    if (excludeIds.includes(person.id)) return;
+
+    const option = document.createElement('option');
+    option.value = person.id; // UUID
+    option.textContent = `${person.name} (${person.birthYear || 'N/A'})`;
+    if (person.id === currentValue) {
+      option.selected = true;
+    }
+    selectElement.appendChild(option);
+  });
+}
+
+// Helper pour gérer les sélections multiples (pour pids)
+function setupPidsSelect(selectElementId, allPeopleData, currentPids, excludeIds = []) {
+    const selectElement = document.getElementById(selectElementId);
+    if (!selectElement) return;
+
+    selectElement.innerHTML = ''; // Clear existing options
+
+    allPeopleData.forEach(person => {
+        if (excludeIds.includes(person.id)) return;
+
+        const option = document.createElement('option');
+        option.value = person.id;
+        option.textContent = `${person.name} (${person.birthYear || 'N/A'})`;
+        if (currentPids.includes(person.id)) {
+            option.selected = true;
+        }
+        selectElement.appendChild(option);
+    });
+    // Ici, tu pourrais initialiser une librairie de 'select multiple' si tu en utilises une (ex: Select2, Choices.js)
+    // Pour un select multiple HTML standard, l'attribut `multiple` doit être sur la balise <select>.
+}
+
+
 export function renderProfilePage() {
+  // Essayer de charger le profil frais, sinon utiliser le cache.
+  // Cette logique sera dans setupProfileFormHandler pour le chargement initial.
   const user = authService.getCurrentUserProfile() || {
-    // Default structure if no profile exists, to prevent render errors
-    id: null,
-    name: '',
-    fid: null,
-    mid: null,
-    pids: [],
-    gender: '',
-    birthYear: '',
-    img: '/assets/avatars/default.svg',
-    gmail: ''
+    id: '', name: '', fid: null, mid: null, pids: [], gender: 'unknown',
+    birthYear: '', img: '/assets/avatars/default.svg', gmail: ''
   };
 
   return `
@@ -23,374 +68,194 @@ export function renderProfilePage() {
         <button id="logout-button" class="logout-button">Déconnexion</button>
       </div>
       <form id="profile-form">
-        <img src="${user.img}" alt="Photo de profil" style="max-width: 150px; border-radius: 50%; margin-bottom: 15px; object-fit: cover; border: 3px solid #4299e1;" />
+        <div style="grid-column: 1 / -1; text-align: center;">
+            <img src="${user.img}" alt="Photo de profil" id="profile-image-preview" style="max-width: 150px; height: 150px; border-radius: 50%; margin-bottom: 15px; object-fit: cover; border: 3px solid #4299e1;" />
+        </div>
 
-        <label>Nom :</label>
-        <input type="text" name="name" value="${user.name || ''}" required />
+        <label for="profile-name">Nom complet :</label>
+        <input type="text" id="profile-name" name="name" value="${user.name || ''}" required />
 
-        <label>Année de naissance :</label>
-        <input type="number" name="birthYear" value="${user.birthYear || ''}" required min="1900" max="${new Date().getFullYear()}" />
+        <label for="profile-birthYear">Année de naissance :</label>
+        <input type="number" id="profile-birthYear" name="birthYear" value="${user.birthYear || ''}" min="1800" max="${new Date().getFullYear()}" />
 
-        <label>Email (Gmail) :</label>
-        <input type="email" name="gmail" value="${user.gmail || ''}" required pattern=".+@gmail\\.com" />
+        <label for="profile-gmail">Email (associé à l'arbre) :</label>
+        <input type="email" id="profile-gmail" name="gmail" value="${user.gmail || ''}" pattern=".+@.+\\..+" />
 
-        <label>Genre :</label>
-        <select name="gender" required>
-          <option value="">-- Choisissez --</option>
+        <label for="profile-gender">Genre :</label>
+        <select id="profile-gender" name="gender" required>
+          <option value="unknown" ${user.gender === 'unknown' ? 'selected' : ''}>Non spécifié</option>
           <option value="male" ${user.gender === 'male' ? 'selected' : ''}>Homme</option>
           <option value="female" ${user.gender === 'female' ? 'selected' : ''}>Femme</option>
         </select>
 
-        <label>Changer la photo :</label>
-        <input type="file" name="imgFile" accept="image/*" />
-        <input type="url" name="imgUrl" placeholder="ou collez une URL" />
+        <label for="profile-imgFile">Changer la photo (fichier) :</label>
+        <input type="file" id="profile-imgFile" name="imgFile" accept="image/*" />
+        
+        <label for="profile-imgUrl">Changer la photo (URL) :</label>
+        <input type="url" id="profile-imgUrl" name="imgUrl" placeholder="Ou collez une URL d'image" value="${(user.img && user.img.startsWith('http')) ? user.img : ''}"/>
 
-        <button type="submit">Mettre à jour</button>
+        <hr style="grid-column: 1 / -1; margin: 20px 0; border-color: #e2e8f0;"/>
+        <h3 style="grid-column: 1 / -1; color: #2d3748; font-weight:600;">Relations Familiales</h3>
+
+        <label for="profile-fid">Père :</label>
+        <select id="profile-fid" name="fid"></select>
+
+        <label for="profile-mid">Mère :</label>
+        <select id="profile-mid" name="mid"></select>
+
+        <label for="profile-pids">Conjoint(s) :</label>
+        <select id="profile-pids" name="pids" multiple style="min-height: 100px;"></select>
+        <small style="grid-column: 1 / -1; text-align:center;">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs conjoints.</small>
+
+
+        <button type="submit" style="grid-column: 1 / -1;">Mettre à jour le profil</button>
       </form>
-
-      <div class="family-relations scrollable-container">
-        <h3>Relations Familiales</h3>
-        <div class="family-selection-menus">
-          <div class="family-selection-menu">
-            <button type="button" id="add-spouse-button" class="sidebar-button">Ajouter un conjoint</button>
-            <div id="add-spouse-form" class="search-form" style="display: none;">
-              <h3 class="sidebar-title">Ajouter un conjoint</h3>
-              <label>Nom du conjoint :</label>
-              <select id="spouse-select"></select>
-              <button id="add-spouse-confirm">Confirmer</button>
-            </div>
-          </div>
-          <div class="family-selection-menu">
-            <button type="button" id="add-father-button" class="sidebar-button">Ajouter un père</button>
-            <div id="add-father-form" class="search-form" style="display: none;">
-              <h3 class="sidebar-title">Ajouter un père</h3>
-              <label>Nom du père :</label>
-              <select id="father-select"></select>
-              <button id="add-father-confirm">Confirmer</button>
-            </div>
-          </div>
-          <div class="family-selection-menu">
-            <button type="button" id="add-mother-button" class="sidebar-button">Ajouter une mère</button>
-            <div id="add-mother-form" class="search-form" style="display: none;">
-              <h3 class="sidebar-title">Ajouter une mère</h3>
-              <label>Nom de la mère :</label>
-              <select id="mother-select"></select>
-              <button id="add-mother-confirm">Confirmer</button>
-            </div>
-          </div>
-          <div class="family-selection-menu">
-            <button type="button" id="add-child-button" class="sidebar-button">Ajouter un enfant</button>
-            <div id="add-child-form" class="search-form" style="display: none;">
-              <h3 class="sidebar-title">Ajouter un enfant</h3>
-              <label>Nombre d'enfants :</label>
-              <input type="number" id="child-count" min="1" max="10" value="1" />
-              <button id="generate-child-menus">Générer les menus</button>
-              <div id="child-menus"></div>
-              <button id="add-child-confirm" style="display: none;">Confirmer l'ajout des enfants</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="family-relations-container"></div>
+      <div id="profile-message" style="margin-top: 15px; text-align: center;"></div>
     </div>
   `;
 }
 
-export function setupProfileFormHandler() {
+export async function setupProfileFormHandler() {
   const form = document.getElementById('profile-form');
+  const messageDiv = document.getElementById('profile-message');
   if (!form) return;
 
-  function toBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result); // Keep the full data URI
-      reader.onerror = reject;
-    });
-  }
-
-  function populateSelectMenu(selectId, data, excludeId = null, filterGender = null) {
-    const selectElement = document.getElementById(selectId);
-    if (!selectElement) return;
-
-    selectElement.innerHTML = '<option value="">-- Choisissez --</option>';
-    let filteredData = data;
-    if (filterGender) {
-        filteredData = data.filter(p => p.gender === filterGender);
+  let currentUserProfile = authService.getCurrentUserProfile(); // Depuis le cache
+  // Essayer de charger le profil frais du serveur
+  try {
+    messageDiv.textContent = "Chargement du profil...";
+    const freshProfile = await authService.fetchUserProfileFromServer();
+    if (freshProfile) {
+      currentUserProfile = freshProfile;
     }
-
-    filteredData.forEach(person => {
-      if (person.id === excludeId) return;
-
-      const option = document.createElement('option');
-      option.value = person.id;
-      option.textContent = `${person.name} (né en ${person.birthYear || 'N/A'})`;
-      selectElement.appendChild(option);
-    });
-  }
-
-  // Load initial data for select menus
-  (async () => {
-    const allFamilyData = await familyDataService.getAllFamilyData();
-    const currentUserProfile = authService.getCurrentUserProfile();
-    const currentUserId = currentUserProfile ? currentUserProfile.id : null;
-
-    if (!currentUserProfile) {
-        console.error("Profile setup: No current user profile found. Cannot populate relation selects.");
+    messageDiv.textContent = "";
+  } catch (error) {
+    console.error("Erreur au chargement du profil frais:", error);
+    messageDiv.textContent = "Erreur au chargement du profil. Certaines données peuvent être obsolètes.";
+    if (!currentUserProfile) { // Si même le cache est vide (improbable après login)
+        window.location.href = '/login'; // Rediriger si pas de profil du tout
         return;
     }
+  }
+  
+  // Pré-remplir le formulaire avec les données du profil chargé
+  document.getElementById('profile-name').value = currentUserProfile.name || '';
+  document.getElementById('profile-birthYear').value = currentUserProfile.birthYear || '';
+  document.getElementById('profile-gmail').value = currentUserProfile.gmail || '';
+  document.getElementById('profile-gender').value = currentUserProfile.gender || 'unknown';
+  document.getElementById('profile-image-preview').src = currentUserProfile.img || '/assets/avatars/default.svg';
+  if (currentUserProfile.img && currentUserProfile.img.startsWith('http')) {
+      document.getElementById('profile-imgUrl').value = currentUserProfile.img;
+  }
 
-    populateSelectMenu('spouse-select', allFamilyData, currentUserId);
-    populateSelectMenu('father-select', allFamilyData, currentUserId, 'male');
-    populateSelectMenu('mother-select', allFamilyData, currentUserId, 'female');
-    // Child select menus are populated dynamically by 'generate-child-menus' button
-  })();
+
+  // Charger toutes les personnes pour les menus déroulants
+  let allPeople = [];
+  try {
+    allPeople = await familyDataService.getAllFamilyData();
+  } catch (error) {
+    console.error("Impossible de charger la liste des personnes pour les relations:", error);
+    messageDiv.textContent = "Erreur: Impossible de charger les options de relations.";
+  }
+
+  // Peupler les selects pour les relations
+  // Exclure l'utilisateur lui-même des options pour père, mère, conjoint.
+  const selfId = [currentUserProfile.id];
+  await populateRelationSelect('profile-fid', allPeople, currentUserProfile.fid, selfId, 'male');
+  await populateRelationSelect('profile-mid', allPeople, currentUserProfile.mid, selfId, 'female');
+  setupPidsSelect('profile-pids', allPeople, currentUserProfile.pids || [], selfId);
+
+
+  const imgFileInput = document.getElementById('profile-imgFile');
+  const imgPreview = document.getElementById('profile-image-preview');
+  imgFileInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+              imgPreview.src = e.target.result;
+              document.getElementById('profile-imgUrl').value = ''; // Effacer l'URL si un fichier est choisi
+          }
+          reader.readAsDataURL(file);
+      }
+  });
+   document.getElementById('profile-imgUrl').addEventListener('input', (event) => {
+        const url = event.target.value;
+        if (url) {
+            imgPreview.src = url; // Met à jour l'aperçu dynamiquement
+            if (imgFileInput.value) imgFileInput.value = ''; // Effacer le fichier si une URL est entrée
+        } else if (!imgFileInput.files[0]) { // Si l'URL est effacée et pas de fichier
+            imgPreview.src = currentUserProfile.img || '/assets/avatars/default.svg'; // Remettre l'image actuelle ou défaut
+        }
+    });
 
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    messageDiv.textContent = "Mise à jour en cours...";
     const formData = new FormData(form);
     
     const name = formData.get('name');
-    const birthYear = parseInt(formData.get('birthYear'), 10);
+    const birthYear = formData.get('birthYear') ? parseInt(formData.get('birthYear'), 10) : undefined;
     const gmail = formData.get('gmail');
     const gender = formData.get('gender');
-
-    let existingUserProfile = authService.getCurrentUserProfile() || {}; // Ensure there's a base
-    let img = existingUserProfile.img || '/assets/avatars/default.svg';
     
+    const fid = formData.get('fid') || null; // Sera l'UUID string ou null
+    const mid = formData.get('mid') || null; // Sera l'UUID string ou null
+    
+    // Pour un select multiple, get() ne retourne que la première. Il faut getAll().
+    const pids = formData.getAll('pids'); // Array d'UUIDs strings
+
+    let imgData = currentUserProfile.img || '/assets/avatars/default.svg'; // Conserver l'image actuelle par défaut
     const imgFile = formData.get('imgFile');
     const imgUrl = formData.get('imgUrl');
 
     if (imgFile && imgFile.size > 0) {
-      img = await toBase64(imgFile);
+      imgData = await toBase64(imgFile);
     } else if (imgUrl && imgUrl.trim() !== '') {
-      img = imgUrl.trim();
+      imgData = imgUrl.trim();
     }
 
     const updatedProfileData = {
-      ...existingUserProfile, // Preserve existing IDs and relationship fields (fid, mid, pids)
-      id: existingUserProfile.id || Date.now(), // Ensure ID exists
+      ...currentUserProfile, // Base avec ID, et autres champs non modifiables directement
       name,
-      gender,
       birthYear,
-      img,
-      gmail
-      // Note: fid, mid, pids are managed by relation handlers, not this form directly
+      gmail,
+      gender,
+      img: imgData,
+      fid,
+      mid,
+      pids,
     };
 
-    authService.updateCurrentUserProfile(updatedProfileData);
-    await familyDataService.updatePersonInFamilyData(updatedProfileData);
-
-    alert('Profil mis à jour avec succès !');
-    location.reload();
+    try {
+      const savedProfile = await authService.updateCurrentUserProfileInFamilyTree(updatedProfileData);
+      currentUserProfile = savedProfile; // Mettre à jour la variable locale avec la réponse du serveur
+      messageDiv.textContent = 'Profil mis à jour avec succès !';
+      messageDiv.style.color = 'green';
+      // Optionnel: re-remplir le formulaire avec `savedProfile` si le backend a modifié des choses
+      // ou simplement faire confiance que `currentUserProfile` est maintenant à jour.
+    } catch (error) {
+      console.error("Profile update failed:", error);
+      messageDiv.textContent = error.response?.data?.message || 'Erreur lors de la mise à jour du profil.';
+      messageDiv.style.color = 'red';
+    }
   });
 
   const logoutButton = document.getElementById('logout-button');
   if (logoutButton) {
     logoutButton.addEventListener('click', () => {
       authService.logout();
-      window.location.href = '/login';
+      window.location.href = '/login'; // Rediriger vers la page de connexion
     });
   }
+}
 
-  // --- Relation Section Toggles & Handlers ---
-
-  // Add Spouse
-  const addSpouseButton = document.getElementById('add-spouse-button');
-  const addSpouseForm = document.getElementById('add-spouse-form');
-  const addSpouseConfirmButton = document.getElementById('add-spouse-confirm');
-
-  if (addSpouseButton && addSpouseForm) {
-    addSpouseButton.addEventListener('click', () => {
-      addSpouseForm.style.display = addSpouseForm.style.display === 'none' ? 'block' : 'none';
-    });
-  }
-  if (addSpouseConfirmButton) {
-    addSpouseConfirmButton.addEventListener('click', async () => {
-      const spouseId = parseInt(document.getElementById('spouse-select').value, 10);
-      if (!spouseId || isNaN(spouseId)) { 
-        alert('Veuillez sélectionner un conjoint.');
-        return;
-      }
-      const userProfile = authService.getCurrentUserProfile();
-      if (!userProfile) { alert("Utilisateur non connecté."); return; }
-
-      const updatedUserProfile = await familyDataService.addSpouse(userProfile, spouseId);
-      if (updatedUserProfile) {
-        authService.updateCurrentUserProfile(updatedUserProfile); // Update profile in localStorage
-        alert('Conjoint ajouté avec succès !');
-        location.reload();
-      } else { 
-        alert('Erreur lors de l\'ajout du conjoint. Vérifiez que la personne sélectionnée existe.');
-      }
-    });
-  }
-
-  // Add Father
-  const addFatherButton = document.getElementById('add-father-button');
-  const addFatherForm = document.getElementById('add-father-form');
-  const addFatherConfirmButton = document.getElementById('add-father-confirm');
-
-  if (addFatherButton && addFatherForm) {
-    addFatherButton.addEventListener('click', () => {
-      addFatherForm.style.display = addFatherForm.style.display === 'none' ? 'block' : 'none';
-    });
-  }
-  if (addFatherConfirmButton) {
-    addFatherConfirmButton.addEventListener('click', async () => {
-      const fatherId = parseInt(document.getElementById('father-select').value, 10);
-      if (!fatherId || isNaN(fatherId)) { alert('Veuillez sélectionner un père.'); return; }
-      
-      const userProfile = authService.getCurrentUserProfile();
-      if (!userProfile) { alert("Utilisateur non connecté."); return; }
-
-      const fatherNode = await familyDataService.getPersonById(fatherId);
-      if (!fatherNode || fatherNode.gender !== 'male') {
-        alert('La personne sélectionnée comme père doit être de genre masculin et exister.');
-        return;
-      }
-
-      const updatedUserProfile = await familyDataService.setFather(userProfile, fatherId);
-      if (updatedUserProfile) {
-        authService.updateCurrentUserProfile(updatedUserProfile);
-        alert('Père ajouté avec succès !');
-        location.reload();
-      } else { alert('Erreur lors de l\'ajout du père.'); }
-    });
-  }
-
-  // Add Mother
-  const addMotherButton = document.getElementById('add-mother-button');
-  const addMotherForm = document.getElementById('add-mother-form');
-  const addMotherConfirmButton = document.getElementById('add-mother-confirm');
-  
-  if (addMotherButton && addMotherForm) {
-    addMotherButton.addEventListener('click', () => {
-      addMotherForm.style.display = addMotherForm.style.display === 'none' ? 'block' : 'none';
-    });
-  }
-  if (addMotherConfirmButton) {
-    addMotherConfirmButton.addEventListener('click', async () => {
-      const motherId = parseInt(document.getElementById('mother-select').value, 10);
-      if (!motherId || isNaN(motherId)) { alert('Veuillez sélectionner une mère.'); return; }
-
-      const userProfile = authService.getCurrentUserProfile();
-      if (!userProfile) { alert("Utilisateur non connecté."); return; }
-
-      const motherNode = await familyDataService.getPersonById(motherId);
-      if (!motherNode || motherNode.gender !== 'female') {
-        alert('La personne sélectionnée comme mère doit être de genre féminin et exister.');
-        return;
-      }
-      
-      const updatedUserProfile = await familyDataService.setMother(userProfile, motherId);
-      if (updatedUserProfile) {
-        authService.updateCurrentUserProfile(updatedUserProfile);
-        alert('Mère ajoutée avec succès !');
-        location.reload();
-      } else { alert('Erreur lors de l\'ajout de la mère.'); }
-    });
-  }
-
-  // Add Child(ren)
-  const addChildButton = document.getElementById('add-child-button');
-  const addChildForm = document.getElementById('add-child-form');
-  const generateChildMenusButton = document.getElementById('generate-child-menus');
-  const childMenusContainer = document.getElementById('child-menus');
-  const addChildConfirmButton = document.getElementById('add-child-confirm');
-
-  if (addChildButton && addChildForm) {
-    addChildButton.addEventListener('click', () => {
-      addChildForm.style.display = addChildForm.style.display === 'none' ? 'block' : 'none';
-      // Pre-generate one child menu if not already generated
-      if (addChildForm.style.display === 'block' && childMenusContainer.children.length === 0) {
-        document.getElementById('child-count').value = "1"; // Reset to 1
-        generateChildMenusButton.click(); // Trigger menu generation
-      }
-    });
-  }
-
-  if (generateChildMenusButton && childMenusContainer && addChildConfirmButton) {
-    generateChildMenusButton.addEventListener('click', async () => {
-      const childCountInput = document.getElementById('child-count');
-      const childCount = parseInt(childCountInput.value, 10);
-      childMenusContainer.innerHTML = ''; // Clear existing menus
-
-      if (isNaN(childCount) || childCount < 1 || childCount > 10) {
-          alert("Veuillez entrer un nombre d'enfants valide (1-10).");
-          childCountInput.value = "1"; 
-          addChildConfirmButton.style.display = 'none';
-          return;
-      }
-      
-      const allFamilyData = await familyDataService.getAllFamilyData();
-      const currentUserProfile = authService.getCurrentUserProfile();
-      if (!currentUserProfile) { alert("Utilisateur non connecté."); return; }
-
-
-      for (let i = 0; i < childCount; i++) {
-        const childMenuDiv = document.createElement('div');
-        childMenuDiv.classList.add('child-menu');
-        // Note: IDs for selects should be unique if this is ever inside a loop generating multiple similar forms.
-        // Here, `child-select-${i}` makes them unique.
-        childMenuDiv.innerHTML = `
-          <label>Enfant ${i + 1} :</label>
-          <select id="child-select-${i}" class="child-select"></select>
-        `;
-        childMenusContainer.appendChild(childMenuDiv);
-        // Populate this specific child select menu, excluding current user and their parents/spouses.
-        // A child cannot be the user themselves, their parent, or their spouse.
-        const existingRelations = [
-            currentUserProfile.id, 
-            ...(currentUserProfile.pids || []),
-            currentUserProfile.fid,
-            currentUserProfile.mid
-        ].filter(id => id != null); // Filter out nulls
-
-        const eligibleChildrenData = allFamilyData.filter(p => !existingRelations.includes(p.id));
-        populateSelectMenu(`child-select-${i}`, eligibleChildrenData, null); // No need to exclude current user again
-      }
-      addChildConfirmButton.style.display = childCount > 0 ? 'block' : 'none';
-    });
-  }
-
-  if (addChildConfirmButton) {
-    addChildConfirmButton.addEventListener('click', async () => {
-      const userProfile = authService.getCurrentUserProfile();
-      if (!userProfile) { alert("Utilisateur non connecté."); return; }
-
-      let childrenAddedSuccessfully = 0;
-      const childSelects = document.querySelectorAll('.child-select');
-
-      for (const select of childSelects) {
-        const childId = parseInt(select.value, 10);
-        if (childId && !isNaN(childId)) {
-          const result = await familyDataService.addChild(userProfile, childId);
-          if (result) {
-            childrenAddedSuccessfully++;
-          } else {
-            alert(`Erreur lors de l'ajout de l'enfant avec ID ${childId}. Vérifiez qu'il existe et n'est pas déjà un parent/conjoint.`);
-          }
-        }
-      }
-
-      if (childrenAddedSuccessfully > 0) {
-        // The userProfile itself (parent) isn't directly modified by adding a child,
-        // but the child's record in familyData is.
-        // We might want to re-fetch userProfile if `addChild` could modify it (e.g., pids with other parent),
-        // but current `addChild` in service only modifies child's fid/mid.
-        // authService.updateCurrentUserProfile(userProfile); // Not strictly necessary if userProfile object itself didn't change
-        alert(`${childrenAddedSuccessfully} enfant(s) ajouté(s) avec succès !`);
-        location.reload();
-      } else if (childSelects.length > 0) {
-        alert("Aucun enfant valide sélectionné ou erreur lors de l'ajout.");
-      }
-      // Optionally hide the form again
-      // addChildForm.style.display = 'none';
-      // childMenusContainer.innerHTML = '';
-      // addChildConfirmButton.style.display = 'none';
-    });
-  }
+function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result); // Retourne la Data URL complète
+    reader.onerror = (error) => reject(error);
+  });
 }

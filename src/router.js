@@ -1,23 +1,25 @@
 // router.js
 import { renderNavbar } from './components/navbar';
-import { renderLeftSidebar } from './components/leftSidebar'; // corrected casing
-import { renderRightSidebar } from './components/rightSidebar'; // corrected casing
-import { renderMainContent } from './components/mainContent'; // corrected casing
+import { renderLeftSidebar } from './components/leftSidebar';
+import { renderRightSidebar } from './components/rightSidebar';
+import { renderMainContent } from './components/mainContent';
 import { renderProfilePage, setupProfileFormHandler } from './components/profile';
 import { renderLoginPage, setupLoginFormHandler } from './components/login';
+import { renderRegisterPage, setupRegisterFormHandler } from './components/register'; // Nouveau
 import { authService } from './services/authService';
 import { familyDataService } from './services/familyDataService';
-import { uiStateService } from './services/uiStateService';
+// uiStateService reste local, pas de changement majeur
+// Les imports d'algorithmes restent
 import { initDijkstra } from './js/algorithms/dijkstra';
 import { initBellmanFord } from './js/algorithms/bellman-ford';
 import { initPrim } from './js/algorithms/prim';
 import { initKruskal } from './js/algorithms/kruskal'; 
 
-// Module-level state for current view and scope
-let currentActiveView = 'tree'; // 'tree' or 'graph'
-let currentDataScope = 'full'; // 'full' or 'personal'
-let cyInstance = null; // To keep track of cytoscape instance for destroy
-let familyTreeInstance = null; // To keep track of FamilyTree instance
+
+let currentActiveView = 'tree';
+let currentDataScope = 'full';
+let cyInstance = null;
+let familyTreeInstance = null;
 
 export function initRouter() {
   const app = document.querySelector('#app');
@@ -28,34 +30,43 @@ export function initRouter() {
   }
 
   async function getPreparedData() {
-    const fullFamilyData = await familyDataService.getAllFamilyData(); 
     if (currentDataScope === 'personal') {
-      const userProfile = authService.getCurrentUserProfile();
-      if (!userProfile || typeof userProfile.id === 'undefined') { /* ... error handling ... */ return []; }
-      console.log("Router - User profile being used for personal scope:", userProfile);
-      return await familyDataService.getPersonalFamilyData(userProfile);
+      // `getPersonalFamilyData` utilise maintenant le token pour identifier l'utilisateur côté backend
+      return await familyDataService.getPersonalFamilyData();
     }
-    return fullFamilyData;
+    return await familyDataService.getAllFamilyData();
   }
 
   async function renderFamilyTree() {
-    if (familyTreeInstance) {
-        // Attempt to destroy or clean up the old instance if the library supports it
-        // For BalkanGraph, re-creating is often the simplest for data changes.
-        // Ensure the container is empty or the library handles replacement.
-        const container = document.getElementById('family-tree-container');
-        if(container) container.innerHTML = ''; // Simple clear
+    const container = document.getElementById('family-tree-container');
+    if (familyTreeInstance && typeof familyTreeInstance.destroy === 'function') {
+        familyTreeInstance.destroy();
+    } else if (container) {
+        container.innerHTML = '';
     }
+    if (container) container.innerHTML = ''; // Simple clear
+
     document.getElementById('tree-view').style.display = 'block';
     document.getElementById('graph-view').style.display = 'none';
-    import('./js/family-tree/tree-view').then(async ({ initFamilyTree, transformFamilyData }) => {
-      const dataToDisplay = await getPreparedData();
-      if (dataToDisplay.length === 0 && currentDataScope === 'personal') {
-        document.getElementById('family-tree-container').innerHTML = 
-          '<p style="text-align:center; padding-top:20px;">Aucune donnée familiale proche à afficher. Vérifiez votre profil et vos relations.</p>';
-        return;
-      }
-      familyTreeInstance = initFamilyTree('family-tree-container', transformFamilyData(dataToDisplay));
+
+    const dataToDisplay = await getPreparedData();
+    if (dataToDisplay.length === 0) {
+      container.innerHTML = 
+        '<p style="text-align:center; padding-top:20px;">Aucune donnée familiale à afficher pour cette vue.</p>';
+      return;
+    }
+    
+    // Assurer que les IDs sont des strings pour FamilyTree.js
+    const transformedDataForTree = dataToDisplay.map(p => ({
+        ...p,
+        id: String(p.id),
+        fid: p.fid ? String(p.fid) : undefined,
+        mid: p.mid ? String(p.mid) : undefined,
+        pids: p.pids ? p.pids.map(pid => String(pid)) : [],
+    }));
+
+    import('./js/family-tree/tree-view').then(({ initFamilyTree, transformFamilyData }) => { // transformFamilyData n'est plus utilisé ici
+      familyTreeInstance = initFamilyTree('family-tree-container', transformedDataForTree);
     });
   }
 
@@ -64,18 +75,24 @@ export function initRouter() {
       cyInstance.destroy();
       cyInstance = null;
     }
+    const container = document.getElementById('graph-container');
+    if(container) container.innerHTML = '';
+
+
     document.getElementById('tree-view').style.display = 'none';
     document.getElementById('graph-view').style.display = 'block';
+    
+    const dataToDisplay = await getPreparedData();
+    if (dataToDisplay.length === 0) {
+      container.innerHTML = 
+        '<p style="text-align:center; padding-top:20px;">Aucune donnée familiale à afficher pour le graphe.</p>';
+      return;
+    }
+
     import('./js/family-tree/graph-view').then(async ({ initGraph, transformGraphData }) => {
-      const dataToDisplay = await getPreparedData();
-      if (dataToDisplay.length === 0 && currentDataScope === 'personal') {
-         document.getElementById('graph-container').innerHTML = 
-           '<p style="text-align:center; padding-top:20px;">Aucune donnée familiale proche à afficher pour le graphe.</p>';
-        return;
-      }
+      // transformGraphData s'attend à ce que les IDs soient déjà corrects (UUID strings)
       const graphData = transformGraphData(dataToDisplay);
       cyInstance = initGraph('graph-container', graphData);
-      // Re-attach algorithm button handlers if cyInstance is new
       setupAlgorithmButtons(cyInstance);
     });
   }
@@ -93,11 +110,8 @@ export function initRouter() {
     document.querySelectorAll('.view-button').forEach(button => {
       button.addEventListener('click', (e) => {
         currentActiveView = e.target.getAttribute('data-view');
-        if (currentActiveView === 'tree') {
-          renderFamilyTree();
-        } else if (currentActiveView === 'graph') {
-          renderGraphView();
-        }
+        if (currentActiveView === 'tree') renderFamilyTree();
+        else if (currentActiveView === 'graph') renderGraphView();
         updateActiveButtons();
       });
     });
@@ -105,35 +119,32 @@ export function initRouter() {
     document.querySelectorAll('.scope-button').forEach(button => {
       button.addEventListener('click', (e) => {
         currentDataScope = e.target.getAttribute('data-scope');
-        if (currentActiveView === 'tree') {
-          renderFamilyTree();
-        } else if (currentActiveView === 'graph') {
-          renderGraphView();
-        }
+        if (currentActiveView === 'tree') renderFamilyTree();
+        else if (currentActiveView === 'graph') renderGraphView();
         updateActiveButtons();
       });
     });
   }
   
-  function setupAlgorithmButtons(cy) { // Pass cy instance
+  function setupAlgorithmButtons(cy) {
     const runDijkstraButton = document.getElementById('run-dijkstra');
     if (runDijkstraButton) {
-      runDijkstraButton.onclick = () => { // Use onclick to overwrite previous if any, or manage listeners carefully
-        const startPersonId = document.getElementById('start-person').value;
-        const endPersonId = document.getElementById('end-person').value;
+      runDijkstraButton.onclick = () => { 
+        const startPersonId = document.getElementById('start-person').value; // UUID
+        const endPersonId = document.getElementById('end-person').value;     // UUID
         if (startPersonId && endPersonId && cy) {
           const startNode = cy.getElementById(startPersonId);
           const endNode = cy.getElementById(endPersonId);
-          if (startNode.length && endNode.length) { // Cytoscape returns collections
+          if (startNode.length && endNode.length) {
             initDijkstra(cy, startNode, endNode);
-            updateRightSidebar();
+            updateRightSidebar(); // Assurez-vous que cette fonction est définie
           } else {
-            console.warn("Dijkstra: Start or end node not found in current graph view.");
+            console.warn("Dijkstra: Start or end node not found.");
           }
         }
       };
     }
-
+    // ... Idem pour Bellman-Ford, Prim, Kruskal ...
     const runBellmanFordButton = document.getElementById('run-bellman-ford');
     if (runBellmanFordButton) {
       runBellmanFordButton.onclick = () => {
@@ -171,114 +182,115 @@ export function initRouter() {
     const runKruskalButton = document.getElementById('run-kruskal');
     if (runKruskalButton) {
       runKruskalButton.onclick = () => {
-        // Kruskal doesn't strictly need a start node from UI for its logic, but your UI has one
-        // const startPersonId = document.getElementById('kruskal-start-person').value;
-        if (cy) { // Kruskal operates on the whole graph
-            initKruskal(cy); // Pass full cy, startNode might be optional or handled inside
+        if (cy) { 
+            initKruskal(cy); 
             updateRightSidebar();
         }
       };
     }
   }
 
-
-  async function renderRoute() { // Now async
+  async function renderRoute() {
     const path = window.location.pathname;
-    // const userProfile = authService.getCurrentUserProfile(); // Use service
-    const isAuthenticated = authService.isAuthenticated(); // Use service
-    const isLoginPage = path === '/login';
+    const isAuthenticated = authService.isAuthenticated();
 
-    if (!isAuthenticated && !isLoginPage) {
-      history.replaceState(null, null, '/login');
-      return renderRoute(); // Recursive call to re-evaluate
+    // Gestion des redirections
+    if (!isAuthenticated && path !== '/login' && path !== '/register') {
+      navigateTo('/login');
+      return;
+    }
+    if (isAuthenticated && (path === '/login' || path === '/register')) {
+      navigateTo('/');
+      return;
     }
 
-    if (isAuthenticated && isLoginPage) {
-      history.replaceState(null, null, '/');
-      return renderRoute(); // Recursive call
-    }
+    // Toujours rendre la navbar
+    app.innerHTML = renderNavbar(); // renderNavbar devra peut-être être asynchrone si elle utilise fetchUserProfileFromServer
 
-    app.innerHTML = `${renderNavbar()}`;
-
-    // Main layout structure
     let mainLayoutHtml = '';
     if (path === '/') {
         mainLayoutHtml = `
             ${renderLeftSidebar()}
-            ${renderMainContent()} {/* This now includes the view/scope buttons */}
+            ${renderMainContent()}
             ${renderRightSidebar()}
         `;
     } else if (path === '/profile') {
-        // Profile page might not need sidebars or a different layout
         mainLayoutHtml = `<div id="main-content-profile" class="profile-container">${renderProfilePage()}</div>`;
     } else if (path === '/login') {
         mainLayoutHtml = `<div id="main-content-login" class="login-container">${renderLoginPage()}</div>`;
+    } else if (path === '/register') {
+        mainLayoutHtml = `<div id="main-content-register" class="login-container">${renderRegisterPage()}</div>`; // Utilise login-container pour le style
     } else {
         mainLayoutHtml = `<div id="main-content-404"><h2>404 - Page non trouvée</h2></div>`;
     }
     app.innerHTML += mainLayoutHtml;
 
-
-    // Content-specific initializations
+    // Initialisations spécifiques à la page
     if (path === '/') {
-        // Initial view rendering
-        if (currentActiveView === 'tree') {
-            await renderFamilyTree();
-        } else {
-            await renderGraphView(); // This will also setup algorithm buttons via its callback
-        }
-        setupMainViewControls();
-        updateActiveButtons();
+      // Tentative de chargement du profil utilisateur pour s'assurer que le token est valide
+      // et que le profil est à jour dans le cache pour la navbar et autres.
+      try {
+        await authService.fetchUserProfileFromServer(); 
+        // Mettre à jour la navbar si elle dépend du profil chargé dynamiquement
+        const newNavbarHtml = renderNavbar();
+        const navbarElement = document.getElementById('navbar');
+        if (navbarElement) navbarElement.outerHTML = newNavbarHtml;
 
-        const familyDataForSelect = await familyDataService.getAllFamilyData();
+      } catch (error) {
+          // fetchUserProfileFromServer gère déjà la déconnexion en cas d'erreur critique
+          // Pas besoin de rediriger à nouveau ici si authService le fait.
+          console.log("Utilisateur non authentifié ou erreur de profil, redirection gérée par authService ou intercepteur.")
+          return; // Arrêter le rendu si l'utilisateur est déconnecté
+      }
 
-        // Setup algorithm selection forms (populating dropdowns)
-        // These don't depend on cyInstance directly for setup, only for execution
-        const dijkstraButton = document.getElementById('dijkstra-button');
-        if (dijkstraButton) {
-          dijkstraButton.addEventListener('click', () => {
-            const dijkstraForm = document.getElementById('dijkstra-form');
-            dijkstraForm.style.display = dijkstraForm.style.display === 'none' ? 'block' : 'none';
-            populateAlgorithmSelects(['start-person', 'end-person'], familyDataForSelect);
-          });
-        }
 
-        const bellmanFordButton = document.getElementById('bellman-ford-button');
-        if (bellmanFordButton) {
-          bellmanFordButton.addEventListener('click', () => {
-            const bellmanFordForm = document.getElementById('bellman-ford-form');
-            bellmanFordForm.style.display = bellmanFordForm.style.display === 'none' ? 'block' : 'none';
-            populateAlgorithmSelects(['bellman-ford-start-person', 'bellman-ford-end-person'], familyDataForSelect);
-          });
-        }
+      if (currentActiveView === 'tree') await renderFamilyTree();
+      else await renderGraphView();
+      
+      setupMainViewControls();
+      updateActiveButtons();
 
-        const primButton = document.getElementById('prim-button');
-        if (primButton) {
-          primButton.addEventListener('click', () => {
-            const primForm = document.getElementById('prim-form');
-            primForm.style.display = primForm.style.display === 'none' ? 'block' : 'none';
-            populateAlgorithmSelects(['prim-start-person'], familyDataForSelect);
-          });
+      // Peupler les selects des algorithmes
+      const familyDataForSelect = await familyDataService.getAllFamilyData();
+      if (familyDataForSelect.length > 0) {
+            const dijkstraButton = document.getElementById('dijkstra-button');
+            if (dijkstraButton) {
+              dijkstraButton.addEventListener('click', () => {
+                document.getElementById('dijkstra-form').style.display = document.getElementById('dijkstra-form').style.display === 'none' ? 'block' : 'none';
+                populateAlgorithmSelects(['start-person', 'end-person'], familyDataForSelect);
+              });
+            }
+             const bellmanFordButton = document.getElementById('bellman-ford-button');
+            if (bellmanFordButton) {
+                bellmanFordButton.addEventListener('click', () => {
+                    document.getElementById('bellman-ford-form').style.display = document.getElementById('bellman-ford-form').style.display === 'none' ? 'block' : 'none';
+                    populateAlgorithmSelects(['bellman-ford-start-person', 'bellman-ford-end-person'], familyDataForSelect);
+                });
+            }
+            const primButton = document.getElementById('prim-button');
+            if (primButton) {
+                primButton.addEventListener('click', () => {
+                    document.getElementById('prim-form').style.display = document.getElementById('prim-form').style.display === 'none' ? 'block' : 'none';
+                    populateAlgorithmSelects(['prim-start-person'], familyDataForSelect);
+                });
+            }
+            const kruskalButton = document.getElementById('kruskal-button');
+            if (kruskalButton) {
+                kruskalButton.addEventListener('click', () => {
+                    document.getElementById('kruskal-form').style.display = document.getElementById('kruskal-form').style.display === 'none' ? 'block' : 'none';
+                     // Kruskal n'a pas besoin de sélection utilisateur dans ce formulaire, mais on le garde pour la cohérence de l'UI
+                    populateAlgorithmSelects(['kruskal-start-person'], familyDataForSelect);
+                });
+            }
         }
-        
-        const kruskalButton = document.getElementById('kruskal-button');
-        if (kruskalButton) {
-          kruskalButton.addEventListener('click', () => {
-            const kruskalForm = document.getElementById('kruskal-form');
-            kruskalForm.style.display = kruskalForm.style.display === 'none' ? 'block' : 'none';
-            populateAlgorithmSelects(['kruskal-start-person'], familyDataForSelect); 
-          });
-        }
-        // Initial setup of algorithm buttons (will be re-attached if graph view re-renders)
-        if (cyInstance) {
-            setupAlgorithmButtons(cyInstance);
-        }
-
+      if (cyInstance) setupAlgorithmButtons(cyInstance);
 
     } else if (path === '/profile') {
-        setupProfileFormHandler();
+      await setupProfileFormHandler(); // Doit être async car il fait des appels API
     } else if (path === '/login') {
-        setupLoginFormHandler();
+      setupLoginFormHandler();
+    } else if (path === '/register') {
+      setupRegisterFormHandler();
     }
   }
 
@@ -286,13 +298,15 @@ export function initRouter() {
     selectIds.forEach(selectId => {
         const selectElement = document.getElementById(selectId);
         if (selectElement) {
+            const currentValue = selectElement.value; // Conserver la valeur si possible (moins pertinent ici)
             selectElement.innerHTML = ''; // Clear previous options
             data.forEach(person => {
                 const option = document.createElement('option');
-                option.value = person.id;
+                option.value = person.id; // UUID
                 option.textContent = person.name;
                 selectElement.appendChild(option);
             });
+            if(currentValue) selectElement.value = currentValue; // Restaurer si l'option existe toujours
         }
     });
   }
@@ -305,13 +319,16 @@ export function initRouter() {
   });
 
   window.addEventListener('popstate', renderRoute);
-  renderRoute();
+  renderRoute(); // Premier rendu
 }
 
+// S'assurer que cette fonction est bien définie et importée/exportée correctement si elle est dans un autre module.
+// Pour l'instant, je la définis ici pour la simplicité.
 function updateRightSidebar() {
-  const rightSidebar = document.getElementById('right-sidebar');
-  if (rightSidebar) {
-    rightSidebar.innerHTML = renderRightSidebar();
+  const rightSidebarContainer = document.getElementById('right-sidebar');
+  if (rightSidebarContainer) {
+    // Assumons que renderRightSidebar() est synchrone et utilise uiStateService
+    // qui est toujours basé sur localStorage.
+    rightSidebarContainer.innerHTML = renderRightSidebar();
   }
 }
-// END OF FILE: src/router.js
