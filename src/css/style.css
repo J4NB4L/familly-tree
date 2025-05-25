@@ -817,6 +817,18 @@ form button:hover {
     overflow-y: auto; 
 }
 
+/* Style principal pour la page de connexion */
+.login-container {
+    grid-area: main-content;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 70px);
+    width: 100%;
+    overflow: auto;
+    padding: 30px;
+}
+
 /* Style principal pour la page de profil */
 .profile-container {
     grid-area: main-content;

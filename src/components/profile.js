@@ -6,7 +6,85 @@ export function renderProfilePage() {
   const user = authService.getCurrentUserProfile() || { /* default structure */ };
   // ... rest of render logic using 'user' ...
   // The familyData for select menus will be fetched asynchronously in setupProfileFormHandler
-  return `...HTML structure as before...`;
+  return `
+    <div class="container-card">
+      <div class="profile-header">
+        <h2>Votre Profil</h2>
+        <button id="logout-button" class="logout-button">Déconnexion</button>
+      </div>
+      <form id="profile-form">
+        <img src="${user.img}" alt="Photo de profil" style="max-width: 150px; border-radius: 8px; margin-bottom: 15px;" />
+
+        <label>Nom :</label>
+        <input type="text" name="name" value="${user.name}" required />
+
+        <label>Année de naissance :</label>
+        <input type="number" name="birthYear" value="${user.birthYear}" required min="1900" max="2025" />
+
+        <label>Email (Gmail) :</label>
+        <input type="email" name="gmail" value="${user.gmail}" required pattern=".+@gmail\\.com" />
+
+        <label>Genre :</label>
+        <select name="gender" required>
+          <option value="">-- Choisissez --</option>
+          <option value="male" ${user.gender === 'male' ? 'selected' : ''}>Homme</option>
+          <option value="female" ${user.gender === 'female' ? 'selected' : ''}>Femme</option>
+        </select>
+
+        <label>Changer la photo :</label>
+        <input type="file" name="imgFile" accept="image/*" />
+        <input type="url" name="imgUrl" placeholder="ou collez une URL" />
+
+        <button type="submit">Mettre à jour</button>
+      </form>
+
+      <div class="family-relations scrollable-container">
+        <h3>Relations Familiales</h3>
+        <div class="family-selection-menus">
+          <div class="family-selection-menu">
+            <button type="button" id="add-spouse-button" class="sidebar-button">Ajouter un conjoint</button>
+            <div id="add-spouse-form" class="search-form" style="display: none;">
+              <h3 class="sidebar-title">Ajouter un conjoint</h3>
+              <label>Nom du conjoint :</label>
+              <select id="spouse-select"></select>
+              <button id="add-spouse-confirm">Confirmer</button>
+            </div>
+          </div>
+          <div class="family-selection-menu">
+            <button type="button" id="add-father-button" class="sidebar-button">Ajouter un père</button>
+            <div id="add-father-form" class="search-form" style="display: none;">
+              <h3 class="sidebar-title">Ajouter un père</h3>
+              <label>Nom du père :</label>
+              <select id="father-select"></select>
+              <button id="add-father-confirm">Confirmer</button>
+            </div>
+          </div>
+          <div class="family-selection-menu">
+            <button type="button" id="add-mother-button" class="sidebar-button">Ajouter une mère</button>
+            <div id="add-mother-form" class="search-form" style="display: none;">
+              <h3 class="sidebar-title">Ajouter une mère</h3>
+              <label>Nom de la mère :</label>
+              <select id="mother-select"></select>
+              <button id="add-mother-confirm">Confirmer</button>
+            </div>
+          </div>
+          <div class="family-selection-menu">
+            <button type="button" id="add-child-button" class="sidebar-button">Ajouter un enfant</button>
+            <div id="add-child-form" class="search-form" style="display: none;">
+              <h3 class="sidebar-title">Ajouter un enfant</h3>
+              <label>Nombre d'enfants :</label>
+              <input type="number" id="child-count" min="1" max="10" value="1" />
+              <button id="generate-child-menus">Générer les menus</button>
+              <div id="child-menus"></div>
+              <button id="add-child-confirm">Confirmer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="family-relations-container"></div>
+    </div>
+  `;
 }
 
 export function setupProfileFormHandler() {

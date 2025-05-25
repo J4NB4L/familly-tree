@@ -1,5 +1,5 @@
 import FamilyTree from '@balkangraph/familytree.js';
-import familyDataService from '../services/familyDataService';
+import { familyDataService } from '../../services/familyDataService';
 
 export function initFamilyTree(containerId, familyData) {
   const chart = new FamilyTree(document.getElementById(containerId), {
