@@ -5,11 +5,11 @@ import { renderRightSidebar } from './components/rightSidebar';
 import { renderMainContent } from './components/mainContent';
 import { renderProfilePage, setupProfileFormHandler } from './components/profile';
 import { renderLoginPage, setupLoginFormHandler } from './components/login';
-import { renderRegisterPage, setupRegisterFormHandler } from './components/register'; // Nouveau
+import { renderRegisterPage, setupRegisterFormHandler } from './components/register';
 import { authService } from './services/authService';
 import { familyDataService } from './services/familyDataService';
-// uiStateService reste local, pas de changement majeur
-// Les imports d'algorithmes restent
+import { uiStateService } from './services/uiStateService';
+
 import { initDijkstra } from './js/algorithms/dijkstra';
 import { initBellmanFord } from './js/algorithms/bellman-ford';
 import { initPrim } from './js/algorithms/prim';
@@ -17,7 +17,7 @@ import { initKruskal } from './js/algorithms/kruskal';
 
 
 let currentActiveView = 'tree';
-let currentDataScope = 'full';
+let currentDataScope = 'personal'; // MODIFIÉ: Vue personnelle par défaut
 let cyInstance = null;
 let familyTreeInstance = null;
 
@@ -30,8 +30,10 @@ export function initRouter() {
   }
 
   async function getPreparedData() {
+    uiStateService.clearAlgorithmSteps(); // Effacer les étapes d'algo lors du changement de données
+    updateRightSidebar(); // Mettre à jour la sidebar pour refléter l'effacement
+
     if (currentDataScope === 'personal') {
-      // `getPersonalFamilyData` utilise maintenant le token pour identifier l'utilisateur côté backend
       return await familyDataService.getPersonalFamilyData();
     }
     return await familyDataService.getAllFamilyData();
@@ -41,31 +43,31 @@ export function initRouter() {
     const container = document.getElementById('family-tree-container');
     if (familyTreeInstance && typeof familyTreeInstance.destroy === 'function') {
         familyTreeInstance.destroy();
-    } else if (container) {
-        container.innerHTML = '';
+        familyTreeInstance = null;
     }
-    if (container) container.innerHTML = ''; // Simple clear
+    if (container) container.innerHTML = ''; 
 
     document.getElementById('tree-view').style.display = 'block';
     document.getElementById('graph-view').style.display = 'none';
 
     const dataToDisplay = await getPreparedData();
-    if (dataToDisplay.length === 0) {
+    if (!dataToDisplay || dataToDisplay.length === 0) {
       container.innerHTML = 
         '<p style="text-align:center; padding-top:20px;">Aucune donnée familiale à afficher pour cette vue.</p>';
       return;
     }
     
-    // Assurer que les IDs sont des strings pour FamilyTree.js
     const transformedDataForTree = dataToDisplay.map(p => ({
         ...p,
-        id: String(p.id),
+        id: String(p.id), // FamilyTree.js attend des strings pour les IDs
         fid: p.fid ? String(p.fid) : undefined,
         mid: p.mid ? String(p.mid) : undefined,
         pids: p.pids ? p.pids.map(pid => String(pid)) : [],
+        // Ajout du tag pour le genre pour le style
+        tags: p.gender ? [p.gender] : ['unknown'] 
     }));
 
-    import('./js/family-tree/tree-view').then(({ initFamilyTree, transformFamilyData }) => { // transformFamilyData n'est plus utilisé ici
+    import('./js/family-tree/tree-view').then(({ initFamilyTree }) => {
       familyTreeInstance = initFamilyTree('family-tree-container', transformedDataForTree);
     });
   }
@@ -83,17 +85,16 @@ export function initRouter() {
     document.getElementById('graph-view').style.display = 'block';
     
     const dataToDisplay = await getPreparedData();
-    if (dataToDisplay.length === 0) {
+     if (!dataToDisplay || dataToDisplay.length === 0) {
       container.innerHTML = 
         '<p style="text-align:center; padding-top:20px;">Aucune donnée familiale à afficher pour le graphe.</p>';
       return;
     }
 
     import('./js/family-tree/graph-view').then(async ({ initGraph, transformGraphData }) => {
-      // transformGraphData s'attend à ce que les IDs soient déjà corrects (UUID strings)
       const graphData = transformGraphData(dataToDisplay);
       cyInstance = initGraph('graph-container', graphData);
-      setupAlgorithmButtons(cyInstance);
+      setupAlgorithmButtons(cyInstance); // S'assurer que les boutons sont (ré)initialisés
     });
   }
 
@@ -117,49 +118,84 @@ export function initRouter() {
     });
 
     document.querySelectorAll('.scope-button').forEach(button => {
-      button.addEventListener('click', (e) => {
+      button.addEventListener('click', async (e) => { // rendu async
         currentDataScope = e.target.getAttribute('data-scope');
-        if (currentActiveView === 'tree') renderFamilyTree();
-        else if (currentActiveView === 'graph') renderGraphView();
+        // Re-fetch and re-render
+        if (currentActiveView === 'tree') await renderFamilyTree();
+        else if (currentActiveView === 'graph') await renderGraphView();
         updateActiveButtons();
+        // Mettre à jour les selects des algos avec les nouvelles données si la vue graphe est active
+        if (currentActiveView === 'graph') {
+            const familyDataForSelect = await getPreparedData(); // Utilise déjà le bon scope
+            populateAlgorithmSelects(['start-person', 'end-person', 'bellman-ford-start-person', 'bellman-ford-end-person', 'prim-start-person', 'kruskal-start-person'], familyDataForSelect);
+        }
       });
     });
   }
   
   function setupAlgorithmButtons(cy) {
+    const algoErrorContainer = document.getElementById('algorithm-error-message'); // Défini dans leftsidebar.js
+    
+    const handleAlgoRun = (algoName, startNodeId, endNodeId, initFn) => {
+        if (currentActiveView === 'tree') {
+            if (algoErrorContainer) {
+                algoErrorContainer.textContent = `Pour utiliser ${algoName}, veuillez basculer vers la vue "Graphe des Relations".`;
+                algoErrorContainer.style.display = 'block';
+            } else {
+                uiStateService.addAlgorithmStep(`ERREUR: ${algoName} ne peut être lancé qu'en vue "Graphe".`);
+                updateRightSidebar();
+            }
+            return;
+        }
+        if (algoErrorContainer) algoErrorContainer.style.display = 'none';
+
+        if (!cy) {
+            uiStateService.addAlgorithmStep("ERREUR: Graphe non initialisé.");
+            updateRightSidebar();
+            return;
+        }
+
+        const startNode = cy.getElementById(startNodeId);
+        let endNode;
+        if (endNodeId) endNode = cy.getElementById(endNodeId);
+
+        let nodesValid = startNode && startNode.length > 0;
+        if (endNodeId) nodesValid = nodesValid && endNode && endNode.length > 0;
+        
+        // Pour Kruskal, startNodeId et endNodeId ne sont pas utilisés directement par l'algo lui-même
+        if (algoName === "Kruskal") {
+            initFn(cy); // Kruskal n'a pas besoin de start/end node spécifiques pour son initialisation
+            updateRightSidebar();
+            return;
+        }
+
+
+        if (nodesValid) {
+            if (endNodeId) initFn(cy, startNode, endNode);
+            else initFn(cy, startNode); // Pour Prim
+            updateRightSidebar();
+        } else {
+            uiStateService.addAlgorithmStep(`ERREUR ${algoName}: Nœud de départ ou d'arrivée non trouvé.`);
+            updateRightSidebar();
+            console.warn(`${algoName}: Start or end node not found. Start: ${startNodeId}, End: ${endNodeId}`);
+        }
+    };
+
     const runDijkstraButton = document.getElementById('run-dijkstra');
     if (runDijkstraButton) {
       runDijkstraButton.onclick = () => { 
-        const startPersonId = document.getElementById('start-person').value; // UUID
-        const endPersonId = document.getElementById('end-person').value;     // UUID
-        if (startPersonId && endPersonId && cy) {
-          const startNode = cy.getElementById(startPersonId);
-          const endNode = cy.getElementById(endPersonId);
-          if (startNode.length && endNode.length) {
-            initDijkstra(cy, startNode, endNode);
-            updateRightSidebar(); // Assurez-vous que cette fonction est définie
-          } else {
-            console.warn("Dijkstra: Start or end node not found.");
-          }
-        }
+        const startPersonId = document.getElementById('start-person').value;
+        const endPersonId = document.getElementById('end-person').value;
+        handleAlgoRun("Dijkstra", startPersonId, endPersonId, initDijkstra);
       };
     }
-    // ... Idem pour Bellman-Ford, Prim, Kruskal ...
+
     const runBellmanFordButton = document.getElementById('run-bellman-ford');
     if (runBellmanFordButton) {
       runBellmanFordButton.onclick = () => {
         const startPersonId = document.getElementById('bellman-ford-start-person').value;
         const endPersonId = document.getElementById('bellman-ford-end-person').value;
-        if (startPersonId && endPersonId && cy) {
-          const startNode = cy.getElementById(startPersonId);
-          const endNode = cy.getElementById(endPersonId);
-          if (startNode.length && endNode.length) {
-            initBellmanFord(cy, startNode, endNode);
-            updateRightSidebar();
-          } else {
-            console.warn("Bellman-Ford: Start or end node not found.");
-          }
-        }
+        handleAlgoRun("Bellman-Ford", startPersonId, endPersonId, initBellmanFord);
       };
     }
 
@@ -167,25 +203,15 @@ export function initRouter() {
     if (runPrimButton) {
       runPrimButton.onclick = () => {
         const startPersonId = document.getElementById('prim-start-person').value;
-        if (startPersonId && cy) {
-          const startNode = cy.getElementById(startPersonId);
-          if (startNode.length) {
-            initPrim(cy, startNode);
-            updateRightSidebar();
-          } else {
-            console.warn("Prim: Start node not found.");
-          }
-        }
+        handleAlgoRun("Prim", startPersonId, null, initPrim);
       };
     }
 
     const runKruskalButton = document.getElementById('run-kruskal');
     if (runKruskalButton) {
       runKruskalButton.onclick = () => {
-        if (cy) { 
-            initKruskal(cy); 
-            updateRightSidebar();
-        }
+        // Kruskal n'a pas besoin de start/end node ici, le select est juste pour UI
+        handleAlgoRun("Kruskal", null, null, initKruskal);
       };
     }
   }
@@ -194,7 +220,6 @@ export function initRouter() {
     const path = window.location.pathname;
     const isAuthenticated = authService.isAuthenticated();
 
-    // Gestion des redirections
     if (!isAuthenticated && path !== '/login' && path !== '/register') {
       navigateTo('/login');
       return;
@@ -204,8 +229,26 @@ export function initRouter() {
       return;
     }
 
-    // Toujours rendre la navbar
-    app.innerHTML = renderNavbar(); // renderNavbar devra peut-être être asynchrone si elle utilise fetchUserProfileFromServer
+    // Essayer de charger le profil utilisateur pour s'assurer que le token est valide avant de rendre quoi que ce soit
+    // Sauf pour les pages de login/register elles-mêmes
+    if (path !== '/login' && path !== '/register') {
+        try {
+            const user = await authService.fetchUserProfileFromServer();
+            if (!user) { // Si fetchUserProfileFromServer retourne null (ex: token invalide déconnecté)
+                if (authService.isAuthenticated()) authService.logout(); // Double check pour nettoyer
+                navigateTo('/login');
+                return;
+            }
+        } catch (error) { // Erreur critique pendant fetchUserProfileFromServer
+            if (authService.isAuthenticated()) authService.logout();
+            navigateTo('/login');
+            return;
+        }
+    }
+
+    // Toujours rendre la navbar après la vérification d'auth (sauf si redirection)
+    const appContainer = document.getElementById('app');
+    if (appContainer) appContainer.innerHTML = renderNavbar(); 
 
     let mainLayoutHtml = '';
     if (path === '/') {
@@ -219,40 +262,28 @@ export function initRouter() {
     } else if (path === '/login') {
         mainLayoutHtml = `<div id="main-content-login" class="login-container">${renderLoginPage()}</div>`;
     } else if (path === '/register') {
-        mainLayoutHtml = `<div id="main-content-register" class="login-container">${renderRegisterPage()}</div>`; // Utilise login-container pour le style
+        mainLayoutHtml = `<div id="main-content-register" class="login-container">${renderRegisterPage()}</div>`;
     } else {
         mainLayoutHtml = `<div id="main-content-404"><h2>404 - Page non trouvée</h2></div>`;
     }
-    app.innerHTML += mainLayoutHtml;
+    
+    if (appContainer) appContainer.innerHTML += mainLayoutHtml;
+
 
     // Initialisations spécifiques à la page
     if (path === '/') {
-      // Tentative de chargement du profil utilisateur pour s'assurer que le token est valide
-      // et que le profil est à jour dans le cache pour la navbar et autres.
-      try {
-        await authService.fetchUserProfileFromServer(); 
-        // Mettre à jour la navbar si elle dépend du profil chargé dynamiquement
-        const newNavbarHtml = renderNavbar();
-        const navbarElement = document.getElementById('navbar');
-        if (navbarElement) navbarElement.outerHTML = newNavbarHtml;
-
-      } catch (error) {
-          // fetchUserProfileFromServer gère déjà la déconnexion en cas d'erreur critique
-          // Pas besoin de rediriger à nouveau ici si authService le fait.
-          console.log("Utilisateur non authentifié ou erreur de profil, redirection gérée par authService ou intercepteur.")
-          return; // Arrêter le rendu si l'utilisateur est déconnecté
-      }
-
+      // La navbar a déjà été mise à jour implicitement par le fetchUserProfileFromServer global
+      // et le renderNavbar() au début de renderRoute().
 
       if (currentActiveView === 'tree') await renderFamilyTree();
-      else await renderGraphView();
+      else await renderGraphView(); // Ceci va appeler getPreparedData qui utilise currentDataScope
       
       setupMainViewControls();
       updateActiveButtons();
 
-      // Peupler les selects des algorithmes
-      const familyDataForSelect = await familyDataService.getAllFamilyData();
-      if (familyDataForSelect.length > 0) {
+      // Peupler les selects des algorithmes avec les données actuellement affichées
+      const familyDataForSelect = await getPreparedData(); // Utilise currentDataScope
+      if (familyDataForSelect && familyDataForSelect.length > 0) {
             const dijkstraButton = document.getElementById('dijkstra-button');
             if (dijkstraButton) {
               dijkstraButton.addEventListener('click', () => {
@@ -278,57 +309,78 @@ export function initRouter() {
             if (kruskalButton) {
                 kruskalButton.addEventListener('click', () => {
                     document.getElementById('kruskal-form').style.display = document.getElementById('kruskal-form').style.display === 'none' ? 'block' : 'none';
-                     // Kruskal n'a pas besoin de sélection utilisateur dans ce formulaire, mais on le garde pour la cohérence de l'UI
-                    populateAlgorithmSelects(['kruskal-start-person'], familyDataForSelect);
+                    populateAlgorithmSelects(['kruskal-start-person'], familyDataForSelect); 
                 });
             }
         }
-      if (cyInstance) setupAlgorithmButtons(cyInstance);
+      if (cyInstance) setupAlgorithmButtons(cyInstance); // S'assurer que les boutons sont liés si cyInstance est créé
 
     } else if (path === '/profile') {
-      await setupProfileFormHandler(); // Doit être async car il fait des appels API
+      await setupProfileFormHandler(); 
     } else if (path === '/login') {
       setupLoginFormHandler();
     } else if (path === '/register') {
       setupRegisterFormHandler();
     }
-  }
 
-  function populateAlgorithmSelects(selectIds, data) {
-    selectIds.forEach(selectId => {
-        const selectElement = document.getElementById(selectId);
-        if (selectElement) {
-            const currentValue = selectElement.value; // Conserver la valeur si possible (moins pertinent ici)
-            selectElement.innerHTML = ''; // Clear previous options
-            data.forEach(person => {
-                const option = document.createElement('option');
-                option.value = person.id; // UUID
-                option.textContent = person.name;
-                selectElement.appendChild(option);
+    // S'assurer que les liens de navigation SPA fonctionnent
+    document.querySelectorAll('a[data-link]').forEach(link => {
+        if (!link.dataset.spaHandlerAttached) { // Eviter d'attacher plusieurs fois
+            link.addEventListener('click', e => {
+                e.preventDefault();
+                navigateTo(link.getAttribute('href'));
             });
-            if(currentValue) selectElement.value = currentValue; // Restaurer si l'option existe toujours
+            link.dataset.spaHandlerAttached = 'true';
         }
     });
   }
 
+  function populateAlgorithmSelects(selectIds, data) {
+    if (!data || data.length === 0) {
+        selectIds.forEach(selectId => {
+            const selectElement = document.getElementById(selectId);
+            if (selectElement) {
+                selectElement.innerHTML = '<option value="">Aucune personne à sélectionner</option>';
+            }
+        });
+        return;
+    }
+    selectIds.forEach(selectId => {
+        const selectElement = document.getElementById(selectId);
+        if (selectElement) {
+            const currentValue = selectElement.value; 
+            selectElement.innerHTML = ''; 
+            data.forEach(person => {
+                const option = document.createElement('option');
+                option.value = person.id; 
+                option.textContent = person.name;
+                selectElement.appendChild(option);
+            });
+            if(currentValue && data.some(p => p.id === currentValue)) {
+                 selectElement.value = currentValue;
+            } else if (data.length > 0) {
+                selectElement.value = data[0].id; // Select first by default if no/invalid previous value
+            }
+        }
+    });
+  }
+  
+  // Attacher l'event listener pour la navigation SPA une seule fois au body
   document.body.addEventListener('click', e => {
-    if (e.target.matches('a[data-link]')) {
+    const target = e.target.closest('a[data-link]'); // Chercher un parent <a> si clic sur un enfant
+    if (target) {
       e.preventDefault();
-      navigateTo(e.target.getAttribute('href'));
+      navigateTo(target.getAttribute('href'));
     }
   });
 
   window.addEventListener('popstate', renderRoute);
-  renderRoute(); // Premier rendu
+  renderRoute(); 
 }
 
-// S'assurer que cette fonction est bien définie et importée/exportée correctement si elle est dans un autre module.
-// Pour l'instant, je la définis ici pour la simplicité.
-function updateRightSidebar() {
+export function updateRightSidebar() { // Rendre exportable si utilisé ailleurs, sinon garder local
   const rightSidebarContainer = document.getElementById('right-sidebar');
   if (rightSidebarContainer) {
-    // Assumons que renderRightSidebar() est synchrone et utilise uiStateService
-    // qui est toujours basé sur localStorage.
     rightSidebarContainer.innerHTML = renderRightSidebar();
   }
 }

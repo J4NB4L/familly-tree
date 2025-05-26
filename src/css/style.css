@@ -269,17 +269,41 @@ form {
 
 /* Styles spécifiques pour le formulaire de profil */
 #profile-form {
-    max-width: 100%; /* Élargir le formulaire de profil */
-    margin: 0;
-    background-color: #ffffff;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    max-width: 100%; /* Déjà défini */
+    padding: 0; /* Le padding est maintenant sur .profile-card */
+    box-shadow: none; /* L'ombre est sur .profile-card */
+    border: none;
+    display: flex; /* Remplacer grid par flex pour une meilleure organisation en colonnes */
+    flex-direction: column;
+    gap: 25px; /* Espacement entre les sections du formulaire */
+}
+
+.profile-section-title {
+    margin: 0 0 20px;
+    color: #2d3748;
+    font-size: 22px; /* Taille ajustée */
+    font-weight: 600;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 10px;
+}
+
+.profile-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px; /* Espacement entre label et input */
+}
+
+.profile-form-field label {
+    font-weight: 500; /* Poids ajusté */
+    color: #495057; /* Couleur de label */
+    font-size: 0.95rem;
+}
+
+.profile-info-grid, .profile-parent-fields {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive */
     gap: 20px;
-    align-items: start;
-    animation: fadeInUp 0.5s ease-out forwards;
+    margin-bottom: 20px; /* Espacement après la grille */
 }
 
 #profile-form img {
@@ -926,6 +950,92 @@ form button:hover {
     width: 100%;
 }
 
+.profile-page-container {
+    background-color: #f0f4f8; /* Un fond doux pour toute la page de profil */
+    min-height: calc(100vh - 70px); /* Hauteur de la navbar */
+    padding: 30px;
+    display: flex; /* Pour centrer le contenu principal */
+    justify-content: center;
+    align-items: flex-start; /* Aligner en haut si le contenu est plus petit */
+}
+
+.profile-card {
+    background-color: white;
+    border-radius: 12px; /* Coins arrondis */
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08); /* Ombre plus douce */
+    padding: 30px 40px; /* Espacement interne */
+}
+
+
+.profile-header-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
+    text-align: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.profile-image-container {
+    position: relative;
+    width: 150px; /* Taille ajustée */
+    height: 150px;
+    margin-bottom: 15px;
+}
+
+.profile-image-upload-trigger {
+    position: absolute;
+    bottom: 0px; /* Ajusté */
+    right: 0px;  /* Ajusté */
+    background-color: #4299e1;
+    border-radius: 50%;
+    width: 36px; /* Ajusté */
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    border: 2px solid white;
+}
+
+.profile-image-upload-trigger:hover {
+    background-color: #3182ce;
+}
+
+.profile-name-header {
+    margin: 0;
+    font-size: 26px; /* Taille ajustée */
+    color: #343a40; /* Couleur plus foncée */
+    font-weight: 600;
+}
+
+.profile-image-preview {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #4299e1; /* Bordure colorée */
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1); /* Ombre pour l'image */
+}
+
+.profile-main-title {
+    color: #2d3748;
+    font-size: 32px; /* Taille ajustée */
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e2e8f0; /* Bordure plus subtile */
+    font-weight: 600; /* Poids ajusté */
+}
+
+
+.profile-content-wrapper {
+    max-width: 1000px; /* Largeur maximale pour le contenu du profil */
+    width: 100%;
+    margin: 0 auto;
+}
+
 /* Style pour l'affichage des sections familiales dans le panneau de droite */
 .family-section {
     margin-top: 15px;
@@ -1000,6 +1110,341 @@ form button:hover {
     box-shadow: 0 6px 12px rgba(49, 130, 206, 0.3);
     background: linear-gradient(90deg, #2b6cb0 0%, #3182ce 100%);
 }
+
+
+
+#profile-form input[type="text"],
+#profile-form input[type="email"],
+#profile-form input[type="number"],
+#profile-form select {
+    width: 100%;
+    padding: 10px 12px; /* Padding ajusté */
+    border-radius: 6px; /* Coins plus doux */
+    border: 1px solid #ced4da; /* Bordure standard */
+    background-color: #f8f9fa; /* Fond légèrement grisé */
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#profile-form input:focus, 
+#profile-form select:focus {
+    border-color: #4299e1;
+    box-shadow: 0 0 0 0.2rem rgba(66, 153, 225, 0.25);
+    outline: none;
+}
+
+.relation-select-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.relation-select-wrapper select {
+    flex-grow: 1;
+}
+
+.profile-relations-section, .profile-family-management-section {
+    border-top: 1px solid #e9ecef;
+    padding-top: 25px;
+    margin-top: 25px;
+}
+
+.profile-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#family-sections-container {
+    display: flex;
+    flex-direction: column;
+    gap: 25px; /* Espacement entre les sections famille */
+}
+
+.family-section-item {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #f9f9f9; /* Fond légèrement différent pour les sections */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.family-section-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+.family-section-item-title {
+    color: #343a40;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.family-children-subsection {
+    background-color: white;
+    padding: 15px;
+    border-radius: 6px;
+    margin-top: 15px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.04);
+}
+.children-subsection-title {
+    color: #495057;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+.children-items-list {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 0 0 15px 0;
+}
+.child-item-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    background-color: #f1f3f5;
+    font-size: 0.9rem;
+}
+.child-item-info {
+    display: flex;
+    flex-direction: column;
+}
+.child-item-name {
+    font-weight: 500;
+    color: #212529;
+}
+.child-item-year {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+.no-children-notice {
+    font-style: italic;
+    color: #6c757d;
+    padding: 10px;
+    text-align: center;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+.add-child-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+.add-child-controls select {
+    flex-grow: 1;
+}
+
+
+.profile-actions-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+    padding-top: 25px;
+    border-top: 1px solid #e9ecef;
+}
+.account-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.profile-action-btn {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.profile-action-btn:hover {
+    transform: translateY(-1px);
+}
+.primary-btn {
+    background-color: #007bff;
+    color: white;
+}
+.primary-btn:hover {
+    background-color: #0069d9;
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.25);
+}
+.primary-btn.submit-btn {
+    padding: 12px 28px; /* Plus grand pour le bouton principal */
+    font-size: 1rem;
+}
+.positive-btn {
+    background-color: #28a745;
+    color: white;
+}
+.positive-btn:hover {
+    background-color: #218838;
+    box-shadow: 0 4px 10px rgba(40, 167, 69, 0.25);
+}
+.danger-btn {
+    background-color: #dc3545;
+    color: white;
+}
+.danger-btn:hover {
+    background-color: #c82333;
+    box-shadow: 0 4px 10px rgba(220, 53, 69, 0.25);
+}
+.outline-danger-btn {
+    background-color: transparent;
+    color: #dc3545;
+    border: 1px solid #dc3545;
+}
+.outline-danger-btn:hover {
+    background-color: #dc3545;
+    color: white;
+    box-shadow: 0 4px 10px rgba(220, 53, 69, 0.15);
+}
+
+.small-btn {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+}
+.remove-relation-btn.small-btn {
+    background-color: transparent;
+    color: #c53030;
+    border: 1px solid #e5a0a0;
+    opacity: 0.8;
+}
+.remove-relation-btn.small-btn:hover {
+    background-color: #fef2f2;
+    color: #c53030;
+    border-color: #c53030;
+    opacity: 1;
+}
+.danger-transparent-btn { /* Pour le bouton de suppression d'enfant dans la liste */
+    background: none;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    color: #c53030;
+    cursor: pointer;
+    padding: 5px 8px;
+    font-size: 14px;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+}
+.danger-transparent-btn:hover {
+    opacity: 1;
+    background-color: #FEF2F2;
+    border-color: #f5c6cb;
+}
+
+
+.profile-message-area {
+    margin: 20px auto 0;
+    padding: 12px 18px; /* Padding ajusté */
+    border-radius: 6px;
+    font-size: 0.95rem; /* Taille ajustée */
+    font-weight: 500;
+    text-align: center;
+    max-width: 100%; /* S'adapte à la largeur du conteneur */
+}
+/* Pour les couleurs de fond dynamiques, elles sont définies en JS */
+
+
+/* Styles pour le right-sidebar info-card (détails personne) */
+#right-sidebar .info-card {
+    background: linear-gradient(135deg, #ffffff 0%, #fdfdff 100%); /* Fond plus clair */
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06); /* Ombre ajustée */
+    border: 1px solid #e9ecef; /* Bordure subtile */
+    transition: transform 0.3s ease;
+    font-size: 0.9rem; /* Taille de police de base pour la carte */
+}
+#right-sidebar .info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+}
+#right-sidebar .info-card h4 {
+    font-size: 1.3rem;
+    color: #343a40;
+    margin-bottom: 15px;
+    font-weight: 600;
+    border-bottom: 1px solid #f1f1f1;
+    padding-bottom: 8px;
+}
+#right-sidebar .info-card p {
+    margin-bottom: 8px;
+    color: #495057;
+    line-height: 1.5;
+}
+#right-sidebar .info-card p strong {
+    color: #212529;
+    margin-right: 5px;
+}
+
+#right-sidebar .family-section { /* Style pour les sections Parents/Conjoints/Enfants dans la sidebar */
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px dashed #e0e0e0; /* Séparateur plus léger */
+}
+#right-sidebar .family-section h5 {
+    margin: 0 0 8px 0;
+    font-size: 1rem;
+    color: #007bff; /* Couleur d'accent */
+    font-weight: 600;
+}
+
+/* Styles pour FamilyTree.js (peut nécessiter !important si les templates internes sont trop spécifiques) */
+/* Pour les nœuds colorés par genre, en supposant que les templates 'hugo_male', etc. sont utilisés */
+/* Si les templates modifient directement le 'fill', ces CSS pourraient ne pas s'appliquer au <rect> principal */
+/* On cible plus généralement au cas où. */
+
+.bft-male .bft-node-rect, /* Si le tag ajoute une classe au groupe du nœud */
+foreignObject[data- θερ*=male] rect { /* Si le tag est dans data- θερ du foreignObject */
+    /* fill: #a0c8f0 !important; */ /* Bleu clair pour homme - géré par template JS */
+}
+.bft-female .bft-node-rect,
+foreignObject[data- θερ*=female] rect {
+    /* fill: #f0a0d8 !important; */ /* Rose clair pour femme - géré par template JS */
+}
+.bft-unknown .bft-node-rect,
+foreignObject[data- θερ*=unknown] rect {
+    /* fill: #d3d3d3 !important; */ /* Gris pour inconnu - géré par template JS */
+}
+
+/* Style pour le nœud de l'utilisateur courant (si tag 'currentUser' est appliqué) */
+.bft-currentuser .bft-node-rect, /* Cible le rectangle du nœud */
+foreignObject[data- θερ*=currentUser] rect {
+    stroke: #ffbf00 !important; /* Bordure dorée pour l'utilisateur actuel */
+    stroke-width: 3px !important;
+}
+.bft-currentuser text { /* Cible le texte du nœud */
+    font-weight: bold !important;
+    fill: #0056b3 !important; /* Couleur de texte différente */
+}
+
+
+/* Message d'erreur pour algorithmes dans leftsidebar */
+#algorithm-error-message {
+    color: #721c24; /* Texte rouge foncé */
+    background-color: #f8d7da; /* Fond rose clair */
+    border: 1px solid #f5c6cb; /* Bordure rose */
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    /* display: none; par défaut, géré par JS */
+}
+
 
 /* Responsivité pour les menus de relations familiales */
 @media (max-width: 768px) {
