@@ -139,22 +139,22 @@ function renderFamilySectionHTML(familyIndex) {
                 <button type="button" class="remove-family-section-btn danger-btn small-btn" data-family-index="${familyIndex}" title="Supprimer cette famille">× Supprimer Famille</button>
             </div>
             <div class="profile-form-field">
-                <label for="family_conjoint_${familyIndex}">Conjoint:</label>
+                <label for="family_conjoint_${familyIndex}">Conjoint(e) pour cette famille :</label>
                 <div class="relation-select-wrapper">
                     <select id="family_conjoint_${familyIndex}" name="family_conjoint_${familyIndex}" class="family-conjoint-select" data-family-index="${familyIndex}"></select>
                     <button type="button" class="remove-relation-btn small-btn" data-relation-type="conjoint" data-family-index="${familyIndex}" title="Retirer ce conjoint">✕</button>
                 </div>
             </div>
             <div class="family-children-subsection">
-                <h5 class="children-subsection-title">Enfants de cette union</h5>
+                <h5 class="children-subsection-title">Enfants de cette union/famille</h5>
                 <div class="family-children-list" data-family-index="${familyIndex}">
                     <!-- Enfants listés ici -->
                 </div>
                 <div class="profile-form-field">
-                    <label for="family_potential_child_${familyIndex}">Ajouter un enfant à cette union:</label>
+                    <label for="family_potential_child_${familyIndex}">Ajouter un enfant existant à cette union/famille:</label>
                     <div class="relation-select-wrapper">
                         <select id="family_potential_child_${familyIndex}" class="family-potential-child-select" data-family-index="${familyIndex}"></select>
-                        <button type="button" class="family-add-child-btn positive-btn small-btn" data-family-index="${familyIndex}">+ Ajouter</button>
+                        <button type="button" class="family-add-child-btn positive-btn small-btn" data-family-index="${familyIndex}">+ Ajouter Enfant</button>
                     </div>
                 </div>
             </div>
@@ -168,21 +168,36 @@ async function setupDynamicFamilySections(allPeople, currentUserProfile, message
     container.innerHTML = ''; 
 
     const pids = currentUserProfile.pids || [];
+    
+    // Always render at least one section, even if pids is empty, for user's direct children or to add a new family.
     if (pids.length === 0) {
         container.insertAdjacentHTML('beforeend', renderFamilySectionHTML(0));
         await setupSingleFamilySectionControls(0, null, allPeople, currentUserProfile, messageDiv);
-    } else {
+    } else { // User has spouses, create a section for each
         pids.forEach(async (conjointId, index) => {
             container.insertAdjacentHTML('beforeend', renderFamilySectionHTML(index));
             await setupSingleFamilySectionControls(index, conjointId, allPeople, currentUserProfile, messageDiv);
         });
     }
 
-    document.getElementById('add-family-section-btn').onclick = async () => {
-        const nextIndex = container.children.length;
-        container.insertAdjacentHTML('beforeend', renderFamilySectionHTML(nextIndex));
-        await setupSingleFamilySectionControls(nextIndex, null, allPeople, currentUserProfile, messageDiv);
-    };
+    // "Add Family Section" button logic
+    const addFamilyBtn = document.getElementById('add-family-section-btn');
+    if (addFamilyBtn) {
+        addFamilyBtn.onclick = async () => {
+            // Find the highest current family index to determine the next one
+            const existingSections = container.querySelectorAll('.family-section-item');
+            let nextIndex = 0;
+            if (existingSections.length > 0) {
+                 nextIndex = Math.max(...Array.from(existingSections).map(s => parseInt(s.dataset.familyIndex, 10))) + 1;
+            }
+            // If a user has pids, but we want to add a new section for "no spouse" children,
+            // we need to ensure this new section doesn't conflict with existing pids.
+            // The `renderFamilySectionHTML` and `setupSingleFamilySectionControls` will handle this.
+            // The main purpose here is to add a new UI block.
+            container.insertAdjacentHTML('beforeend', renderFamilySectionHTML(nextIndex));
+            await setupSingleFamilySectionControls(nextIndex, null, allPeople, currentUserProfile, messageDiv);
+        };
+    }
 }
 
 async function setupSingleFamilySectionControls(familyIndex, currentConjointId, allPeople, currentUserProfile, messageDiv) {
@@ -197,33 +212,46 @@ async function setupSingleFamilySectionControls(familyIndex, currentConjointId, 
     const removeConjointBtn = section.querySelector(`button[data-relation-type="conjoint"][data-family-index="${familyIndex}"]`);
 
     // 1. Peupler le select du conjoint
+    // Get all conjoint IDs currently selected in OTHER family sections
     const existingConjointIdsInOtherSections = Array.from(document.querySelectorAll('.family-conjoint-select'))
+        .filter(s => s.id !== conjointSelect.id) // Exclude the current section's select
         .map(s => s.value)
-        .filter(v => v && v !== currentConjointId); 
+        .filter(v => v && v.trim() !== ""); 
 
     await populateSelect(conjointSelect.id, allPeople, currentConjointId, 
         [currentUserProfile.id, currentUserProfile.fid, currentUserProfile.mid, ...existingConjointIdsInOtherSections].filter(Boolean), 
-        p => { 
+        p => { // p is a potential conjoint candidate
             if (p.id === currentUserProfile.id) return false; 
             if (p.id === currentUserProfile.fid || p.id === currentUserProfile.mid) return false; 
             if (allPeople.some(child => (child.fid === currentUserProfile.id || child.mid === currentUserProfile.id) && child.id === p.id)) return false;
+            // Cannot select someone as spouse if they are already selected as spouse in another section (handled by existingConjointIdsInOtherSections in excludeIds)
             return true;
         },
-        "-- Sélectionner Conjoint --"
+        "-- Sélectionner Conjoint(e) --"
     );
-    if(currentConjointId) conjointSelect.value = currentConjointId;
+    if(currentConjointId) {
+        conjointSelect.value = currentConjointId;
+    }
 
 
-    async function refreshSpecificFamilyChildren(selectedConjointId) {
+    async function refreshSpecificFamilyChildren(selectedConjointIdForRefresh) {
         childrenListDiv.innerHTML = ''; 
         
         let enfantsDeCetteUnion = [];
-        if (selectedConjointId) {
-            enfantsDeCetteUnion = allPeople.filter(p => 
-                (p.fid === currentUserProfile.id && p.mid === selectedConjointId) ||
-                (p.mid === currentUserProfile.id && p.fid === selectedConjointId)
+        if (selectedConjointIdForRefresh && selectedConjointIdForRefresh.trim() !== "") {
+            // Children parented by BOTH user and the selected conjoint
+            enfantsDeCetteUnion = allPeople.filter(p =>
+                (p.fid === currentUserProfile.id && p.mid === selectedConjointIdForRefresh) ||
+                (p.mid === currentUserProfile.id && p.fid === selectedConjointIdForRefresh)
+            );
+        } else {
+            // No spouse selected for this family section: list children parented by user AND other parent is null/empty
+            enfantsDeCetteUnion = allPeople.filter(p =>
+                (p.fid === currentUserProfile.id && (!p.mid || p.mid === "")) ||
+                (p.mid === currentUserProfile.id && (!p.fid || p.fid === ""))
             );
         }
+
 
         if (enfantsDeCetteUnion.length > 0) {
             const ul = document.createElement('ul');
@@ -238,7 +266,7 @@ async function setupSingleFamilySectionControls(familyIndex, currentConjointId, 
                 nameSpan.textContent = child.name;
                 nameSpan.className = 'child-item-name';
                 const yearSpan = document.createElement('span');
-                yearSpan.textContent = `Né(e) en ${child.birthYear || 'N/A'}`;
+                yearSpan.textContent = ` (Né(e) en ${child.birthYear || 'N/A'})`;
                 yearSpan.className = 'child-item-year';
                 
                 infoDiv.appendChild(nameSpan);
@@ -249,135 +277,152 @@ async function setupSingleFamilySectionControls(familyIndex, currentConjointId, 
                 removeChildBtn.innerHTML = '✕';
                 removeChildBtn.type = 'button';
                 removeChildBtn.className = 'remove-relation-btn small-btn danger-transparent-btn';
-                removeChildBtn.title = `Dissocier ${child.name}`;
+                removeChildBtn.title = `Dissocier ${child.name} de cette union/famille`;
                 
                 removeChildBtn.onclick = async () => {
-                    if (!confirm(`Dissocier ${child.name} de cette union? Son profil sera mis à jour.`)) return;
+                    if (!confirm(`Dissocier ${child.name} de cette union/famille ? Son profil sera mis à jour pour retirer les liens parentaux correspondants.`)) return;
                     
-                    let childToUpdate = allPeople.find(p => p.id === child.id);
-                    if (childToUpdate.fid === currentUserProfile.id && childToUpdate.mid === selectedConjointId) {
-                        childToUpdate.fid = null; childToUpdate.mid = null;
-                    } else if (childToUpdate.mid === currentUserProfile.id && childToUpdate.fid === selectedConjointId) {
-                        childToUpdate.mid = null; childToUpdate.fid = null;
+                    let childToUpdate = JSON.parse(JSON.stringify(allPeople.find(p => p.id === child.id))); // Deep copy for modification
+                    let changed = false;
+
+                    if (selectedConjointIdForRefresh && selectedConjointIdForRefresh.trim() !== "") { 
+                        if (childToUpdate.fid === currentUserProfile.id && childToUpdate.mid === selectedConjointIdForRefresh) {
+                            childToUpdate.fid = null; childToUpdate.mid = null; changed = true;
+                        } else if (childToUpdate.mid === currentUserProfile.id && childToUpdate.fid === selectedConjointIdForRefresh) {
+                            childToUpdate.mid = null; childToUpdate.fid = null; changed = true;
+                        } else { 
+                            if (childToUpdate.fid === currentUserProfile.id) { childToUpdate.fid = null; changed = true; }
+                            if (childToUpdate.mid === currentUserProfile.id) { childToUpdate.mid = null; changed = true; }
+                        }
                     } else { 
-                         if (childToUpdate.fid === currentUserProfile.id) childToUpdate.fid = null;
-                         if (childToUpdate.mid === currentUserProfile.id) childToUpdate.mid = null;
+                        if (childToUpdate.fid === currentUserProfile.id) {
+                            childToUpdate.fid = null; changed = true;
+                        }
+                        if (childToUpdate.mid === currentUserProfile.id) {
+                            childToUpdate.mid = null; changed = true;
+                        }
                     }
 
-                    try {
-                        await familyDataService.updatePersonInFamilyData(childToUpdate);
-                        const refreshedData = await initializeProfilePage(messageDiv, false); 
-                        allPeople = refreshedData.allPeople; 
-                        await refreshSpecificFamilyChildren(selectedConjointId); 
-                        messageDiv.textContent = `${child.name} dissocié(e).`; messageDiv.style.color = 'green';
-                    } catch (err) { 
-                        messageDiv.textContent = `Erreur dissociation: ${err.message || err}`; messageDiv.style.color = 'red';
+                    if (changed) {
+                        try {
+                            await familyDataService.updatePersonInFamilyData(childToUpdate);
+                            const refreshedData = await initializeProfilePage(messageDiv, false); 
+                            allPeople = refreshedData.allPeople; 
+                            currentUserProfile = refreshedData.currentUserProfile || currentUserProfile; 
+                            await refreshSpecificFamilyChildren(selectedConjointIdForRefresh); 
+                            messageDiv.textContent = `${child.name} dissocié(e).`; messageDiv.style.color = 'green';
+                        } catch (err) { 
+                            messageDiv.textContent = `Erreur dissociation: ${err.message || err}`; messageDiv.style.color = 'red';
+                        }
+                    } else {
+                        messageDiv.textContent = `${child.name} n'était pas lié(e) comme attendu. Aucune modification.`; messageDiv.style.color = 'orange';
                     }
-                     setTimeout(() => { messageDiv.textContent = ""; }, 3000);
+                    setTimeout(() => { messageDiv.textContent = ""; }, 3000);
                 };
                 li.appendChild(removeChildBtn);
                 ul.appendChild(li);
             });
             childrenListDiv.appendChild(ul);
-        } else if (selectedConjointId) {
+        } else if (selectedConjointIdForRefresh && selectedConjointIdForRefresh.trim() !== "") { 
              childrenListDiv.innerHTML = '<p class="no-children-notice">Aucun enfant commun trouvé pour cette union.</p>';
+        } else { 
+             childrenListDiv.innerHTML = '<p class="no-children-notice">Aucun enfant (sans autre conjoint désigné) lié à vous dans cette famille.</p>';
         }
 
+        // Populate potential child select
+        const currentSelectedConjointForFilter = allPeople.find(p => p.id === selectedConjointIdForRefresh);
 
-        const currentSelectedConjoint = allPeople.find(p => p.id === selectedConjointId);
         await populateSelect(potentialChildSelect.id, allPeople, null, 
-            [currentUserProfile.id, selectedConjointId].filter(Boolean), 
-            // Refined filter for potential children (person 'p')
-            (p) => {
-                // Rule 0: A conjoint must be selected for this union to add children to it.
-                if (!selectedConjointId || !currentSelectedConjoint) {
-                    return false;
-                }
+            [currentUserProfile.id, selectedConjointIdForRefresh].filter(id => id && id.trim() !== ""), 
+            (p) => { // p is the potential child
+                if (p.id === currentUserProfile.id) return false; 
+                if (selectedConjointIdForRefresh && p.id === selectedConjointIdForRefresh) return false; 
 
-                // Rule 1: Candidate 'p' cannot be the User (currentUserProfile).
-                if (p.id === currentUserProfile.id) return false;
-                // Rule 2: Candidate 'p' cannot be the selected Conjoint for this family section.
-                if (p.id === selectedConjointId) return false;
-
-                // Rule 3: Candidate 'p' cannot be a parent of the User.
                 if (currentUserProfile.fid === p.id || currentUserProfile.mid === p.id) return false;
-                // Rule 4: Candidate 'p' cannot be a parent of the selected Conjoint.
-                if (currentSelectedConjoint.fid === p.id || currentSelectedConjoint.mid === p.id) return false;
-                
-                // Rule 7: Candidate 'p' cannot already be a child of THIS specific User + Conjoint union.
-                // This check verifies if 'p' is already fully parented by both currentUserProfile and currentSelectedConjoint.
-                let isAlreadyChildOfThisSpecificUnion = false;
-                if (currentUserProfile.gender === 'male' && currentSelectedConjoint.gender === 'female') {
-                    if (p.fid === currentUserProfile.id && p.mid === selectedConjointId) isAlreadyChildOfThisSpecificUnion = true;
-                } else if (currentUserProfile.gender === 'female' && currentSelectedConjoint.gender === 'male') {
-                    if (p.mid === currentUserProfile.id && p.fid === selectedConjointId) isAlreadyChildOfThisSpecificUnion = true;
-                } else {
-                    if ((p.fid === currentUserProfile.id && p.mid === selectedConjointId) || 
-                        (p.mid === currentUserProfile.id && p.fid === selectedConjointId)) {
-                        isAlreadyChildOfThisSpecificUnion = true;
+                if (currentSelectedConjointForFilter && (currentSelectedConjointForFilter.fid === p.id || currentSelectedConjointForFilter.mid === p.id)) return false;
+
+                let p_can_have_user_as_parent = false;
+                if (currentUserProfile.gender === 'male') {
+                    if (!p.fid || p.fid === currentUserProfile.id) p_can_have_user_as_parent = true;
+                } else if (currentUserProfile.gender === 'female') {
+                    if (!p.mid || p.mid === currentUserProfile.id) p_can_have_user_as_parent = true;
+                } else { 
+                    if ((!p.fid || p.fid === currentUserProfile.id) || (!p.mid || p.mid === currentUserProfile.id)) p_can_have_user_as_parent = true;
+                }
+                if (!p_can_have_user_as_parent) return false;
+
+                if (currentSelectedConjointForFilter) {
+                    let p_can_have_conjoint_as_parent = false;
+                    if (currentSelectedConjointForFilter.gender === 'male') {
+                        if (!p.fid || p.fid === currentSelectedConjointForFilter.id) p_can_have_conjoint_as_parent = true;
+                    } else if (currentSelectedConjointForFilter.gender === 'female') {
+                        if (!p.mid || p.mid === currentSelectedConjointForFilter.id) p_can_have_conjoint_as_parent = true;
+                    } else { 
+                         if ((!p.fid || p.fid === currentSelectedConjointForFilter.id) || (!p.mid || p.mid === currentSelectedConjointForFilter.id)) p_can_have_conjoint_as_parent = true;
+                    }
+                    if (!p_can_have_conjoint_as_parent) return false;
+
+                    if ((p.fid === currentUserProfile.id && p.mid === currentSelectedConjointForFilter.id) ||
+                        (p.mid === currentUserProfile.id && p.fid === currentSelectedConjointForFilter.id)) {
+                        return false;
+                    }
+                } else { 
+                    if ((p.fid === currentUserProfile.id && (!p.mid || p.mid === "")) ||
+                        (p.mid === currentUserProfile.id && (!p.fid || p.fid === ""))) {
+                        return false;
                     }
                 }
-                if (isAlreadyChildOfThisSpecificUnion) return false;
-
-                // Rule 5: Candidate 'p' must be able to accept User as a parent (no conflicting existing parent of same gender).
-                if (currentUserProfile.gender === 'male') { // User would be father
-                    if (p.fid && p.fid !== currentUserProfile.id) return false; // p already has a DIFFERENT father.
-                } else if (currentUserProfile.gender === 'female') { // User would be mother
-                    if (p.mid && p.mid !== currentUserProfile.id) return false; // p already has a DIFFERENT mother.
-                } else { // User's gender is 'unknown'
-                    if (p.fid && p.mid) return false; 
-                }
-
-                // Rule 6: Candidate 'p' must be able to accept Conjoint as a parent.
-                if (currentSelectedConjoint.gender === 'male') { // Conjoint would be father
-                    if (p.fid && p.fid !== currentSelectedConjoint.id) return false; 
-                } else if (currentSelectedConjoint.gender === 'female') { // Conjoint would be mother
-                    if (p.mid && p.mid !== currentSelectedConjoint.id) return false; 
-                } else { // Conjoint's gender is 'unknown'
-                    if (p.fid && p.mid) return false;
-                }
-                
                 return true;
             }, 
             "-- Sélectionner enfant existant --"
         );
     }
     
-    await refreshSpecificFamilyChildren(currentConjointId);
+    await refreshSpecificFamilyChildren(currentConjointId || null); // Initial call
     conjointSelect.onchange = async (e) => {
-        await refreshSpecificFamilyChildren(e.target.value);
+        await refreshSpecificFamilyChildren(e.target.value || null); 
     };
 
     addChildBtn.onclick = async () => {
-        const selectedConjointId = conjointSelect.value;
+        const selectedConjointIdForAdd = conjointSelect.value || null; 
         const childIdToAdd = potentialChildSelect.value;
 
-        if (!selectedConjointId) {
-            messageDiv.textContent = "Sélectionnez un conjoint pour cette famille."; messageDiv.style.color = 'orange';
-            return;
-        }
         if (!childIdToAdd) {
             messageDiv.textContent = "Sélectionnez un enfant à ajouter."; messageDiv.style.color = 'orange';
+            setTimeout(() => { messageDiv.textContent = ""; }, 3000);
             return;
         }
         
-        const conjoint = allPeople.find(p => p.id === selectedConjointId);
-        if (currentUserProfile.gender === 'unknown' || (conjoint && conjoint.gender === 'unknown')) {
-             messageDiv.textContent = "Le genre de l'utilisateur et du conjoint doivent être définis (Homme/Femme)."; messageDiv.style.color = 'orange';
+        const conjointForAdd = selectedConjointIdForAdd ? allPeople.find(p => p.id === selectedConjointIdForAdd) : null;
+
+        if (currentUserProfile.gender === 'unknown') {
+             messageDiv.textContent = "Le genre de l'utilisateur doit être défini (Homme/Femme) pour assigner un rôle parental."; messageDiv.style.color = 'orange';
+             setTimeout(() => { messageDiv.textContent = ""; }, 4000);
+             return;
+        }
+        if (conjointForAdd && conjointForAdd.gender === 'unknown') {
+             messageDiv.textContent = "Le genre du conjoint sélectionné doit être défini (Homme/Femme) pour assigner un rôle parental."; messageDiv.style.color = 'orange';
+             setTimeout(() => { messageDiv.textContent = ""; }, 4000);
              return;
         }
         
-        let childToUpdate = allPeople.find(p => p.id === childIdToAdd);
+        let childToUpdate = JSON.parse(JSON.stringify(allPeople.find(p => p.id === childIdToAdd)));
         let newFid = childToUpdate.fid, newMid = childToUpdate.mid;
 
         if (currentUserProfile.gender === 'male') newFid = currentUserProfile.id;
         else if (currentUserProfile.gender === 'female') newMid = currentUserProfile.id;
 
-        if (conjoint.gender === 'male') newFid = conjoint.id;
-        else if (conjoint.gender === 'female') newMid = conjoint.id;
+        if (conjointForAdd) {
+            if (conjointForAdd.gender === 'male') newFid = conjointForAdd.id;
+            else if (conjointForAdd.gender === 'female') newMid = conjointForAdd.id;
+        } else { 
+            if (currentUserProfile.gender === 'male') newMid = null; 
+            else if (currentUserProfile.gender === 'female') newFid = null; 
+        }
 
-        if (newFid && newMid && newFid === newMid) {
+        if (newFid && newMid && newFid === newMid) { 
             messageDiv.textContent = "Un enfant ne peut pas avoir la même personne comme père et mère."; messageDiv.style.color = 'red';
+            setTimeout(() => { messageDiv.textContent = ""; }, 4000);
             return;
         }
         childToUpdate.fid = newFid;
@@ -385,10 +430,11 @@ async function setupSingleFamilySectionControls(familyIndex, currentConjointId, 
 
         try {
             await familyDataService.updatePersonInFamilyData(childToUpdate);
-            const refreshedData = await initializeProfilePage(messageDiv, false);
+            const refreshedData = await initializeProfilePage(messageDiv, false); 
             allPeople = refreshedData.allPeople;
-            await refreshSpecificFamilyChildren(selectedConjointId);
-            messageDiv.textContent = `${childToUpdate.name} ajouté(e) à l'union.`; messageDiv.style.color = 'green';
+            currentUserProfile = refreshedData.currentUserProfile || currentUserProfile;
+            await refreshSpecificFamilyChildren(selectedConjointIdForAdd); 
+            messageDiv.textContent = `${childToUpdate.name} ajouté(e) comme enfant.`; messageDiv.style.color = 'green';
         } catch (err) { 
             messageDiv.textContent = `Erreur ajout enfant: ${err.message || err}`; messageDiv.style.color = 'red';
         }
@@ -396,77 +442,88 @@ async function setupSingleFamilySectionControls(familyIndex, currentConjointId, 
     };
 
     removeFamilyBtn.onclick = async () => {
-        if (!confirm("Supprimer cette section famille ? Le conjoint sera dissocié. Les enfants de cette union devront être réassignés manuellement si nécessaire.")) return;
-        section.remove(); 
-        messageDiv.textContent = "Section famille retirée. Sauvegardez le profil pour appliquer."; messageDiv.style.color = 'orange';
-        setTimeout(() => { messageDiv.textContent = ""; }, 4000);
-        const conjointToRemoveId = conjointSelect.value;
-        if(conjointToRemoveId && currentUserProfile.pids) {
-            currentUserProfile.pids = currentUserProfile.pids.filter(pid => pid !== conjointToRemoveId);
+        const conjointNameInvolved = currentConjointId ? (allPeople.find(p => p.id === currentConjointId)?.name || 'ce conjoint') : null;
+        let confirmMsg = "Supprimer cette section famille ?";
+        if (conjointNameInvolved) {
+            confirmMsg += ` Le conjoint ${conjointNameInvolved} sera dissocié si vous sauvegardez le profil.`;
         }
+        confirmMsg += " Les enfants listés ici ne seront pas automatiquement dissociés de leurs parents; cette action concerne la section UI et le lien de conjoint. Vous devrez sauvegarder le profil pour que les changements de conjoints soient effectifs.";
+
+        if (!confirm(confirmMsg)) return;
+        
+        section.remove(); 
+        
+        messageDiv.textContent = "Section famille retirée de l'interface. Sauvegardez le profil pour appliquer les changements de conjoints."; messageDiv.style.color = 'orange';
+        setTimeout(() => { messageDiv.textContent = ""; }, 5000);
     };
     
     if (removeConjointBtn) {
         removeConjointBtn.onclick = async () => {
-            if (!conjointSelect.value) return;
-            const conjointName = allPeople.find(p=>p.id === conjointSelect.value)?.name || 'ce conjoint';
-            if (!confirm(`Retirer ${conjointName} de cette famille ? Les enfants communs devront être gérés manuellement.`)) return;
+            const selectedConjointValue = conjointSelect.value;
+            if (!selectedConjointValue || selectedConjointValue.trim() === "") return;
+
+            const conjointName = allPeople.find(p=>p.id === selectedConjointValue)?.name || 'ce conjoint';
+            if (!confirm(`Retirer ${conjointName} de cette famille ? Les enfants ne seront plus listés sous cette union spécifique dans cette section. Vous devrez sauvegarder le profil pour que la dissociation du conjoint soit permanente.`)) return;
             
-            const conjointToRemoveId = conjointSelect.value;
             conjointSelect.value = ""; 
             await refreshSpecificFamilyChildren(null); 
             
-            if(conjointToRemoveId && currentUserProfile.pids) {
-                 currentUserProfile.pids = currentUserProfile.pids.filter(pid => pid !== conjointToRemoveId);
-            }
-            messageDiv.textContent = "Conjoint retiré. Sauvegardez le profil pour appliquer."; messageDiv.style.color = 'orange';
-            setTimeout(() => { messageDiv.textContent = ""; }, 4000);
+            messageDiv.textContent = "Conjoint retiré de cette section. Sauvegardez le profil global pour appliquer la modification des conjoints."; messageDiv.style.color = 'orange';
+            setTimeout(() => { messageDiv.textContent = ""; }, 5000);
         }
     }
 }
 
 async function initializeProfilePage(messageDiv, populateMainFields = true) {
-    let currentUserProfile, allPeople;
+    let localCurrentUserProfile, localAllPeople; // Use local vars to avoid race conditions with outer scope vars
     if(populateMainFields) {
       messageDiv.textContent = "Chargement du profil...";
       messageDiv.style.color = '#4a5568';
     }
     try {
-        currentUserProfile = await authService.fetchUserProfileFromServer();
-        if (!currentUserProfile) throw new Error("Profil utilisateur non récupéré.");
-        allPeople = await familyDataService.getAllFamilyData();
+        localCurrentUserProfile = await authService.fetchUserProfileFromServer();
+        if (!localCurrentUserProfile) throw new Error("Profil utilisateur non récupéré.");
+        localAllPeople = await familyDataService.getAllFamilyData();
 
         if(populateMainFields) {
-            document.getElementById('profile-name').value = currentUserProfile.name || '';
-            document.getElementById('profile-birthYear').value = currentUserProfile.birthYear || '';
-            document.getElementById('profile-deathYear').value = currentUserProfile.deathYear || '';
-            document.getElementById('profile-gmail').value = currentUserProfile.gmail || '';
-            document.getElementById('profile-gender').value = currentUserProfile.gender || 'unknown';
-            document.getElementById('profile-image-preview').src = currentUserProfile.img || '/assets/avatars/default.svg';
+            document.getElementById('profile-name').value = localCurrentUserProfile.name || '';
+            document.getElementById('profile-birthYear').value = localCurrentUserProfile.birthYear || '';
+            document.getElementById('profile-deathYear').value = localCurrentUserProfile.deathYear || '';
+            document.getElementById('profile-gmail').value = localCurrentUserProfile.gmail || '';
+            document.getElementById('profile-gender').value = localCurrentUserProfile.gender || 'unknown';
+            document.getElementById('profile-image-preview').src = localCurrentUserProfile.img || '/assets/avatars/default.svg';
             const imgUrlInput = document.getElementById('profile-imgUrl');
-            if (imgUrlInput && currentUserProfile.img && currentUserProfile.img.startsWith('http')) {
-                imgUrlInput.value = currentUserProfile.img;
+            if (imgUrlInput && localCurrentUserProfile.img && (localCurrentUserProfile.img.startsWith('http://') || localCurrentUserProfile.img.startsWith('https://'))) {
+                imgUrlInput.value = localCurrentUserProfile.img;
+            } else if (imgUrlInput) {
+                imgUrlInput.value = ''; 
             }
             const profileNameHeader = document.getElementById('profile-header-name');
-            if (profileNameHeader) profileNameHeader.textContent = currentUserProfile.name || 'Votre nom';
+            if (profileNameHeader) profileNameHeader.textContent = localCurrentUserProfile.name || 'Votre nom';
         }
 
-        const selfId = [currentUserProfile.id];
-        await populateSelect('profile-fid', allPeople, currentUserProfile.fid, selfId, 
-            p => p.gender === 'male' && p.id !== currentUserProfile.mid && p.id !== currentUserProfile.id && !allPeople.some(child => (child.fid === currentUserProfile.id || child.mid === currentUserProfile.id) && child.id === p.id) 
-        );
-        await populateSelect('profile-mid', allPeople, currentUserProfile.mid, selfId, 
-            p => p.gender === 'female' && p.id !== currentUserProfile.fid && p.id !== currentUserProfile.id && !allPeople.some(child => (child.fid === currentUserProfile.id || child.mid === currentUserProfile.id) && child.id === p.id)
-        );
+        const selfId = [localCurrentUserProfile.id];
+        const parentCandidateFilter = (pGender) => (p) => {
+            if (p.id === localCurrentUserProfile.id) return false; 
+            if (p.gender !== pGender && p.gender !== 'unknown') return false; // Allow unknown gender as parent too
+            if (p.id === (pGender === 'male' ? localCurrentUserProfile.mid : localCurrentUserProfile.fid)) return false; 
+            if (localAllPeople.some(child => (child.fid === localCurrentUserProfile.id || child.mid === localCurrentUserProfile.id) && child.id === p.id)) return false;
+            if (localCurrentUserProfile.pids && localCurrentUserProfile.pids.includes(p.id)) return false;
+            return true;
+        };
 
-        await setupDynamicFamilySections(allPeople, currentUserProfile, messageDiv);
+        await populateSelect('profile-fid', localAllPeople, localCurrentUserProfile.fid, selfId, parentCandidateFilter('male'));
+        await populateSelect('profile-mid', localAllPeople, localCurrentUserProfile.mid, selfId, parentCandidateFilter('female'));
+
+
+        await setupDynamicFamilySections(localAllPeople, localCurrentUserProfile, messageDiv);
 
         if(populateMainFields) messageDiv.textContent = ""; 
-        return { currentUserProfile, allPeople };
+        return { currentUserProfile: localCurrentUserProfile, allPeople: localAllPeople };
 
     } catch (error) {
         console.error("Erreur critique au chargement du profil:", error);
-        messageDiv.textContent = "Erreur critique au chargement du profil. Redirection...";
+        messageDiv.textContent = `Erreur critique: ${error.message}. Redirection...`;
         messageDiv.style.color = 'red';
         if (!authService.isAuthenticated()) { 
             setTimeout(() => window.location.href = '/login', 2000);
@@ -493,7 +550,7 @@ export async function setupProfileFormHandler() {
           const type = btn.dataset.relationType;
           if (type === 'fid') document.getElementById('profile-fid').value = "";
           else if (type === 'mid') document.getElementById('profile-mid').value = "";
-          messageDiv.textContent = "Parent retiré. Sauvegardez le profil pour appliquer."; messageDiv.style.color = 'orange';
+          messageDiv.textContent = "Parent retiré (sera appliqué à la sauvegarde)."; messageDiv.style.color = 'orange';
           setTimeout(() => { messageDiv.textContent = ""; }, 4000);
       };
   });
@@ -515,21 +572,26 @@ export async function setupProfileFormHandler() {
         }
     });
   }
-  if (imgUrlInput && imgPreview) {
+  if (imgUrlInput && imgPreview) { 
     imgUrlInput.addEventListener('input', (event) => {
-        const url = event.target.value;
-        if (url && url.startsWith('http')) { 
+        const url = event.target.value.trim();
+        if (url && (url.startsWith('http://') || url.startsWith('https://'))) { 
             imgPreview.src = url; 
             if (imgFileInput) imgFileInput.value = ''; 
-        } else if (!url && imgFileInput && !imgFileInput.files[0] && currentUserProfile) { 
-            imgPreview.src = currentUserProfile.img || '/assets/avatars/default.svg'; 
+        } else if (!url) { 
+            if (imgFileInput && imgFileInput.files[0]) {
+                // If file is selected, keep its preview. FileReader already did this.
+            } else if (currentUserProfile) { 
+                 imgPreview.src = currentUserProfile.img || '/assets/avatars/default.svg';
+            }
         }
     });
   }
 
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (!currentUserProfile) {
+    if (!currentUserProfile) { 
         messageDiv.textContent = "Profil non chargé. Impossible de sauvegarder."; messageDiv.style.color = 'red';
         return;
     }
@@ -546,16 +608,20 @@ export async function setupProfileFormHandler() {
     const mid = document.getElementById('profile-mid').value || null;
 
     const conjointSelects = document.querySelectorAll('.family-conjoint-select');
-    const pids = Array.from(conjointSelects).map(s => s.value).filter(v => v);
+    const pids = Array.from(conjointSelects)
+                      .map(s => s.value)
+                      .filter(v => v && v.trim() !== ""); 
 
     let imgData = currentUserProfile.img || '/assets/avatars/default.svg'; 
     const currentImgFile = imgFileInput ? imgFileInput.files[0] : null;
-    const currentImgUrl = imgUrlInput ? imgUrlInput.value : '';
+    const currentImgUrl = imgUrlInput ? imgUrlInput.value.trim() : '';
 
     if (currentImgFile && currentImgFile.size > 0) {
       imgData = await toBase64(currentImgFile);
-    } else if (currentImgUrl && currentImgUrl.trim() !== '' && currentImgUrl.startsWith('http')) {
-      imgData = currentImgUrl.trim();
+    } else if (currentImgUrl && (currentImgUrl.startsWith('http://') || currentImgUrl.startsWith('https://'))) {
+      imgData = currentImgUrl;
+    } else if (!currentImgUrl && !currentImgFile) { 
+        imgData = currentUserProfile.img || '/assets/avatars/default.svg';
     }
 
 
@@ -565,8 +631,14 @@ export async function setupProfileFormHandler() {
         setTimeout(() => { messageDiv.textContent = ""; }, 5000);
         return;
     }
-    if (pids.includes(fid) || pids.includes(mid)) {
-        messageDiv.textContent = "Un conjoint ne peut pas être également un parent direct.";
+    if (pids.includes(fid) && fid !== null) { 
+        messageDiv.textContent = "Un conjoint ne peut pas être également le père.";
+        messageDiv.style.color = 'red';
+        setTimeout(() => { messageDiv.textContent = ""; }, 5000);
+        return;
+    }
+    if (pids.includes(mid) && mid !== null) { 
+        messageDiv.textContent = "Un conjoint ne peut pas être également la mère.";
         messageDiv.style.color = 'red';
         setTimeout(() => { messageDiv.textContent = ""; }, 5000);
         return;
@@ -576,7 +648,7 @@ export async function setupProfileFormHandler() {
     const updatedProfileData = {
       ...currentUserProfile, 
       name,
-      birthYear: birthYear === null ? undefined : birthYear,
+      birthYear: birthYear === null ? undefined : birthYear, 
       deathYear: deathYear === null ? undefined : deathYear,
       gmail, gender, img: imgData,
       fid, mid,
@@ -588,7 +660,7 @@ export async function setupProfileFormHandler() {
       
       const refreshed = await initializeProfilePage(messageDiv, true); 
       currentUserProfile = refreshed.currentUserProfile; 
-      allPeople = refreshed.allPeople;
+      allPeople = refreshed.allPeople;                 
 
       messageDiv.textContent = 'Profil mis à jour avec succès !';
       messageDiv.style.color = 'green';
@@ -603,7 +675,6 @@ export async function setupProfileFormHandler() {
       console.error("Profile update failed:", error);
       messageDiv.textContent = error.response?.data?.message || error.message || 'Erreur lors de la mise à jour.';
       messageDiv.style.color = 'red';
-      setTimeout(() => { messageDiv.textContent = ""; }, 5000);
     }
   });
 
@@ -619,7 +690,7 @@ export async function setupProfileFormHandler() {
   if (deleteAccountButton) {
     deleteAccountButton.addEventListener('click', async () => {
         if (confirm("Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.")) {
-            if (confirm("Confirmation finale : Supprimer définitivement le compte ?")) {
+            if (confirm("Confirmation finale : Supprimer définitivement le compte et toutes les données associées ?")) {
                 messageDiv.textContent = "Suppression du compte..."; messageDiv.style.color = 'orange';
                 try {
                     await authService.deleteAccount(); 
