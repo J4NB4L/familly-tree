@@ -30,12 +30,12 @@ async function populateRelationSelect(selectElementId, data, currentValue, exclu
   });
 }
 
-// Helper pour gérer les sélections multiples (pour pids)
+// Helper pour gérer la sélection du conjoint (pour pids)
 function setupPidsSelect(selectElementId, allPeopleData, currentPids, excludeIds = []) {
     const selectElement = document.getElementById(selectElementId);
     if (!selectElement) return;
 
-    selectElement.innerHTML = ''; // Clear existing options
+    selectElement.innerHTML = '<option value="">-- Aucun(e) --</option>'; // Option pour ne rien sélectionner
 
     allPeopleData.forEach(person => {
         if (excludeIds.includes(person.id)) return;
@@ -43,13 +43,12 @@ function setupPidsSelect(selectElementId, allPeopleData, currentPids, excludeIds
         const option = document.createElement('option');
         option.value = person.id;
         option.textContent = `${person.name} (${person.birthYear || 'N/A'})`;
-        if (currentPids.includes(person.id)) {
+        // Sélectionner le premier conjoint s'il y en a plusieurs
+        if (currentPids.length > 0 && currentPids[0] === person.id) {
             option.selected = true;
         }
         selectElement.appendChild(option);
     });
-    // Ici, tu pourrais initialiser une librairie de 'select multiple' si tu en utilises une (ex: Select2, Choices.js)
-    // Pour un select multiple HTML standard, l'attribut `multiple` doit être sur la balise <select>.
 }
 
 
@@ -62,55 +61,93 @@ export function renderProfilePage() {
   };
 
   return `
-    <div class="container-card">
-      <div class="profile-header">
-        <h2>Votre Profil</h2>
-        <button id="logout-button" class="logout-button">Déconnexion</button>
-      </div>
-      <form id="profile-form">
-        <div style="grid-column: 1 / -1; text-align: center;">
-            <img src="${user.img}" alt="Photo de profil" id="profile-image-preview" style="max-width: 150px; height: 150px; border-radius: 50%; margin-bottom: 15px; object-fit: cover; border: 3px solid #4299e1;" />
-        </div>
-
-        <label for="profile-name">Nom complet :</label>
-        <input type="text" id="profile-name" name="name" value="${user.name || ''}" required />
-
-        <label for="profile-birthYear">Année de naissance :</label>
-        <input type="number" id="profile-birthYear" name="birthYear" value="${user.birthYear || ''}" min="1800" max="${new Date().getFullYear()}" />
-
-        <label for="profile-gmail">Email (associé à l'arbre) :</label>
-        <input type="email" id="profile-gmail" name="gmail" value="${user.gmail || ''}" pattern=".+@.+\\..+" />
-
-        <label for="profile-gender">Genre :</label>
-        <select id="profile-gender" name="gender" required>
-          <option value="unknown" ${user.gender === 'unknown' ? 'selected' : ''}>Non spécifié</option>
-          <option value="male" ${user.gender === 'male' ? 'selected' : ''}>Homme</option>
-          <option value="female" ${user.gender === 'female' ? 'selected' : ''}>Femme</option>
-        </select>
-
-        <label for="profile-imgFile">Changer la photo (fichier) :</label>
-        <input type="file" id="profile-imgFile" name="imgFile" accept="image/*" />
+    <div style="background-color: #f8f9fa; min-height: 100vh; padding: 20px; overflow-x: hidden;">
+      <div style="max-width: 1200px; margin: 0 auto;">
+        <h1 style="color: #333; font-size: 28px; margin-bottom: 25px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px;">Profil utilisateur</h1>
         
-        <label for="profile-imgUrl">Changer la photo (URL) :</label>
-        <input type="url" id="profile-imgUrl" name="imgUrl" placeholder="Ou collez une URL d'image" value="${(user.img && user.img.startsWith('http')) ? user.img : ''}"/>
-
-        <hr style="grid-column: 1 / -1; margin: 20px 0; border-color: #e2e8f0;"/>
-        <h3 style="grid-column: 1 / -1; color: #2d3748; font-weight:600;">Relations Familiales</h3>
-
-        <label for="profile-fid">Père :</label>
-        <select id="profile-fid" name="fid"></select>
-
-        <label for="profile-mid">Mère :</label>
-        <select id="profile-mid" name="mid"></select>
-
-        <label for="profile-pids">Conjoint(s) :</label>
-        <select id="profile-pids" name="pids" multiple style="min-height: 100px;"></select>
-        <small style="grid-column: 1 / -1; text-align:center;">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs conjoints.</small>
-
-
-        <button type="submit" style="grid-column: 1 / -1;">Mettre à jour le profil</button>
-      </form>
-      <div id="profile-message" style="margin-top: 15px; text-align: center;"></div>
+        <div style="display: flex; flex-direction: column; background-color: white; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.15); overflow: hidden; padding: 0; width: 100%; max-height: calc(100vh - 120px);">
+          <div style="display: flex; flex-wrap: wrap;">
+            <!-- Colonne de gauche avec photo -->
+            <div style="width: 280px; padding: 30px; text-align: center; border-right: 1px solid #e2e8f0; flex-shrink: 0;">
+              <div style="position: relative; width: 180px; height: 180px; margin: 0 auto 20px;">
+                <img src="${user.img}" alt="Photo de profil" id="profile-image-preview" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #4299e1; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+                <div style="position: absolute; bottom: 5px; right: 5px; background-color: #4299e1; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.3);" onclick="document.getElementById('profile-imgFile').click()">
+                  <span style="color: white; font-size: 24px;">+</span>
+                </div>
+              </div>
+              <h2 style="margin: 0 0 20px; font-size: 24px; color: #333; font-weight: 600;">${user.name || 'Votre nom'}</h2>
+              
+              <!-- Bouton de déconnexion -->
+              <button id="logout-button" style="width: 100%; margin-top: 20px; background-color: #f56565; color: white; border: none; padding: 12px 0; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.2s ease;">Déconnexion</button>
+              
+              <!-- Champs cachés pour l'upload d'image -->
+              <input type="file" id="profile-imgFile" name="imgFile" accept="image/*" style="display:none" />
+              <input type="url" id="profile-imgUrl" name="imgUrl" style="display:none" value="${(user.img && user.img.startsWith('http')) ? user.img : ''}"/>
+            </div>
+            
+            <!-- Colonne principale avec informations -->
+            <div style="flex: 1; padding: 30px; min-width: 300px;">
+              <h3 style="margin: 0 0 25px; color: #2d3748; font-size: 20px; font-weight: 600;">Informations personnelles</h3>
+              
+              <form id="profile-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; row-gap: 20px;">
+                <!-- Informations personnelles -->
+                <div style="display: flex; align-items: center;">
+                  <span style="width: 180px; color: #4a5568; font-size: 16px; font-weight: 500;">Genre:</span>
+                  <select id="profile-gender" name="gender" style="flex: 1; padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; background-color: white; font-size: 16px;">
+                    <option value="unknown" ${user.gender === 'unknown' ? 'selected' : ''}>Non spécifié</option>
+                    <option value="male" ${user.gender === 'male' ? 'selected' : ''}>Homme</option>
+                    <option value="female" ${user.gender === 'female' ? 'selected' : ''}>Femme</option>
+                  </select>
+                </div>
+                
+                <div style="display: flex; align-items: center;">
+                  <span style="width: 180px; color: #4a5568; font-size: 16px; font-weight: 500;">Date de naissance:</span>
+                  <input type="number" id="profile-birthYear" name="birthYear" value="${user.birthYear || ''}" min="1800" max="${new Date().getFullYear()}" style="flex: 1; padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 16px;" />
+                </div>
+                
+                <div style="display: flex; align-items: center;">
+                  <span style="width: 180px; color: #4a5568; font-size: 16px; font-weight: 500;">Email:</span>
+                  <input type="email" id="profile-gmail" name="gmail" value="${user.gmail || ''}" pattern=".+@.+\\..+" style="flex: 1; padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 16px;" />
+                </div>
+                
+                <div style="display: flex; align-items: center;">
+                  <span style="width: 180px; color: #4a5568; font-size: 16px; font-weight: 500;">Nom complet:</span>
+                  <input type="text" id="profile-name" name="name" value="${user.name || ''}" required style="flex: 1; padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 16px;" />
+                </div>
+                
+                <!-- Section Relations Familiales -->
+                <div style="grid-column: 1 / -1; margin-top: 15px;">
+                  <h3 style="color: #2d3748; font-size: 20px; font-weight: 600; margin: 15px 0; padding-top: 20px; border-top: 2px solid #e2e8f0;">Relations Familiales</h3>
+                </div>
+                
+                <div style="display: flex; align-items: center;">
+                  <span style="width: 180px; color: #4a5568; font-size: 16px; font-weight: 500;">Père:</span>
+                  <select id="profile-fid" name="fid" style="flex: 1; padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; background-color: white; font-size: 16px;"></select>
+                </div>
+                
+                <div style="display: flex; align-items: center;">
+                  <span style="width: 180px; color: #4a5568; font-size: 16px; font-weight: 500;">Mère:</span>
+                  <select id="profile-mid" name="mid" style="flex: 1; padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; background-color: white; font-size: 16px;"></select>
+                </div>
+                
+                <div style="display: flex; align-items: center;">
+                  <span style="width: 180px; color: #4a5568; font-size: 16px; font-weight: 500;">Conjoint:</span>
+                  <select id="profile-pids" name="pids" style="flex: 1; padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; background-color: white; font-size: 16px;">
+                    <!-- Options seront ajoutées dynamiquement -->
+                  </select>
+                </div>
+                
+                <!-- Bouton de mise à jour -->
+                <div style="grid-column: 1 / -1; text-align: right; margin-top: 20px;">
+                  <button type="submit" style="background-color: #4299e1; color: white; border: none; padding: 12px 30px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">Mettre à jour</button>
+                </div>
+              </form>
+              
+              <div id="profile-message" style="margin-top: 15px; padding: 12px; border-radius: 6px; font-size: 16px; font-weight: 500; text-align: center;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 }
