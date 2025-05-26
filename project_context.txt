@@ -1,9 +1,14 @@
 Project Context From: /c/Users/PC/School/RO/TP/TP1/frontend
-Generated On: Sun May 25 20:39:41     2025
+Generated On: Mon May 26 01:34:47     2025
 ===============================================
 Ignored Directory Patterns: .* node_modules vendor build dist target __pycache__ .next cache target venv storage
 Ignored File Patterns: *.log *.jar *.pdf *.png *.jpg *.class *.sqlite *.csv project_context.txt package-lock.json yarn.lock composer.lock *.ico pnpm-lock.yaml
 ===============================================
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/.env
+
+# URL de base de l'API backend
+VITE_API_URL=http://localhost:5000/api// END OF FILE: .env
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/.gitignore
 
@@ -246,11 +251,13 @@ exit 0
 
 [
   {
-    "id": 1,
+    "id": "d4c3e1a5-0b1e-4f8a-9a9c-0d2b3e4f5a6b",
     "name": "Maurice Dupont",
     "mid": null,
     "fid": null,
-    "pids": [2],
+    "pids": [
+      "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+    ],
     "gender": "male",
     "birthYear": 1935,
     "deathYear": 2010,
@@ -258,11 +265,13 @@ exit 0
     "gmail": "maurice.dupont@gmail.com"
   },
   {
-    "id": 2,
+    "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
     "name": "Jeanne Martin",
     "mid": null,
     "fid": null,
-    "pids": [1],
+    "pids": [
+      "d4c3e1a5-0b1e-4f8a-9a9c-0d2b3e4f5a6b"
+    ],
     "gender": "female",
     "birthYear": 1938,
     "deathYear": 2015,
@@ -270,201 +279,251 @@ exit 0
     "gmail": "jeanne.martin@gmail.com"
   },
   {
-    "id": 3,
+    "id": "b8c9d0e1-f2a3-b4c5-d6e7-f8g9h0i1j2k3",
     "name": "Bernard Dupont",
-    "mid": 2,
-    "fid": 1,
-    "pids": [4],
+    "mid": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "fid": "d4c3e1a5-0b1e-4f8a-9a9c-0d2b3e4f5a6b",
+    "pids": [
+      "c1d2e3f4-g5h6-i7j8-k9l0-m1n2o3p4q5r6"
+    ],
     "gender": "male",
     "birthYear": 1960,
+    "deathYear": null,
     "img": "/assets/avatars/father.svg",
     "gmail": "bernard.dupont@gmail.com"
   },
   {
-    "id": 4,
+    "id": "c1d2e3f4-g5h6-i7j8-k9l0-m1n2o3p4q5r6",
     "name": "Sophie Lefèvre",
     "mid": null,
     "fid": null,
-    "pids": [3],
+    "pids": [
+      "b8c9d0e1-f2a3-b4c5-d6e7-f8g9h0i1j2k3"
+    ],
     "gender": "female",
     "birthYear": 1962,
+    "deathYear": null,
     "img": "/assets/avatars/mother.svg",
     "gmail": "sophie.lefevre@gmail.com"
   },
   {
-    "id": 5,
+    "id": "e5f6g7h8-i9j0-k1l2-m3n4-o5p6q7r8s9t0",
     "name": "Pierre Lambert",
     "mid": null,
     "fid": null,
-    "pids": [6],
+    "pids": [
+      "f1g2h3i4-j5k6-l7m8-n9o0-p1q2r3s4t5u6"
+    ],
     "gender": "male",
     "birthYear": 1958,
+    "deathYear": null,
     "img": "/assets/avatars/father.svg",
     "gmail": "pierre.lambert@gmail.com"
   },
   {
-    "id": 6,
+    "id": "f1g2h3i4-j5k6-l7m8-n9o0-p1q2r3s4t5u6",
     "name": "Catherine Dupont",
-    "mid": 2,
-    "fid": 1,
-    "pids": [5],
+    "mid": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "fid": "d4c3e1a5-0b1e-4f8a-9a9c-0d2b3e4f5a6b",
+    "pids": [
+      "e5f6g7h8-i9j0-k1l2-m3n4-o5p6q7r8s9t0"
+    ],
     "gender": "female",
     "birthYear": 1963,
+    "deathYear": null,
     "img": "/assets/avatars/mother.svg",
     "gmail": "catherine.dupont@gmail.com"
   },
   {
-    "id": 7,
+    "id": "g7h8i9j0-k1l2-m3n4-o5p6-q7r8s9t0u1v2",
     "name": "René Moreau",
     "mid": null,
     "fid": null,
-    "pids": [8],
+    "pids": [
+      "h1i2j3k4-l5m6-n7o8-p9q0-r1s2t3u4v5w6"
+    ],
     "gender": "male",
     "birthYear": 1965,
+    "deathYear": null,
     "img": "/assets/avatars/father.svg",
     "gmail": "rene.moreau@gmail.com"
   },
   {
-    "id": 8,
+    "id": "h1i2j3k4-l5m6-n7o8-p9q0-r1s2t3u4v5w6",
     "name": "Marie Dupont",
-    "mid": 2,
-    "fid": 1,
-    "pids": [7],
+    "mid": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "fid": "d4c3e1a5-0b1e-4f8a-9a9c-0d2b3e4f5a6b",
+    "pids": [
+      "g7h8i9j0-k1l2-m3n4-o5p6-q7r8s9t0u1v2"
+    ],
     "gender": "female",
     "birthYear": 1965,
+    "deathYear": null,
     "img": "/assets/avatars/mother.svg",
     "gmail": "marie.dupont@gmail.com"
   },
   {
-    "id": 9,
+    "id": "i7j8k9l0-m1n2-o3p4-q5r6-s7t8u9v0w1x2",
     "name": "Thomas Dupont",
-    "mid": 4,
-    "fid": 3,
-    "pids": [10],
+    "mid": "c1d2e3f4-g5h6-i7j8-k9l0-m1n2o3p4q5r6",
+    "fid": "b8c9d0e1-f2a3-b4c5-d6e7-f8g9h0i1j2k3",
+    "pids": [
+      "j1k2l3m4-n5o6-p7q8-r9s0-t1u2v3w4x5y6"
+    ],
     "gender": "male",
     "birthYear": 1985,
+    "deathYear": null,
     "img": "/assets/avatars/son.svg",
     "gmail": "thomas.dupont@gmail.com"
   },
   {
-    "id": 10,
+    "id": "j1k2l3m4-n5o6-p7q8-r9s0-t1u2v3w4x5y6",
     "name": "Laura Blanc",
     "mid": null,
     "fid": null,
-    "pids": [9],
+    "pids": [
+      "i7j8k9l0-m1n2-o3p4-q5r6-s7t8u9v0w1x2"
+    ],
     "gender": "female",
     "birthYear": 1988,
+    "deathYear": null,
     "img": "/assets/avatars/wife.svg",
     "gmail": "laura.blanc@gmail.com"
   },
   {
-    "id": 11,
+    "id": "k7l8m9n0-o1p2-q3r4-s5t6-u7v8w9x0y1z2",
     "name": "Emilie Dupont",
-    "mid": 4,
-    "fid": 3,
-    "pids": [12],
+    "mid": "c1d2e3f4-g5h6-i7j8-k9l0-m1n2o3p4q5r6",
+    "fid": "b8c9d0e1-f2a3-b4c5-d6e7-f8g9h0i1j2k3",
+    "pids": [
+      "l1m2n3o4-p5q6-r7s8-t9u0-v1w2x3y4z5a6"
+    ],
     "gender": "female",
     "birthYear": 1990,
+    "deathYear": null,
     "img": "/assets/avatars/daughter.svg",
     "gmail": "emilie.dupont@gmail.com"
   },
   {
-    "id": 12,
+    "id": "l1m2n3o4-p5q6-r7s8-t9u0-v1w2x3y4z5a6",
     "name": "Julien Petit",
     "mid": null,
     "fid": null,
-    "pids": [11],
+    "pids": [
+      "k7l8m9n0-o1p2-q3r4-s5t6-u7v8w9x0y1z2"
+    ],
     "gender": "male",
     "birthYear": 1987,
+    "deathYear": null,
     "img": "/assets/avatars/husband.svg",
     "gmail": "julien.petit@gmail.com"
   },
   {
-    "id": 13,
+    "id": "m7n8o9p0-q1r2-s3t4-u5v6-w7x8y9z0a1b2",
     "name": "Marc Lambert",
-    "mid": 6,
-    "fid": 5,
+    "mid": "f1g2h3i4-j5k6-l7m8-n9o0-p1q2r3s4t5u6",
+    "fid": "e5f6g7h8-i9j0-k1l2-m3n4-o5p6q7r8s9t0",
+    "pids": [],
     "gender": "male",
     "birthYear": 1988,
+    "deathYear": null,
     "img": "/assets/avatars/son.svg",
     "gmail": "marc.lambert@gmail.com"
   },
   {
-    "id": 14,
+    "id": "n1o2p3q4-r5s6-t7u8-v9w0-x1y2z3a4b5c6",
     "name": "Claire Lambert",
-    "mid": 6,
-    "fid": 5,
+    "mid": "f1g2h3i4-j5k6-l7m8-n9o0-p1q2r3s4t5u6",
+    "fid": "e5f6g7h8-i9j0-k1l2-m3n4-o5p6q7r8s9t0",
+    "pids": [],
     "gender": "female",
     "birthYear": 1992,
+    "deathYear": null,
     "img": "/assets/avatars/daughter.svg",
     "gmail": "claire.lambert@gmail.com"
   },
   {
-    "id": 15,
+    "id": "o7p8q9r0-s1t2-u3v4-w5x6-y7z8a9b0c1d2",
     "name": "Pascal Moreau",
-    "mid": 8,
-    "fid": 7,
+    "mid": "h1i2j3k4-l5m6-n7o8-p9q0-r1s2t3u4v5w6",
+    "fid": "g7h8i9j0-k1l2-m3n4-o5p6-q7r8s9t0u1v2",
+    "pids": [
+      "s1t2u3v4-w5x6-y7z8-a9b0-c1d2e3f4g5h6"
+    ],
     "gender": "male",
     "birthYear": 1990,
+    "deathYear": null,
     "img": "/assets/avatars/son.svg",
     "gmail": "pascal.moreau@gmail.com"
   },
   {
-    "id": 16,
+    "id": "p1q2r3s4-t5u6-v7w8-x9y0-z1a2b3c4d5e6",
     "name": "Alice Moreau",
-    "mid": 8,
-    "fid": 7,
+    "mid": "h1i2j3k4-l5m6-n7o8-p9q0-r1s2t3u4v5w6",
+    "fid": "g7h8i9j0-k1l2-m3n4-o5p6-q7r8s9t0u1v2",
+    "pids": [],
     "gender": "female",
     "birthYear": 1993,
+    "deathYear": null,
     "img": "/assets/avatars/daughter.svg",
     "gmail": "alice.moreau@gmail.com"
   },
   {
-    "id": 17,
+    "id": "q7r8s9t0-u1v2-w3x4-y5z6-a7b8c9d0e1f2",
     "name": "Léo Dupont",
-    "mid": 10,
-    "fid": 9,
+    "mid": "j1k2l3m4-n5o6-p7q8-r9s0-t1u2v3w4x5y6",
+    "fid": "i7j8k9l0-m1n2-o3p4-q5r6-s7t8u9v0w1x2",
+    "pids": [],
     "gender": "male",
     "birthYear": 2015,
+    "deathYear": null,
     "img": "/assets/avatars/grandson.svg",
     "gmail": "leo.dupont@gmail.com"
   },
   {
-    "id": 18,
+    "id": "r1s2t3u4-v5w6-x7y8-z9a0-b1c2d3e4f5g6",
     "name": "Emma Dupont",
-    "mid": 10,
-    "fid": 9,
+    "mid": "j1k2l3m4-n5o6-p7q8-r9s0-t1u2v3w4x5y6",
+    "fid": "i7j8k9l0-m1n2-o3p4-q5r6-s7t8u9v0w1x2",
+    "pids": [],
     "gender": "female",
     "birthYear": 2018,
+    "deathYear": null,
     "img": "/assets/avatars/granddaughter.svg",
     "gmail": "emma.dupont@gmail.com"
   },
   {
-    "id": 19,
+    "id": "s7t8u9v0-w1x2-y3z4-a5b6-c7d8e9f0g1h2",
     "name": "Lucas Petit",
-    "mid": 11,
-    "fid": 12,
+    "mid": "k7l8m9n0-o1p2-q3r4-s5t6-u7v8w9x0y1z2",
+    "fid": "l1m2n3o4-p5q6-r7s8-t9u0-v1w2x3y4z5a6",
+    "pids": [],
     "gender": "male",
     "birthYear": 2019,
+    "deathYear": null,
     "img": "/assets/avatars/grandson.svg",
     "gmail": "lucas.petit@gmail.com"
   },
   {
-    "id": 20,
+    "id": "t1u2v3w4-x5y6-z7a8-b9c0-d1e2f3g4h5i6",
     "name": "Louise Petit",
-    "mid": 11,
-    "fid": 12,
+    "mid": "k7l8m9n0-o1p2-q3r4-s5t6-u7v8w9x0y1z2",
+    "fid": "l1m2n3o4-p5q6-r7s8-t9u0-v1w2x3y4z5a6",
+    "pids": [],
     "gender": "female",
     "birthYear": 2021,
+    "deathYear": null,
     "img": "/assets/avatars/granddaughter.svg",
     "gmail": "louise.petit@gmail.com"
   },
   {
-    "id": 21,
+    "id": "u7v8w9x0-y1z2-a3b4-c5d6-e7f8g9h0i1j2",
     "name": "Richard Roy",
     "mid": null,
     "fid": null,
-    "pids": [22],
+    "pids": [
+      "v1w2x3y4-z5a6-b7c8-d9e0-f1g2h3i4j5k6"
+    ],
     "gender": "male",
     "birthYear": 1940,
     "deathYear": 2020,
@@ -472,81 +531,98 @@ exit 0
     "gmail": "richard.roy@gmail.com"
   },
   {
-    "id": 22,
+    "id": "v1w2x3y4-z5a6-b7c8-d9e0-f1g2h3i4j5k6",
     "name": "Hélène Durand",
     "mid": null,
     "fid": null,
-    "pids": [21],
+    "pids": [
+      "u7v8w9x0-y1z2-a3b4-c5d6-e7f8g9h0i1j2"
+    ],
     "gender": "female",
     "birthYear": 1942,
+    "deathYear": null,
     "img": "/assets/avatars/grandmother.svg",
     "gmail": "helene.durand@gmail.com"
   },
   {
-    "id": 23,
+    "id": "w7x8y9z0-a1b2-c3d4-e5f6-g7h8i9j0k1l2",
     "name": "Philippe Roy",
-    "mid": 22,
-    "fid": 21,
-    "pids": [24],
+    "mid": "v1w2x3y4-z5a6-b7c8-d9e0-f1g2h3i4j5k6",
+    "fid": "u7v8w9x0-y1z2-a3b4-c5d6-e7f8g9h0i1j2",
+    "pids": [
+      "x1y2z3a4-b5c6-d7e8-f9g0-h1i2j3k4l5m6"
+    ],
     "gender": "male",
     "birthYear": 1964,
+    "deathYear": null,
     "img": "/assets/avatars/father.svg",
     "gmail": "philippe.roy@gmail.com"
   },
   {
-    "id": 24,
+    "id": "x1y2z3a4-b5c6-d7e8-f9g0-h1i2j3k4l5m6",
     "name": "Nathalie Simon",
     "mid": null,
     "fid": null,
-    "pids": [23],
+    "pids": [
+      "w7x8y9z0-a1b2-c3d4-e5f6-g7h8i9j0k1l2"
+    ],
     "gender": "female",
     "birthYear": 1967,
+    "deathYear": null,
     "img": "/assets/avatars/mother.svg",
     "gmail": "nathalie.simon@gmail.com"
   },
   {
-    "id": 25,
+    "id": "s1t2u3v4-w5x6-y7z8-a9b0-c1d2e3f4g5h6",
     "name": "Isabelle Roy",
-    "mid": 22,
-    "fid": 21,
-    "pids": [15],
+    "mid": "v1w2x3y4-z5a6-b7c8-d9e0-f1g2h3i4j5k6",
+    "fid": "u7v8w9x0-y1z2-a3b4-c5d6-e7f8g9h0i1j2",
+    "pids": [
+      "o7p8q9r0-s1t2-u3v4-w5x6-y7z8a9b0c1d2"
+    ],
     "gender": "female",
     "birthYear": 1968,
+    "deathYear": null,
     "img": "/assets/avatars/mother.svg",
     "gmail": "isabelle.roy@gmail.com"
   },
   {
-    "id": 26,
+    "id": "y7z8a9b0-c1d2-e3f4-g5h6-i7j8k9l0m1n2",
     "name": "Antoine Roy",
-    "mid": 24,
-    "fid": 23,
+    "mid": "x1y2z3a4-b5c6-d7e8-f9g0-h1i2j3k4l5m6",
+    "fid": "w7x8y9z0-a1b2-c3d4-e5f6-g7h8i9j0k1l2",
+    "pids": [],
     "gender": "male",
     "birthYear": 1995,
+    "deathYear": null,
     "img": "/assets/avatars/son.svg",
     "gmail": "antoine.roy@gmail.com"
   },
   {
-    "id": 27,
+    "id": "z1a2b3c4-d5e6-f7g8-h9i0-j1k2l3m4n5o6",
     "name": "Camille Roy",
-    "mid": 24,
-    "fid": 23,
+    "mid": "x1y2z3a4-b5c6-d7e8-f9g0-h1i2j3k4l5m6",
+    "fid": "w7x8y9z0-a1b2-c3d4-e5f6-g7h8i9j0k1l2",
+    "pids": [],
     "gender": "female",
     "birthYear": 1998,
+    "deathYear": null,
     "img": "/assets/avatars/daughter.svg",
     "gmail": "camille.roy@gmail.com"
   },
   {
-    "id": 28,
+    "id": "a7b8c9d0-e1f2-g3h4-i5j6-k7l8m9n0o1p2",
     "name": "Théo Moreau",
-    "mid": 25,
-    "fid": 15,
+    "mid": "s1t2u3v4-w5x6-y7z8-a9b0-c1d2e3f4g5h6",
+    "fid": "o7p8q9r0-s1t2-u3v4-w5x6-y7z8a9b0c1d2",
+    "pids": [],
     "gender": "male",
     "birthYear": 2020,
+    "deathYear": null,
     "img": "/assets/avatars/grandson.svg",
     "gmail": "theo.moreau@gmail.com"
   }
-]
-// END OF FILE: public/data/dummydata.json
+]// END OF FILE: public/data/dummydata.json
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/public/vite.svg
 
@@ -611,87 +687,56 @@ export function renderLeftSidebar() {
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/login.js
 
-// src/components/login.js
+// frontend/src/components/login.js (ou LoginPage.js)
 import { authService } from '../services/authService';
-import { familyDataService } from '../services/familyDataService'; // Import familyDataService
+// import { familyDataService } from '../services/familyDataService'; // Moins direct ici
 
 export function renderLoginPage() {
   return `
-    <div class="container-card">
+    <div class="container-card" style="max-width: 500px; margin: 40px auto;">
       <h2>Connexion</h2>
       <form id="login-form">
-        <label>Nom complet :</label>
-        <input type="text" name="name" required />
+        <label for="email">Email :</label>
+        <input type="email" id="email" name="email" required />
 
-        <label>Année de naissance :</label>
-        <input type="number" name="birthYear" required min="1900" max="2025" />
-
-        <label>Email (Gmail) :</label>
-        <input type="email" name="email" pattern=".+@gmail\\.com" required />
-
-        <label>Genre :</label>
-        <select name="gender" required>
-          <option value="">-- Choisissez --</option>
-          <option value="male">Homme</option>
-          <option value="female">Femme</option>
-        </select>
-
-        <label>Photo (URL ou fichier) :</label>
-        <input type="file" name="imgFile" accept="image/*" />
-        <input type="url" name="imgUrl" placeholder="ou collez une URL d'image" />
+        <label for="password">Mot de passe :</label>
+        <input type="password" id="password" name="password" required />
 
         <button type="submit">Se connecter</button>
+        <p style="text-align: center; margin-top: 15px;">
+          Pas encore de compte ? <a href="/register" data-link>S'inscrire</a>
+        </p>
       </form>
+      <div id="login-error" style="color: red; margin-top: 10px;"></div>
     </div>
   `;
 }
 
 export function setupLoginFormHandler() {
   const form = document.getElementById('login-form');
+  const errorDiv = document.getElementById('login-error');
   if (!form) return;
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    errorDiv.textContent = ''; // Clear previous errors
     const formData = new FormData(e.target);
-    // ... (formData retrieval as before) ...
-    const name = formData.get('name');
-    const birthYear = parseInt(formData.get('birthYear'), 10);
-    const gmail = formData.get('email');
-    const gender = formData.get('gender');
-    let img = '/assets/avatars/default.svg';
-    // ... (imgFile and imgUrl logic as before to set img) ...
-    const imgFile = formData.get('imgFile');
-    const imgUrl = formData.get('imgUrl');
-    if (imgFile && imgFile.size > 0) {
-        img = await toBase64(imgFile);
-      } else if (imgUrl) {
-        img = imgUrl;
-      }
+    const email = formData.get('email');
+    const password = formData.get('password');
 
     try {
-      const userProfile = await authService.login(name, birthYear, gmail, gender, img);
-      // Ensure the new user profile is also reflected in the main familyData
-      // This is important if the user is "new" to the dataset
-      await familyDataService.updatePersonInFamilyData(userProfile);
-      
-      // Ensure dummy data is loaded if this is the first time (or handled by getAllFamilyData)
-      await familyDataService.getAllFamilyData(); // This ensures it's loaded/initialized
-
-      window.location.href = '/profile'; // Or use router navigateTo
+      const userProfileFromTree = await authService.login(email, password); // authService.login gère maintenant la synchro avec l'arbre
+      if (userProfileFromTree) {
+        window.location.href = '/'; // Ou la page de profil /dashboard
+      } else {
+        // Ce cas ne devrait pas arriver si authService.login lève une erreur en cas d'échec
+        errorDiv.textContent = "Échec de la connexion. Profil non chargé.";
+      }
     } catch (error) {
       console.error("Login failed:", error);
-      // Handle login error display
+      errorDiv.textContent = error.response?.data?.message || "Échec de la connexion. Vérifiez vos identifiants.";
     }
   });
-
-  function toBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result.split(',')[1]);
-      reader.onerror = reject;
-    });
-  }
 }// END OF FILE: src/components/login.js
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/maincontent.js
@@ -725,32 +770,34 @@ export function renderMainContent() {
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/navbar.js
 
+// frontend/src/components/navbar.js
 import { authService } from '../services/authService';
 
-
 export function renderNavbar() {
-  const user = authService.getCurrentUserProfile();
+  // Utiliser le profil mis en cache. Le router se charge de le rafraîchir au besoin.
+  const userProfile = authService.getCurrentUserProfile(); 
 
-  const userSection = user
-    ? `
+  let userSectionHtml = '<a href="/login" data-link>Connexion</a>'; // Par défaut
+  
+  if (userProfile && userProfile.id) { // Vérifier si l'utilisateur est "connecté" et a un profil
+    userSectionHtml = `
       <a href="/profile" data-link class="user-info">
-        <img src="${user.img}" alt="Photo de ${user.name}" class="user-avatar" />
-        <span>${user.name}</span>
+        <img src="${userProfile.img || '/assets/avatars/default.svg'}" alt="Photo de ${userProfile.name || 'Utilisateur'}" class="user-avatar" />
+        <span>${userProfile.name || 'Mon Profil'}</span>
       </a>
-    `
-    : `<a href="/login" data-link>Connexion</a>`;
+    `;
+  }
 
   return `
     <div id="navbar">
       <h1>Arbre Généalogique Familial</h1>
       <div id="navbar-menu">
         <a href="/" data-link>Accueil</a>
-        ${userSection}
+        ${userSectionHtml}
       </div>
     </div>
   `;
-}
-// END OF FILE: src/components/navbar.js
+}// END OF FILE: src/components/navbar.js
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/profile.js
 
@@ -758,18 +805,63 @@ export function renderNavbar() {
 import { authService } from '../services/authService';
 import { familyDataService } from '../services/familyDataService';
 
+// Helper pour peupler les menus déroulants des relations
+// `data` est la liste complète des personnes (FamilyPerson[])
+// `currentValue` est l'ID (UUID string) actuellement sélectionné pour ce champ
+// `excludeIds` est un tableau d'IDs (UUID strings) à exclure des options (ex: soi-même)
+async function populateRelationSelect(selectElementId, data, currentValue, excludeIds = [], filterGender = null) {
+  const selectElement = document.getElementById(selectElementId);
+  if (!selectElement) return;
+
+  selectElement.innerHTML = '<option value="">-- Aucun(e) --</option>'; // Option pour ne rien sélectionner
+
+  let filteredData = data;
+  if (filterGender) {
+    filteredData = data.filter(p => p.gender === filterGender);
+  }
+
+  filteredData.forEach(person => {
+    if (excludeIds.includes(person.id)) return;
+
+    const option = document.createElement('option');
+    option.value = person.id; // UUID
+    option.textContent = `${person.name} (${person.birthYear || 'N/A'})`;
+    if (person.id === currentValue) {
+      option.selected = true;
+    }
+    selectElement.appendChild(option);
+  });
+}
+
+// Helper pour gérer les sélections multiples (pour pids)
+function setupPidsSelect(selectElementId, allPeopleData, currentPids, excludeIds = []) {
+    const selectElement = document.getElementById(selectElementId);
+    if (!selectElement) return;
+
+    selectElement.innerHTML = ''; // Clear existing options
+
+    allPeopleData.forEach(person => {
+        if (excludeIds.includes(person.id)) return;
+
+        const option = document.createElement('option');
+        option.value = person.id;
+        option.textContent = `${person.name} (${person.birthYear || 'N/A'})`;
+        if (currentPids.includes(person.id)) {
+            option.selected = true;
+        }
+        selectElement.appendChild(option);
+    });
+    // Ici, tu pourrais initialiser une librairie de 'select multiple' si tu en utilises une (ex: Select2, Choices.js)
+    // Pour un select multiple HTML standard, l'attribut `multiple` doit être sur la balise <select>.
+}
+
+
 export function renderProfilePage() {
+  // Essayer de charger le profil frais, sinon utiliser le cache.
+  // Cette logique sera dans setupProfileFormHandler pour le chargement initial.
   const user = authService.getCurrentUserProfile() || {
-    // Default structure if no profile exists, to prevent render errors
-    id: null,
-    name: '',
-    fid: null,
-    mid: null,
-    pids: [],
-    gender: '',
-    birthYear: '',
-    img: '/assets/avatars/default.svg',
-    gmail: ''
+    id: '', name: '', fid: null, mid: null, pids: [], gender: 'unknown',
+    birthYear: '', img: '/assets/avatars/default.svg', gmail: ''
   };
 
   return `
@@ -779,405 +871,295 @@ export function renderProfilePage() {
         <button id="logout-button" class="logout-button">Déconnexion</button>
       </div>
       <form id="profile-form">
-        <img src="${user.img}" alt="Photo de profil" style="max-width: 150px; border-radius: 50%; margin-bottom: 15px; object-fit: cover; border: 3px solid #4299e1;" />
+        <div style="grid-column: 1 / -1; text-align: center;">
+            <img src="${user.img}" alt="Photo de profil" id="profile-image-preview" style="max-width: 150px; height: 150px; border-radius: 50%; margin-bottom: 15px; object-fit: cover; border: 3px solid #4299e1;" />
+        </div>
 
-        <label>Nom :</label>
-        <input type="text" name="name" value="${user.name || ''}" required />
+        <label for="profile-name">Nom complet :</label>
+        <input type="text" id="profile-name" name="name" value="${user.name || ''}" required />
 
-        <label>Année de naissance :</label>
-        <input type="number" name="birthYear" value="${user.birthYear || ''}" required min="1900" max="${new Date().getFullYear()}" />
+        <label for="profile-birthYear">Année de naissance :</label>
+        <input type="number" id="profile-birthYear" name="birthYear" value="${user.birthYear || ''}" min="1800" max="${new Date().getFullYear()}" />
 
-        <label>Email (Gmail) :</label>
-        <input type="email" name="gmail" value="${user.gmail || ''}" required pattern=".+@gmail\\.com" />
+        <label for="profile-gmail">Email (associé à l'arbre) :</label>
+        <input type="email" id="profile-gmail" name="gmail" value="${user.gmail || ''}" pattern=".+@.+\\..+" />
 
-        <label>Genre :</label>
-        <select name="gender" required>
-          <option value="">-- Choisissez --</option>
+        <label for="profile-gender">Genre :</label>
+        <select id="profile-gender" name="gender" required>
+          <option value="unknown" ${user.gender === 'unknown' ? 'selected' : ''}>Non spécifié</option>
           <option value="male" ${user.gender === 'male' ? 'selected' : ''}>Homme</option>
           <option value="female" ${user.gender === 'female' ? 'selected' : ''}>Femme</option>
         </select>
 
-        <label>Changer la photo :</label>
-        <input type="file" name="imgFile" accept="image/*" />
-        <input type="url" name="imgUrl" placeholder="ou collez une URL" />
+        <label for="profile-imgFile">Changer la photo (fichier) :</label>
+        <input type="file" id="profile-imgFile" name="imgFile" accept="image/*" />
+        
+        <label for="profile-imgUrl">Changer la photo (URL) :</label>
+        <input type="url" id="profile-imgUrl" name="imgUrl" placeholder="Ou collez une URL d'image" value="${(user.img && user.img.startsWith('http')) ? user.img : ''}"/>
 
-        <button type="submit">Mettre à jour</button>
+        <hr style="grid-column: 1 / -1; margin: 20px 0; border-color: #e2e8f0;"/>
+        <h3 style="grid-column: 1 / -1; color: #2d3748; font-weight:600;">Relations Familiales</h3>
+
+        <label for="profile-fid">Père :</label>
+        <select id="profile-fid" name="fid"></select>
+
+        <label for="profile-mid">Mère :</label>
+        <select id="profile-mid" name="mid"></select>
+
+        <label for="profile-pids">Conjoint(s) :</label>
+        <select id="profile-pids" name="pids" multiple style="min-height: 100px;"></select>
+        <small style="grid-column: 1 / -1; text-align:center;">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs conjoints.</small>
+
+
+        <button type="submit" style="grid-column: 1 / -1;">Mettre à jour le profil</button>
       </form>
-
-      <div class="family-relations scrollable-container">
-        <h3>Relations Familiales</h3>
-        <div class="family-selection-menus">
-          <div class="family-selection-menu">
-            <button type="button" id="add-spouse-button" class="sidebar-button">Ajouter un conjoint</button>
-            <div id="add-spouse-form" class="search-form" style="display: none;">
-              <h3 class="sidebar-title">Ajouter un conjoint</h3>
-              <label>Nom du conjoint :</label>
-              <select id="spouse-select"></select>
-              <button id="add-spouse-confirm">Confirmer</button>
-            </div>
-          </div>
-          <div class="family-selection-menu">
-            <button type="button" id="add-father-button" class="sidebar-button">Ajouter un père</button>
-            <div id="add-father-form" class="search-form" style="display: none;">
-              <h3 class="sidebar-title">Ajouter un père</h3>
-              <label>Nom du père :</label>
-              <select id="father-select"></select>
-              <button id="add-father-confirm">Confirmer</button>
-            </div>
-          </div>
-          <div class="family-selection-menu">
-            <button type="button" id="add-mother-button" class="sidebar-button">Ajouter une mère</button>
-            <div id="add-mother-form" class="search-form" style="display: none;">
-              <h3 class="sidebar-title">Ajouter une mère</h3>
-              <label>Nom de la mère :</label>
-              <select id="mother-select"></select>
-              <button id="add-mother-confirm">Confirmer</button>
-            </div>
-          </div>
-          <div class="family-selection-menu">
-            <button type="button" id="add-child-button" class="sidebar-button">Ajouter un enfant</button>
-            <div id="add-child-form" class="search-form" style="display: none;">
-              <h3 class="sidebar-title">Ajouter un enfant</h3>
-              <label>Nombre d'enfants :</label>
-              <input type="number" id="child-count" min="1" max="10" value="1" />
-              <button id="generate-child-menus">Générer les menus</button>
-              <div id="child-menus"></div>
-              <button id="add-child-confirm" style="display: none;">Confirmer l'ajout des enfants</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="family-relations-container"></div>
+      <div id="profile-message" style="margin-top: 15px; text-align: center;"></div>
     </div>
   `;
 }
 
-export function setupProfileFormHandler() {
+export async function setupProfileFormHandler() {
   const form = document.getElementById('profile-form');
+  const messageDiv = document.getElementById('profile-message');
   if (!form) return;
 
-  function toBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result); // Keep the full data URI
-      reader.onerror = reject;
-    });
-  }
-
-  function populateSelectMenu(selectId, data, excludeId = null, filterGender = null) {
-    const selectElement = document.getElementById(selectId);
-    if (!selectElement) return;
-
-    selectElement.innerHTML = '<option value="">-- Choisissez --</option>';
-    let filteredData = data;
-    if (filterGender) {
-        filteredData = data.filter(p => p.gender === filterGender);
+  let currentUserProfile = authService.getCurrentUserProfile(); // Depuis le cache
+  // Essayer de charger le profil frais du serveur
+  try {
+    messageDiv.textContent = "Chargement du profil...";
+    const freshProfile = await authService.fetchUserProfileFromServer();
+    if (freshProfile) {
+      currentUserProfile = freshProfile;
     }
-
-    filteredData.forEach(person => {
-      if (person.id === excludeId) return;
-
-      const option = document.createElement('option');
-      option.value = person.id;
-      option.textContent = `${person.name} (né en ${person.birthYear || 'N/A'})`;
-      selectElement.appendChild(option);
-    });
-  }
-
-  // Load initial data for select menus
-  (async () => {
-    const allFamilyData = await familyDataService.getAllFamilyData();
-    const currentUserProfile = authService.getCurrentUserProfile();
-    const currentUserId = currentUserProfile ? currentUserProfile.id : null;
-
-    if (!currentUserProfile) {
-        console.error("Profile setup: No current user profile found. Cannot populate relation selects.");
+    messageDiv.textContent = "";
+  } catch (error) {
+    console.error("Erreur au chargement du profil frais:", error);
+    messageDiv.textContent = "Erreur au chargement du profil. Certaines données peuvent être obsolètes.";
+    if (!currentUserProfile) { // Si même le cache est vide (improbable après login)
+        window.location.href = '/login'; // Rediriger si pas de profil du tout
         return;
     }
+  }
+  
+  // Pré-remplir le formulaire avec les données du profil chargé
+  document.getElementById('profile-name').value = currentUserProfile.name || '';
+  document.getElementById('profile-birthYear').value = currentUserProfile.birthYear || '';
+  document.getElementById('profile-gmail').value = currentUserProfile.gmail || '';
+  document.getElementById('profile-gender').value = currentUserProfile.gender || 'unknown';
+  document.getElementById('profile-image-preview').src = currentUserProfile.img || '/assets/avatars/default.svg';
+  if (currentUserProfile.img && currentUserProfile.img.startsWith('http')) {
+      document.getElementById('profile-imgUrl').value = currentUserProfile.img;
+  }
 
-    populateSelectMenu('spouse-select', allFamilyData, currentUserId);
-    populateSelectMenu('father-select', allFamilyData, currentUserId, 'male');
-    populateSelectMenu('mother-select', allFamilyData, currentUserId, 'female');
-    // Child select menus are populated dynamically by 'generate-child-menus' button
-  })();
+
+  // Charger toutes les personnes pour les menus déroulants
+  let allPeople = [];
+  try {
+    allPeople = await familyDataService.getAllFamilyData();
+  } catch (error) {
+    console.error("Impossible de charger la liste des personnes pour les relations:", error);
+    messageDiv.textContent = "Erreur: Impossible de charger les options de relations.";
+  }
+
+  // Peupler les selects pour les relations
+  // Exclure l'utilisateur lui-même des options pour père, mère, conjoint.
+  const selfId = [currentUserProfile.id];
+  await populateRelationSelect('profile-fid', allPeople, currentUserProfile.fid, selfId, 'male');
+  await populateRelationSelect('profile-mid', allPeople, currentUserProfile.mid, selfId, 'female');
+  setupPidsSelect('profile-pids', allPeople, currentUserProfile.pids || [], selfId);
+
+
+  const imgFileInput = document.getElementById('profile-imgFile');
+  const imgPreview = document.getElementById('profile-image-preview');
+  imgFileInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+              imgPreview.src = e.target.result;
+              document.getElementById('profile-imgUrl').value = ''; // Effacer l'URL si un fichier est choisi
+          }
+          reader.readAsDataURL(file);
+      }
+  });
+   document.getElementById('profile-imgUrl').addEventListener('input', (event) => {
+        const url = event.target.value;
+        if (url) {
+            imgPreview.src = url; // Met à jour l'aperçu dynamiquement
+            if (imgFileInput.value) imgFileInput.value = ''; // Effacer le fichier si une URL est entrée
+        } else if (!imgFileInput.files[0]) { // Si l'URL est effacée et pas de fichier
+            imgPreview.src = currentUserProfile.img || '/assets/avatars/default.svg'; // Remettre l'image actuelle ou défaut
+        }
+    });
 
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    messageDiv.textContent = "Mise à jour en cours...";
     const formData = new FormData(form);
     
     const name = formData.get('name');
-    const birthYear = parseInt(formData.get('birthYear'), 10);
+    const birthYear = formData.get('birthYear') ? parseInt(formData.get('birthYear'), 10) : undefined;
     const gmail = formData.get('gmail');
     const gender = formData.get('gender');
-
-    let existingUserProfile = authService.getCurrentUserProfile() || {}; // Ensure there's a base
-    let img = existingUserProfile.img || '/assets/avatars/default.svg';
     
+    const fid = formData.get('fid') || null; // Sera l'UUID string ou null
+    const mid = formData.get('mid') || null; // Sera l'UUID string ou null
+    
+    // Pour un select multiple, get() ne retourne que la première. Il faut getAll().
+    const pids = formData.getAll('pids'); // Array d'UUIDs strings
+
+    let imgData = currentUserProfile.img || '/assets/avatars/default.svg'; // Conserver l'image actuelle par défaut
     const imgFile = formData.get('imgFile');
     const imgUrl = formData.get('imgUrl');
 
     if (imgFile && imgFile.size > 0) {
-      img = await toBase64(imgFile);
+      imgData = await toBase64(imgFile);
     } else if (imgUrl && imgUrl.trim() !== '') {
-      img = imgUrl.trim();
+      imgData = imgUrl.trim();
     }
 
     const updatedProfileData = {
-      ...existingUserProfile, // Preserve existing IDs and relationship fields (fid, mid, pids)
-      id: existingUserProfile.id || Date.now(), // Ensure ID exists
+      ...currentUserProfile, // Base avec ID, et autres champs non modifiables directement
       name,
-      gender,
       birthYear,
-      img,
-      gmail
-      // Note: fid, mid, pids are managed by relation handlers, not this form directly
+      gmail,
+      gender,
+      img: imgData,
+      fid,
+      mid,
+      pids,
     };
 
-    authService.updateCurrentUserProfile(updatedProfileData);
-    await familyDataService.updatePersonInFamilyData(updatedProfileData);
-
-    alert('Profil mis à jour avec succès !');
-    location.reload();
+    try {
+      const savedProfile = await authService.updateCurrentUserProfileInFamilyTree(updatedProfileData);
+      currentUserProfile = savedProfile; // Mettre à jour la variable locale avec la réponse du serveur
+      messageDiv.textContent = 'Profil mis à jour avec succès !';
+      messageDiv.style.color = 'green';
+      // Optionnel: re-remplir le formulaire avec `savedProfile` si le backend a modifié des choses
+      // ou simplement faire confiance que `currentUserProfile` est maintenant à jour.
+    } catch (error) {
+      console.error("Profile update failed:", error);
+      messageDiv.textContent = error.response?.data?.message || 'Erreur lors de la mise à jour du profil.';
+      messageDiv.style.color = 'red';
+    }
   });
 
   const logoutButton = document.getElementById('logout-button');
   if (logoutButton) {
     logoutButton.addEventListener('click', () => {
       authService.logout();
-      window.location.href = '/login';
+      window.location.href = '/login'; // Rediriger vers la page de connexion
     });
   }
+}
 
-  // --- Relation Section Toggles & Handlers ---
-
-  // Add Spouse
-  const addSpouseButton = document.getElementById('add-spouse-button');
-  const addSpouseForm = document.getElementById('add-spouse-form');
-  const addSpouseConfirmButton = document.getElementById('add-spouse-confirm');
-
-  if (addSpouseButton && addSpouseForm) {
-    addSpouseButton.addEventListener('click', () => {
-      addSpouseForm.style.display = addSpouseForm.style.display === 'none' ? 'block' : 'none';
-    });
-  }
-  if (addSpouseConfirmButton) {
-    addSpouseConfirmButton.addEventListener('click', async () => {
-      const spouseId = parseInt(document.getElementById('spouse-select').value, 10);
-      if (!spouseId || isNaN(spouseId)) { 
-        alert('Veuillez sélectionner un conjoint.');
-        return;
-      }
-      const userProfile = authService.getCurrentUserProfile();
-      if (!userProfile) { alert("Utilisateur non connecté."); return; }
-
-      const updatedUserProfile = await familyDataService.addSpouse(userProfile, spouseId);
-      if (updatedUserProfile) {
-        authService.updateCurrentUserProfile(updatedUserProfile); // Update profile in localStorage
-        alert('Conjoint ajouté avec succès !');
-        location.reload();
-      } else { 
-        alert('Erreur lors de l\'ajout du conjoint. Vérifiez que la personne sélectionnée existe.');
-      }
-    });
-  }
-
-  // Add Father
-  const addFatherButton = document.getElementById('add-father-button');
-  const addFatherForm = document.getElementById('add-father-form');
-  const addFatherConfirmButton = document.getElementById('add-father-confirm');
-
-  if (addFatherButton && addFatherForm) {
-    addFatherButton.addEventListener('click', () => {
-      addFatherForm.style.display = addFatherForm.style.display === 'none' ? 'block' : 'none';
-    });
-  }
-  if (addFatherConfirmButton) {
-    addFatherConfirmButton.addEventListener('click', async () => {
-      const fatherId = parseInt(document.getElementById('father-select').value, 10);
-      if (!fatherId || isNaN(fatherId)) { alert('Veuillez sélectionner un père.'); return; }
-      
-      const userProfile = authService.getCurrentUserProfile();
-      if (!userProfile) { alert("Utilisateur non connecté."); return; }
-
-      const fatherNode = await familyDataService.getPersonById(fatherId);
-      if (!fatherNode || fatherNode.gender !== 'male') {
-        alert('La personne sélectionnée comme père doit être de genre masculin et exister.');
-        return;
-      }
-
-      const updatedUserProfile = await familyDataService.setFather(userProfile, fatherId);
-      if (updatedUserProfile) {
-        authService.updateCurrentUserProfile(updatedUserProfile);
-        alert('Père ajouté avec succès !');
-        location.reload();
-      } else { alert('Erreur lors de l\'ajout du père.'); }
-    });
-  }
-
-  // Add Mother
-  const addMotherButton = document.getElementById('add-mother-button');
-  const addMotherForm = document.getElementById('add-mother-form');
-  const addMotherConfirmButton = document.getElementById('add-mother-confirm');
-  
-  if (addMotherButton && addMotherForm) {
-    addMotherButton.addEventListener('click', () => {
-      addMotherForm.style.display = addMotherForm.style.display === 'none' ? 'block' : 'none';
-    });
-  }
-  if (addMotherConfirmButton) {
-    addMotherConfirmButton.addEventListener('click', async () => {
-      const motherId = parseInt(document.getElementById('mother-select').value, 10);
-      if (!motherId || isNaN(motherId)) { alert('Veuillez sélectionner une mère.'); return; }
-
-      const userProfile = authService.getCurrentUserProfile();
-      if (!userProfile) { alert("Utilisateur non connecté."); return; }
-
-      const motherNode = await familyDataService.getPersonById(motherId);
-      if (!motherNode || motherNode.gender !== 'female') {
-        alert('La personne sélectionnée comme mère doit être de genre féminin et exister.');
-        return;
-      }
-      
-      const updatedUserProfile = await familyDataService.setMother(userProfile, motherId);
-      if (updatedUserProfile) {
-        authService.updateCurrentUserProfile(updatedUserProfile);
-        alert('Mère ajoutée avec succès !');
-        location.reload();
-      } else { alert('Erreur lors de l\'ajout de la mère.'); }
-    });
-  }
-
-  // Add Child(ren)
-  const addChildButton = document.getElementById('add-child-button');
-  const addChildForm = document.getElementById('add-child-form');
-  const generateChildMenusButton = document.getElementById('generate-child-menus');
-  const childMenusContainer = document.getElementById('child-menus');
-  const addChildConfirmButton = document.getElementById('add-child-confirm');
-
-  if (addChildButton && addChildForm) {
-    addChildButton.addEventListener('click', () => {
-      addChildForm.style.display = addChildForm.style.display === 'none' ? 'block' : 'none';
-      // Pre-generate one child menu if not already generated
-      if (addChildForm.style.display === 'block' && childMenusContainer.children.length === 0) {
-        document.getElementById('child-count').value = "1"; // Reset to 1
-        generateChildMenusButton.click(); // Trigger menu generation
-      }
-    });
-  }
-
-  if (generateChildMenusButton && childMenusContainer && addChildConfirmButton) {
-    generateChildMenusButton.addEventListener('click', async () => {
-      const childCountInput = document.getElementById('child-count');
-      const childCount = parseInt(childCountInput.value, 10);
-      childMenusContainer.innerHTML = ''; // Clear existing menus
-
-      if (isNaN(childCount) || childCount < 1 || childCount > 10) {
-          alert("Veuillez entrer un nombre d'enfants valide (1-10).");
-          childCountInput.value = "1"; 
-          addChildConfirmButton.style.display = 'none';
-          return;
-      }
-      
-      const allFamilyData = await familyDataService.getAllFamilyData();
-      const currentUserProfile = authService.getCurrentUserProfile();
-      if (!currentUserProfile) { alert("Utilisateur non connecté."); return; }
-
-
-      for (let i = 0; i < childCount; i++) {
-        const childMenuDiv = document.createElement('div');
-        childMenuDiv.classList.add('child-menu');
-        // Note: IDs for selects should be unique if this is ever inside a loop generating multiple similar forms.
-        // Here, `child-select-${i}` makes them unique.
-        childMenuDiv.innerHTML = `
-          <label>Enfant ${i + 1} :</label>
-          <select id="child-select-${i}" class="child-select"></select>
-        `;
-        childMenusContainer.appendChild(childMenuDiv);
-        // Populate this specific child select menu, excluding current user and their parents/spouses.
-        // A child cannot be the user themselves, their parent, or their spouse.
-        const existingRelations = [
-            currentUserProfile.id, 
-            ...(currentUserProfile.pids || []),
-            currentUserProfile.fid,
-            currentUserProfile.mid
-        ].filter(id => id != null); // Filter out nulls
-
-        const eligibleChildrenData = allFamilyData.filter(p => !existingRelations.includes(p.id));
-        populateSelectMenu(`child-select-${i}`, eligibleChildrenData, null); // No need to exclude current user again
-      }
-      addChildConfirmButton.style.display = childCount > 0 ? 'block' : 'none';
-    });
-  }
-
-  if (addChildConfirmButton) {
-    addChildConfirmButton.addEventListener('click', async () => {
-      const userProfile = authService.getCurrentUserProfile();
-      if (!userProfile) { alert("Utilisateur non connecté."); return; }
-
-      let childrenAddedSuccessfully = 0;
-      const childSelects = document.querySelectorAll('.child-select');
-
-      for (const select of childSelects) {
-        const childId = parseInt(select.value, 10);
-        if (childId && !isNaN(childId)) {
-          const result = await familyDataService.addChild(userProfile, childId);
-          if (result) {
-            childrenAddedSuccessfully++;
-          } else {
-            alert(`Erreur lors de l'ajout de l'enfant avec ID ${childId}. Vérifiez qu'il existe et n'est pas déjà un parent/conjoint.`);
-          }
-        }
-      }
-
-      if (childrenAddedSuccessfully > 0) {
-        // The userProfile itself (parent) isn't directly modified by adding a child,
-        // but the child's record in familyData is.
-        // We might want to re-fetch userProfile if `addChild` could modify it (e.g., pids with other parent),
-        // but current `addChild` in service only modifies child's fid/mid.
-        // authService.updateCurrentUserProfile(userProfile); // Not strictly necessary if userProfile object itself didn't change
-        alert(`${childrenAddedSuccessfully} enfant(s) ajouté(s) avec succès !`);
-        location.reload();
-      } else if (childSelects.length > 0) {
-        alert("Aucun enfant valide sélectionné ou erreur lors de l'ajout.");
-      }
-      // Optionally hide the form again
-      // addChildForm.style.display = 'none';
-      // childMenusContainer.innerHTML = '';
-      // addChildConfirmButton.style.display = 'none';
-    });
-  }
+function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result); // Retourne la Data URL complète
+    reader.onerror = (error) => reject(error);
+  });
 }// END OF FILE: src/components/profile.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/register.js
+
+// frontend/src/components/register.js
+import { authService } from '../services/authService';
+
+export function renderRegisterPage() {
+  return `
+    <div class="container-card" style="max-width: 500px; margin: 40px auto;">
+      <h2>Inscription</h2>
+      <form id="register-form">
+        <label for="firstName">Prénom :</label>
+        <input type="text" id="firstName" name="firstName" required />
+
+        <label for="lastName">Nom :</label>
+        <input type="text" id="lastName" name="lastName" required />
+        
+        <label for="email">Email :</label>
+        <input type="email" id="email" name="email" required />
+
+        <label for="password">Mot de passe :</label>
+        <input type="password" id="password" name="password" required minlength="6" />
+
+        <label for="confirmPassword">Confirmer le mot de passe :</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" required />
+
+        <button type="submit">S'inscrire</button>
+        <p style="text-align: center; margin-top: 15px;">
+          Déjà un compte ? <a href="/login" data-link>Se connecter</a>
+        </p>
+      </form>
+      <div id="register-error" style="color: red; margin-top: 10px;"></div>
+    </div>
+  `;
+}
+
+export function setupRegisterFormHandler() {
+  const form = document.getElementById('register-form');
+  const errorDiv = document.getElementById('register-error');
+  if (!form) return;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorDiv.textContent = '';
+    const formData = new FormData(e.target);
+    const firstName = formData.get('firstName');
+    const lastName = formData.get('lastName');
+    const email = formData.get('email');
+    const password = formData.get('password');
+    const confirmPassword = formData.get('confirmPassword');
+
+    if (password !== confirmPassword) {
+      errorDiv.textContent = "Les mots de passe ne correspondent pas.";
+      return;
+    }
+
+    try {
+      await authService.register({ email, password, firstName, lastName });
+      // authService.register gère la création du profil dans l'arbre.
+      window.location.href = '/'; // Ou /profile pour compléter les infos
+    } catch (error) {
+      console.error("Registration failed:", error);
+      errorDiv.textContent = error.response?.data?.message || "Échec de l'inscription.";
+    }
+  });
+}// END OF FILE: src/components/register.js
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/components/rightsidebar.js
 
+// frontend/src/components/rightsidebar.js
 import { uiStateService } from '../services/uiStateService';
 
 export function renderRightSidebar() {
   const algorithmSteps = uiStateService.getAlgorithmSteps();
 
-  // Générer la liste des étapes
   let stepsHtml = '';
   if (algorithmSteps.length > 0) {
     stepsHtml = algorithmSteps.map((step, index) =>
       `<li>${index + 1}. ${step}</li>`
     ).join('');
   } else {
-    stepsHtml = '<li>Aucune étape à afficher</li>';
+    stepsHtml = '<li>Aucune étape d\'algorithme à afficher. Sélectionnez un algorithme et des nœuds.</li>';
   }
 
+  // Ajout d'un conteneur pour les détails de la personne sélectionnée dans l'arbre
   return `
     <div id="right-sidebar">
-      <h3 class="sidebar-title">Processus</h3>
-      <ul class="process-steps">
+      <div class="info-card" style="margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h4>Détails de la Personne</h4>
+        <p>Cliquez sur un nœud dans l'arbre généalogique pour voir les détails ici.</p>
+      </div>
+      <h3 class="sidebar-title">Processus d'Algorithme</h3>
+      <ul class="process-steps" style="max-height: 300px; overflow-y: auto; padding-left: 20px;">
         ${stepsHtml}
       </ul>
     </div>
   `;
-}
-// END OF FILE: src/components/rightsidebar.js
+}// END OF FILE: src/components/rightsidebar.js
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/counter.ts
 
@@ -2701,31 +2683,33 @@ export function initPrim(cy, startNode) {
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/family-tree/graph-view.js
 import cytoscape from 'cytoscape';
 
-export function initGraph(containerId, graphData) {
+export function initGraph(containerId, graphData) { // graphData vient de transformGraphData
   const cy = cytoscape({
     container: document.getElementById(containerId),
-    elements: graphData,
+    elements: graphData, // elements est déjà { nodes: [...], edges: [...] }
     style: [
+      // ... (styles inchangés, s'assurent juste que 'data(id)' est bien l'UUID string)
       {
         selector: 'node',
         style: {
           'background-color': '#11479e',
-          'label': 'data(label)',
+          'label': 'data(label)', // Assurez-vous que label est bien défini dans transformGraphData
           'color': '#fff',
           'text-valign': 'center',
           'text-halign': 'center',
-          'width': '150px',
-          'height': '150px',
-          'font-size': '16px',
+          'width': '100px', // Ajusté pour potentiellement plus de texte/nœuds
+          'height': '100px',
+          'font-size': '12px', // Ajusté
           'border-color': '#000',
-          'border-width': '2px',
-          'border-opacity': '0.5'
+          'border-width': '1px',
+          'border-opacity': '0.5',
+          'shape': 'ellipse' // ou 'roundrectangle'
         }
       },
       {
         selector: 'edge',
         style: {
-          'width': 6,
+          'width': 3, // Ajusté
           'line-color': '#9dbaea',
           'target-arrow-color': '#9dbaea',
           'target-arrow-shape': 'triangle',
@@ -2733,119 +2717,93 @@ export function initGraph(containerId, graphData) {
         }
       },
       {
-        selector: 'edge[relationship = "partner"]',
+        selector: 'edge[relationship = "partner"]', // Style pour les arêtes de conjoints
         style: {
-          'width': 6,
-          'line-color': '#ff69b4',
+          'line-color': '#ff69b4', // Rose pour conjoints
           'line-style': 'dashed',
-          'target-arrow-shape': 'none',
-          'curve-style': 'bezier'
+          'target-arrow-shape': 'none' // Pas de flèche pour relation symétrique
         }
       }
     ],
     layout: {
-      name: 'breadthfirst', // Consider 'cose' or 'dagre' for more complex family trees
-      directed: true,
-      padding: 30
+      name: 'cose', // COSE est souvent meilleur pour les graphes sociaux/réseaux
+      idealEdgeLength: 100,
+      nodeOverlap: 20,
+      refresh: 20,
+      fit: true,
+      padding: 30,
+      randomize: false,
+      componentSpacing: 100,
+      nodeRepulsion: 400000,
+      edgeElasticity: 100,
+      nestingFactor: 5,
+      gravity: 80,
+      numIter: 1000,
+      initialTemp: 200,
+      coolingFactor: 0.95,
+      minTemp: 1.0
     }
   });
-
   return cy;
 }
 
-export function transformGraphData(familyData) {
-  // Ensure familyData is an array
-  if (!Array.isArray(familyData)) {
-    console.error("transformGraphData expects an array, received:", familyData);
-    return { nodes: [], edges: [] }; // Return empty graph data
+// Transforme les données brutes de l'API (FamilyPerson[]) en un format pour Cytoscape
+export function transformGraphData(familyDataArray) { // Renommé pour clarté
+  if (!Array.isArray(familyDataArray)) {
+    console.error("transformGraphData expects an array, received:", familyDataArray);
+    return { nodes: [], edges: [] };
   }
 
-  const nodes = familyData.map(person => {
-    // Ensure person and person.id are valid before creating a node
-    if (!person || typeof person.id === 'undefined' || person.id === null) {
-      console.warn('Skipping person with invalid or missing ID:', person);
-      return null; // This entry will be filtered out
+  const nodes = familyDataArray.map(person => {
+    if (!person || typeof person.id !== 'string' || person.id === '') { // ID est UUID string
+      console.warn('Skipping person with invalid or missing ID (must be UUID string):', person);
+      return null;
     }
     return {
       data: {
-        id: person.id.toString(),
-        label: person.name || 'Unnamed', // Fallback for missing name
+        id: person.id, // UUID string
+        label: person.name || 'Unnamed',
         gender: person.gender,
         birthYear: person.birthYear,
         img: person.img
+        // Ajoute d'autres données si tu veux les utiliser dans les styles ou les popups
       }
     };
-  }).filter(node => node !== null); // Filter out any null entries due to invalid persons
+  }).filter(node => node !== null);
 
   const edges = [];
+  const existingEdges = new Set(); // Pour éviter les doublons d'arêtes de partenariat
 
-  familyData.forEach(person => {
-    // Ensure person and person.id are valid before processing edges
-    if (!person || typeof person.id === 'undefined' || person.id === null) {
-      return; // Skip this person if their ID is invalid
+  familyDataArray.forEach(person => {
+    if (!person || typeof person.id !== 'string' || person.id === '') return;
+
+    const personId = person.id;
+
+    // Arêtes parent-enfant (dirigées du parent vers l'enfant)
+    if (person.fid) { // fid est un UUID string du père
+      edges.push({ data: { id: `edge-${person.fid}-to-${personId}`, source: person.fid, target: personId, relationship: 'parent-child' } });
     }
-    const personIdStr = person.id.toString();
-
-    // Father to child edge
-    if (typeof person.fid !== 'undefined' && person.fid !== null) {
-      const fatherIdStr = person.fid.toString();
-      edges.push({
-        data: {
-          id: `${fatherIdStr}-to-child-${personIdStr}`,
-          source: fatherIdStr,
-          target: personIdStr,
-          relationship: 'father-to-child'
-        }
-      });
+    if (person.mid) { // mid est un UUID string de la mère
+      edges.push({ data: { id: `edge-${person.mid}-to-${personId}`, source: person.mid, target: personId, relationship: 'parent-child' } });
     }
 
-    // Mother to child edge
-    if (typeof person.mid !== 'undefined' && person.mid !== null) {
-      const motherIdStr = person.mid.toString();
-      edges.push({
-        data: {
-          id: `${motherIdStr}-to-child-${personIdStr}`,
-          source: motherIdStr,
-          target: personIdStr,
-          relationship: 'mother-to-child'
-        }
-      });
-    }
+    // Arêtes de partenariat (non dirigées)
+    if (person.pids && Array.isArray(person.pids)) {
+      person.pids.forEach(partnerId => { // partnerId est un UUID string
+        if (typeof partnerId !== 'string' || partnerId === '') return;
 
-    // Partner edges
-    // Ensure person.pids exists, is an array, and has elements
-    if (person.pids && Array.isArray(person.pids) && person.pids.length > 0) {
-      person.pids.forEach(partnerId => {
-        // CRITICAL CHECK: Ensure partnerId is valid before using it
-        if (typeof partnerId === 'undefined' || partnerId === null) {
-          console.warn(`Invalid partnerId (value: ${partnerId}) found in pids for person ${person.name || 'Unnamed'} (ID: ${personIdStr}). Skipping this partner edge.`);
-          return; // Skip this iteration for the invalid partnerId
-        }
-        const partnerIdStr = partnerId.toString();
-
-        // Parse IDs as numbers for comparison to ensure correct ordering for unique edge creation
-        const currentPersonIdNum = parseInt(personIdStr, 10);
-        const partnerIdNum = parseInt(partnerIdStr, 10);
-
-        // Create edge only if current person's ID is less than partner's ID
-        // This prevents duplicate partner edges (e.g., A-B and B-A)
-        if (!isNaN(currentPersonIdNum) && !isNaN(partnerIdNum) && currentPersonIdNum < partnerIdNum) {
-          edges.push({
-            data: {
-              id: `${personIdStr}-partner-${partnerIdStr}`,
-              source: personIdStr,
-              target: partnerIdStr,
-              relationship: 'partner'
-            }
-          });
+        // Créer un ID d'arête unique pour éviter les doublons (A-B et B-A)
+        const edgeId = [personId, partnerId].sort().join('-');
+        if (!existingEdges.has(edgeId)) {
+          edges.push({ data: { id: `edge-${edgeId}`, source: personId, target: partnerId, relationship: 'partner' } });
+          existingEdges.add(edgeId);
         }
       });
     }
   });
 
   return { nodes, edges };
-}
-// END OF FILE: src/js/family-tree/graph-view.js// END OF FILE: src/js/family-tree/graph-view.js
+}// END OF FILE: src/js/family-tree/graph-view.js
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/family-tree/person-form.js
 
@@ -2853,151 +2811,158 @@ export function transformGraphData(familyData) {
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/family-tree/tree-view.js
 
+// src/js/family-tree/tree-view.js
 import FamilyTree from '@balkangraph/familytree.js';
-import { familyDataService } from '../../services/familyDataService';
+import { familyDataService } from '../../services/familyDataService'; // Pour les détails dans updatePersonDetails
 
-export function initFamilyTree(containerId, familyData) {
+// initFamilyTree reçoit directement les données formatées par le router
+export function initFamilyTree(containerId, familyDataForTree) {
+  // familyDataForTree a déjà les IDs en string
   const chart = new FamilyTree(document.getElementById(containerId), {
-    mode: 'tree',
+    mode: 'tree', // ou 'light', 'dark' etc.
     orientation: FamilyTree.orientation.top,
     nodeBinding: {
       field_0: 'name',
-      field_1: 'years',
+      field_1: 'years', // Sera calculé dans transformFamilyData (ou ici)
       img_0: 'img'
     },
-    template: 'hugo', // Template par défaut qui fonctionne avec FamilyTree.js
-    // Ou utilisez un template personnalisé :
-    // template: FamilyTree.templates.hugo
-    levelSeparation: 60,
+    // Utilise un template standard ou personnalisé. 'hugo' est un bon point de départ.
+    template: 'hugo', 
+    // Pour des templates plus personnalisés, réfère-toi à la documentation de BalkanGraph
+    // Par exemple, pour afficher le genre différemment :
+    // FamilyTree.templates.tommy_male = Object.assign({}, FamilyTree.templates.tommy);
+    // FamilyTree.templates.tommy_male.defs = '<style>...</style>'; // Ajouter des styles spécifiques au genre
+
+    levelSeparation: 70,
     siblingSeparation: 60,
     subtreeSeparation: 80,
-    nodes: familyData
-  });
-
-  chart.on('click', function(sender, args) {
-    if (args.node) {
-      const personId = args.node.id;
-      const person = familyData.find(p => p.id.toString() === personId);
-      if (person) {
-        updatePersonDetails(person);
-      }
+    nodes: familyDataForTree.map(person => { // Calculer 'years' ici
+        let years = '';
+        if (person.birthYear) {
+            years = person.birthYear.toString();
+            if (person.deathYear) {
+                years += ` - ${person.deathYear}`;
+            }
+        }
+        return {...person, years };
+    }),
+    // Gestion des clics pour afficher les détails (optionnel, peut être géré autrement)
+     onClick: function (sender, args) { // Note: 'this' ici est l'instance de FamilyTree
+        if (args.node) {
+            const personId = args.node.id; // C'est l'UUID string
+            updatePersonDetailsById(personId); // Fonction pour charger et afficher les détails
+            return false; // Pour éviter le comportement par défaut si tu le gères entièrement
+        }
+    },
+    editForm: { // Désactiver le formulaire d'édition intégré si tu gères tout via ta page de profil
+        generateElements: false,
+        buttons: {}
+    },
+    menu: { // Personnaliser le menu contextuel du noeud
+        pdf: { text: "Exporter en PDF" },
+        png: { text: "Exporter en PNG" },
+        // edit: null, // Désactiver le bouton d'édition du menu si besoin
+    },
+    tags: { // Pour styler les noeuds par genre (si ton template le supporte)
+        male: {
+            template: "hugo" // ou un template spécifique "hugo_male"
+            // css: "path/to/male.css"
+        },
+        female: {
+            template: "hugo" // ou "hugo_female"
+            // css: "path/to/female.css"
+        },
+        unknown: {
+            template: "hugo"
+        }
     }
   });
-
   return chart;
 }
 
-export function transformFamilyData(rawData) {
-  return rawData.map(person => {
-    let years = '';
-    if (person.birthYear) {
-      years = person.birthYear.toString();
-      if (person.deathYear) {
-        years += ` - ${person.deathYear}`;
+// La transformation principale des données (UUIDs, etc.) est faite dans le router avant d'appeler initFamilyTree.
+// Cette fonction n'est plus exportée ou utilisée de la même manière.
+// export function transformFamilyData(rawData) { ... } // DEPRECATED ou usage interne
+
+// Fonction pour afficher les détails d'une personne dans la sidebar droite
+async function updatePersonDetailsById(personId) {
+  const detailsContainer = document.querySelector('#right-sidebar .info-card'); // Assure-toi que .info-card existe
+  if (!detailsContainer) {
+      // Créer le conteneur s'il n'existe pas (ou log une erreur)
+      const rightSidebar = document.getElementById('right-sidebar');
+      if(rightSidebar) {
+          const card = document.createElement('div');
+          card.className = 'info-card'; // Ajoute une classe pour le style
+          rightSidebar.appendChild(card);
+          // detailsContainer = card; // Attention, cette assignation ne fonctionnera pas comme prévu ici.
+          // Il vaut mieux s'assurer que le HTML initial de rightsidebar contient déjà .info-card
+      } else {
+          console.error("Right sidebar container not found for person details.");
+          return;
       }
+  }
+
+
+  try {
+    const person = await familyDataService.getPersonById(personId);
+    if (!person) {
+      detailsContainer.innerHTML = '<p>Personne non trouvée.</p>';
+      return;
+    }
+    
+    // Pour obtenir les noms des parents/conjoints/enfants, on a besoin de toutes les données
+    // ou de faire des appels supplémentaires. Pour l'instant, on va chercher dans toutes les données si possible.
+    // C'est moins performant mais plus simple pour l'affichage.
+    // Idéalement, le backend pourrait renvoyer ces infos déjà "populées".
+    const allFamilyData = await familyDataService.getAllFamilyData();
+
+    let status = person.deathYear ? 'Décédé(e)' : 'Vivant(e)';
+    let age = '';
+    if (person.birthYear) {
+      const endYear = person.deathYear || new Date().getFullYear();
+      age = (endYear - person.birthYear).toString();
     }
 
-    return {
-      id: person.id.toString(),
-      fid: person.fid ? person.fid.toString() : undefined, // Father ID
-      mid: person.mid ? person.mid.toString() : undefined, // Mother ID
-      pids: person.pids ? person.pids.map(pid => pid.toString()) : [], // Partner IDs
-      name: person.name,
-      gender: person.gender || 'unknown',
-      years: years,
-      img: person.img || getDefaultAvatar(person.gender || 'unknown'),
-      birthYear: person.birthYear,
-      deathYear: person.deathYear,
-      gmail: person.gmail,
-      tags: [person.gender] // Ajouter le genre comme tag pour le styling
-    };
-  });
-}
+    const father = person.fid ? allFamilyData.find(p => p.id === person.fid) : null;
+    const mother = person.mid ? allFamilyData.find(p => p.id === person.mid) : null;
+    const partners = person.pids ? person.pids.map(pid => allFamilyData.find(p => p.id === pid)).filter(p => p) : [];
+    const children = allFamilyData.filter(p => p.fid === person.id || p.mid === person.id);
 
-function getDefaultAvatar(gender) {
-  switch(gender.toLowerCase()) {
-    case 'male':
-      return '/assets/avatars/default-male.svg';
-    case 'female':
-      return '/assets/avatars/default-female.svg';
-    default:
-      return '/assets/avatars/default.svg';
+    detailsContainer.innerHTML = `
+      <h4>${person.name}</h4>
+      <p><strong>Année de naissance:</strong> ${person.birthYear || 'Inconnue'}</p>
+      ${person.deathYear ? `<p><strong>Année de décès:</strong> ${person.deathYear}</p>` : ''}
+      <p><strong>Âge:</strong> ${age ? age + ' ans' : 'Inconnu'}</p>
+      <p><strong>Genre:</strong> ${person.gender === 'male' ? 'Homme' : person.gender === 'female' ? 'Femme' : 'Non spécifié'}</p>
+      <p><strong>Statut:</strong> ${status}</p>
+      ${person.gmail ? `<p><strong>Email:</strong> ${person.gmail}</p>` : ''}
+      
+      ${father || mother ? `
+        <div class="family-section">
+          <h5>Parents</h5>
+          ${father ? `<p>Père: ${father.name}</p>` : ''}
+          ${mother ? `<p>Mère: ${mother.name}</p>` : ''}
+        </div>
+      ` : ''}
+      
+      ${partners.length > 0 ? `
+        <div class="family-section">
+          <h5>Conjoint(s)</h5>
+          ${partners.map(partner => `<p>${partner.name}</p>`).join('')}
+        </div>
+      ` : ''}
+      
+      ${children.length > 0 ? `
+        <div class="family-section">
+          <h5>Enfants</h5>
+          ${children.map(child => `<p>${child.name}</p>`).join('')}
+        </div>
+      ` : ''}
+    `;
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour des détails de la personne:", error);
+    detailsContainer.innerHTML = '<p>Erreur lors du chargement des détails.</p>';
   }
-}
-
-function updatePersonDetails(person) {
-  const detailsContainer = document.querySelector('#right-sidebar .info-card');
-  if (!detailsContainer) return;
-
-  let status = person.deathYear ? 'Décédé(e)' : 'Vivant(e)';
-  let age = '';
-
-  if (person.birthYear) {
-    if (person.deathYear) {
-      age = person.deathYear - person.birthYear;
-    } else {
-      age = new Date().getFullYear() - person.birthYear;
-    }
-  }
-
-  // Récupérer les données complètes depuis localStorage pour les relations
-  const familyData = familyDataService.getRawFamilyDataSync();
-  
-  // Trouver les partenaires
-  let partners = [];
-  if (person.pids && person.pids.length > 0) {
-    partners = person.pids.map(pid => {
-      const partner = familyData.find(p => p.id.toString() === pid.toString());
-      return partner ? partner.name : 'Inconnu';
-    });
-  }
-
-  // Trouver les enfants
-  const children = familyData.filter(p => 
-    (p.fid && p.fid.toString() === person.id.toString()) || 
-    (p.mid && p.mid.toString() === person.id.toString())
-  );
-
-  // Trouver les parents
-  let father = null, mother = null;
-  if (person.fid) {
-    father = familyData.find(p => p.id.toString() === person.fid.toString());
-  }
-  if (person.mid) {
-    mother = familyData.find(p => p.id.toString() === person.mid.toString());
-  }
-
-  detailsContainer.innerHTML = `
-    <h4>${person.name}</h4>
-    <p><strong>Année de naissance:</strong> ${person.birthYear || 'Inconnue'}</p>
-    ${person.deathYear ? `<p><strong>Année de décès:</strong> ${person.deathYear}</p>` : ''}
-    <p><strong>Âge:</strong> ${age ? age + ' ans' : 'Inconnu'}</p>
-    <p><strong>Genre:</strong> ${person.gender === 'male' ? 'Homme' : person.gender === 'female' ? 'Femme' : 'Non spécifié'}</p>
-    <p><strong>Statut:</strong> ${status}</p>
-    ${person.gmail ? `<p><strong>Email:</strong> ${person.gmail}</p>` : ''}
-    
-    ${father || mother ? `
-      <div class="family-section">
-        <h5>Parents</h5>
-        ${father ? `<p>Père: ${father.name}</p>` : ''}
-        ${mother ? `<p>Mère: ${mother.name}</p>` : ''}
-      </div>
-    ` : ''}
-    
-    ${partners.length > 0 ? `
-      <div class="family-section">
-        <h5>Conjoint(s)</h5>
-        ${partners.map(partner => `<p>${partner}</p>`).join('')}
-      </div>
-    ` : ''}
-    
-    ${children.length > 0 ? `
-      <div class="family-section">
-        <h5>Enfants</h5>
-        ${children.map(child => `<p>${child.name}</p>`).join('')}
-      </div>
-    ` : ''}
-  `;
 }// END OF FILE: src/js/family-tree/tree-view.js
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/js/utils/api.js
@@ -3204,16 +3169,15 @@ export function clearAlgorithmSteps() {
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/main.ts
 
-// main.ts
+// frontend/src/main.ts
 import './css/style.css';
 import { initRouter } from './router';
-import { familyDataService } from './services/familyDataService'; // Import service
+// familyDataService.getAllFamilyData(); // Plus besoin ici, le router et les services s'en chargent
 
 async function main() {
-  // Ensure family data is initialized once when the app loads, if necessary.
-  // This can be called by any component/service that needs it first.
-  // Or explicitly here.
-  await familyDataService.getAllFamilyData(); // This will trigger initialization if needed.
+  // La logique d'initialisation des données est maintenant gérée par les services
+  // et les composants eux-mêmes lorsqu'ils en ont besoin.
+  // Le router s'assurera que l'utilisateur est authentifié avant d'afficher les pages protégées.
   initRouter();
 }
 
@@ -3239,24 +3203,26 @@ main();// END OF FILE: src/main.ts
 
 // router.js
 import { renderNavbar } from './components/navbar';
-import { renderLeftSidebar } from './components/leftSidebar'; // corrected casing
-import { renderRightSidebar } from './components/rightSidebar'; // corrected casing
-import { renderMainContent } from './components/mainContent'; // corrected casing
+import { renderLeftSidebar } from './components/leftSidebar';
+import { renderRightSidebar } from './components/rightSidebar';
+import { renderMainContent } from './components/mainContent';
 import { renderProfilePage, setupProfileFormHandler } from './components/profile';
 import { renderLoginPage, setupLoginFormHandler } from './components/login';
+import { renderRegisterPage, setupRegisterFormHandler } from './components/register'; // Nouveau
 import { authService } from './services/authService';
 import { familyDataService } from './services/familyDataService';
-import { uiStateService } from './services/uiStateService';
+// uiStateService reste local, pas de changement majeur
+// Les imports d'algorithmes restent
 import { initDijkstra } from './js/algorithms/dijkstra';
 import { initBellmanFord } from './js/algorithms/bellman-ford';
 import { initPrim } from './js/algorithms/prim';
 import { initKruskal } from './js/algorithms/kruskal'; 
 
-// Module-level state for current view and scope
-let currentActiveView = 'tree'; // 'tree' or 'graph'
-let currentDataScope = 'full'; // 'full' or 'personal'
-let cyInstance = null; // To keep track of cytoscape instance for destroy
-let familyTreeInstance = null; // To keep track of FamilyTree instance
+
+let currentActiveView = 'tree';
+let currentDataScope = 'full';
+let cyInstance = null;
+let familyTreeInstance = null;
 
 export function initRouter() {
   const app = document.querySelector('#app');
@@ -3267,34 +3233,43 @@ export function initRouter() {
   }
 
   async function getPreparedData() {
-    const fullFamilyData = await familyDataService.getAllFamilyData(); 
     if (currentDataScope === 'personal') {
-      const userProfile = authService.getCurrentUserProfile();
-      if (!userProfile || typeof userProfile.id === 'undefined') { /* ... error handling ... */ return []; }
-      console.log("Router - User profile being used for personal scope:", userProfile);
-      return await familyDataService.getPersonalFamilyData(userProfile);
+      // `getPersonalFamilyData` utilise maintenant le token pour identifier l'utilisateur côté backend
+      return await familyDataService.getPersonalFamilyData();
     }
-    return fullFamilyData;
+    return await familyDataService.getAllFamilyData();
   }
 
   async function renderFamilyTree() {
-    if (familyTreeInstance) {
-        // Attempt to destroy or clean up the old instance if the library supports it
-        // For BalkanGraph, re-creating is often the simplest for data changes.
-        // Ensure the container is empty or the library handles replacement.
-        const container = document.getElementById('family-tree-container');
-        if(container) container.innerHTML = ''; // Simple clear
+    const container = document.getElementById('family-tree-container');
+    if (familyTreeInstance && typeof familyTreeInstance.destroy === 'function') {
+        familyTreeInstance.destroy();
+    } else if (container) {
+        container.innerHTML = '';
     }
+    if (container) container.innerHTML = ''; // Simple clear
+
     document.getElementById('tree-view').style.display = 'block';
     document.getElementById('graph-view').style.display = 'none';
-    import('./js/family-tree/tree-view').then(async ({ initFamilyTree, transformFamilyData }) => {
-      const dataToDisplay = await getPreparedData();
-      if (dataToDisplay.length === 0 && currentDataScope === 'personal') {
-        document.getElementById('family-tree-container').innerHTML = 
-          '<p style="text-align:center; padding-top:20px;">Aucune donnée familiale proche à afficher. Vérifiez votre profil et vos relations.</p>';
-        return;
-      }
-      familyTreeInstance = initFamilyTree('family-tree-container', transformFamilyData(dataToDisplay));
+
+    const dataToDisplay = await getPreparedData();
+    if (dataToDisplay.length === 0) {
+      container.innerHTML = 
+        '<p style="text-align:center; padding-top:20px;">Aucune donnée familiale à afficher pour cette vue.</p>';
+      return;
+    }
+    
+    // Assurer que les IDs sont des strings pour FamilyTree.js
+    const transformedDataForTree = dataToDisplay.map(p => ({
+        ...p,
+        id: String(p.id),
+        fid: p.fid ? String(p.fid) : undefined,
+        mid: p.mid ? String(p.mid) : undefined,
+        pids: p.pids ? p.pids.map(pid => String(pid)) : [],
+    }));
+
+    import('./js/family-tree/tree-view').then(({ initFamilyTree, transformFamilyData }) => { // transformFamilyData n'est plus utilisé ici
+      familyTreeInstance = initFamilyTree('family-tree-container', transformedDataForTree);
     });
   }
 
@@ -3303,18 +3278,24 @@ export function initRouter() {
       cyInstance.destroy();
       cyInstance = null;
     }
+    const container = document.getElementById('graph-container');
+    if(container) container.innerHTML = '';
+
+
     document.getElementById('tree-view').style.display = 'none';
     document.getElementById('graph-view').style.display = 'block';
+    
+    const dataToDisplay = await getPreparedData();
+    if (dataToDisplay.length === 0) {
+      container.innerHTML = 
+        '<p style="text-align:center; padding-top:20px;">Aucune donnée familiale à afficher pour le graphe.</p>';
+      return;
+    }
+
     import('./js/family-tree/graph-view').then(async ({ initGraph, transformGraphData }) => {
-      const dataToDisplay = await getPreparedData();
-      if (dataToDisplay.length === 0 && currentDataScope === 'personal') {
-         document.getElementById('graph-container').innerHTML = 
-           '<p style="text-align:center; padding-top:20px;">Aucune donnée familiale proche à afficher pour le graphe.</p>';
-        return;
-      }
+      // transformGraphData s'attend à ce que les IDs soient déjà corrects (UUID strings)
       const graphData = transformGraphData(dataToDisplay);
       cyInstance = initGraph('graph-container', graphData);
-      // Re-attach algorithm button handlers if cyInstance is new
       setupAlgorithmButtons(cyInstance);
     });
   }
@@ -3332,11 +3313,8 @@ export function initRouter() {
     document.querySelectorAll('.view-button').forEach(button => {
       button.addEventListener('click', (e) => {
         currentActiveView = e.target.getAttribute('data-view');
-        if (currentActiveView === 'tree') {
-          renderFamilyTree();
-        } else if (currentActiveView === 'graph') {
-          renderGraphView();
-        }
+        if (currentActiveView === 'tree') renderFamilyTree();
+        else if (currentActiveView === 'graph') renderGraphView();
         updateActiveButtons();
       });
     });
@@ -3344,35 +3322,32 @@ export function initRouter() {
     document.querySelectorAll('.scope-button').forEach(button => {
       button.addEventListener('click', (e) => {
         currentDataScope = e.target.getAttribute('data-scope');
-        if (currentActiveView === 'tree') {
-          renderFamilyTree();
-        } else if (currentActiveView === 'graph') {
-          renderGraphView();
-        }
+        if (currentActiveView === 'tree') renderFamilyTree();
+        else if (currentActiveView === 'graph') renderGraphView();
         updateActiveButtons();
       });
     });
   }
   
-  function setupAlgorithmButtons(cy) { // Pass cy instance
+  function setupAlgorithmButtons(cy) {
     const runDijkstraButton = document.getElementById('run-dijkstra');
     if (runDijkstraButton) {
-      runDijkstraButton.onclick = () => { // Use onclick to overwrite previous if any, or manage listeners carefully
-        const startPersonId = document.getElementById('start-person').value;
-        const endPersonId = document.getElementById('end-person').value;
+      runDijkstraButton.onclick = () => { 
+        const startPersonId = document.getElementById('start-person').value; // UUID
+        const endPersonId = document.getElementById('end-person').value;     // UUID
         if (startPersonId && endPersonId && cy) {
           const startNode = cy.getElementById(startPersonId);
           const endNode = cy.getElementById(endPersonId);
-          if (startNode.length && endNode.length) { // Cytoscape returns collections
+          if (startNode.length && endNode.length) {
             initDijkstra(cy, startNode, endNode);
-            updateRightSidebar();
+            updateRightSidebar(); // Assurez-vous que cette fonction est définie
           } else {
-            console.warn("Dijkstra: Start or end node not found in current graph view.");
+            console.warn("Dijkstra: Start or end node not found.");
           }
         }
       };
     }
-
+    // ... Idem pour Bellman-Ford, Prim, Kruskal ...
     const runBellmanFordButton = document.getElementById('run-bellman-ford');
     if (runBellmanFordButton) {
       runBellmanFordButton.onclick = () => {
@@ -3410,114 +3385,115 @@ export function initRouter() {
     const runKruskalButton = document.getElementById('run-kruskal');
     if (runKruskalButton) {
       runKruskalButton.onclick = () => {
-        // Kruskal doesn't strictly need a start node from UI for its logic, but your UI has one
-        // const startPersonId = document.getElementById('kruskal-start-person').value;
-        if (cy) { // Kruskal operates on the whole graph
-            initKruskal(cy); // Pass full cy, startNode might be optional or handled inside
+        if (cy) { 
+            initKruskal(cy); 
             updateRightSidebar();
         }
       };
     }
   }
 
-
-  async function renderRoute() { // Now async
+  async function renderRoute() {
     const path = window.location.pathname;
-    // const userProfile = authService.getCurrentUserProfile(); // Use service
-    const isAuthenticated = authService.isAuthenticated(); // Use service
-    const isLoginPage = path === '/login';
+    const isAuthenticated = authService.isAuthenticated();
 
-    if (!isAuthenticated && !isLoginPage) {
-      history.replaceState(null, null, '/login');
-      return renderRoute(); // Recursive call to re-evaluate
+    // Gestion des redirections
+    if (!isAuthenticated && path !== '/login' && path !== '/register') {
+      navigateTo('/login');
+      return;
+    }
+    if (isAuthenticated && (path === '/login' || path === '/register')) {
+      navigateTo('/');
+      return;
     }
 
-    if (isAuthenticated && isLoginPage) {
-      history.replaceState(null, null, '/');
-      return renderRoute(); // Recursive call
-    }
+    // Toujours rendre la navbar
+    app.innerHTML = renderNavbar(); // renderNavbar devra peut-être être asynchrone si elle utilise fetchUserProfileFromServer
 
-    app.innerHTML = `${renderNavbar()}`;
-
-    // Main layout structure
     let mainLayoutHtml = '';
     if (path === '/') {
         mainLayoutHtml = `
             ${renderLeftSidebar()}
-            ${renderMainContent()} {/* This now includes the view/scope buttons */}
+            ${renderMainContent()}
             ${renderRightSidebar()}
         `;
     } else if (path === '/profile') {
-        // Profile page might not need sidebars or a different layout
         mainLayoutHtml = `<div id="main-content-profile" class="profile-container">${renderProfilePage()}</div>`;
     } else if (path === '/login') {
         mainLayoutHtml = `<div id="main-content-login" class="login-container">${renderLoginPage()}</div>`;
+    } else if (path === '/register') {
+        mainLayoutHtml = `<div id="main-content-register" class="login-container">${renderRegisterPage()}</div>`; // Utilise login-container pour le style
     } else {
         mainLayoutHtml = `<div id="main-content-404"><h2>404 - Page non trouvée</h2></div>`;
     }
     app.innerHTML += mainLayoutHtml;
 
-
-    // Content-specific initializations
+    // Initialisations spécifiques à la page
     if (path === '/') {
-        // Initial view rendering
-        if (currentActiveView === 'tree') {
-            await renderFamilyTree();
-        } else {
-            await renderGraphView(); // This will also setup algorithm buttons via its callback
-        }
-        setupMainViewControls();
-        updateActiveButtons();
+      // Tentative de chargement du profil utilisateur pour s'assurer que le token est valide
+      // et que le profil est à jour dans le cache pour la navbar et autres.
+      try {
+        await authService.fetchUserProfileFromServer(); 
+        // Mettre à jour la navbar si elle dépend du profil chargé dynamiquement
+        const newNavbarHtml = renderNavbar();
+        const navbarElement = document.getElementById('navbar');
+        if (navbarElement) navbarElement.outerHTML = newNavbarHtml;
 
-        const familyDataForSelect = await familyDataService.getAllFamilyData();
+      } catch (error) {
+          // fetchUserProfileFromServer gère déjà la déconnexion en cas d'erreur critique
+          // Pas besoin de rediriger à nouveau ici si authService le fait.
+          console.log("Utilisateur non authentifié ou erreur de profil, redirection gérée par authService ou intercepteur.")
+          return; // Arrêter le rendu si l'utilisateur est déconnecté
+      }
 
-        // Setup algorithm selection forms (populating dropdowns)
-        // These don't depend on cyInstance directly for setup, only for execution
-        const dijkstraButton = document.getElementById('dijkstra-button');
-        if (dijkstraButton) {
-          dijkstraButton.addEventListener('click', () => {
-            const dijkstraForm = document.getElementById('dijkstra-form');
-            dijkstraForm.style.display = dijkstraForm.style.display === 'none' ? 'block' : 'none';
-            populateAlgorithmSelects(['start-person', 'end-person'], familyDataForSelect);
-          });
-        }
 
-        const bellmanFordButton = document.getElementById('bellman-ford-button');
-        if (bellmanFordButton) {
-          bellmanFordButton.addEventListener('click', () => {
-            const bellmanFordForm = document.getElementById('bellman-ford-form');
-            bellmanFordForm.style.display = bellmanFordForm.style.display === 'none' ? 'block' : 'none';
-            populateAlgorithmSelects(['bellman-ford-start-person', 'bellman-ford-end-person'], familyDataForSelect);
-          });
-        }
+      if (currentActiveView === 'tree') await renderFamilyTree();
+      else await renderGraphView();
+      
+      setupMainViewControls();
+      updateActiveButtons();
 
-        const primButton = document.getElementById('prim-button');
-        if (primButton) {
-          primButton.addEventListener('click', () => {
-            const primForm = document.getElementById('prim-form');
-            primForm.style.display = primForm.style.display === 'none' ? 'block' : 'none';
-            populateAlgorithmSelects(['prim-start-person'], familyDataForSelect);
-          });
+      // Peupler les selects des algorithmes
+      const familyDataForSelect = await familyDataService.getAllFamilyData();
+      if (familyDataForSelect.length > 0) {
+            const dijkstraButton = document.getElementById('dijkstra-button');
+            if (dijkstraButton) {
+              dijkstraButton.addEventListener('click', () => {
+                document.getElementById('dijkstra-form').style.display = document.getElementById('dijkstra-form').style.display === 'none' ? 'block' : 'none';
+                populateAlgorithmSelects(['start-person', 'end-person'], familyDataForSelect);
+              });
+            }
+             const bellmanFordButton = document.getElementById('bellman-ford-button');
+            if (bellmanFordButton) {
+                bellmanFordButton.addEventListener('click', () => {
+                    document.getElementById('bellman-ford-form').style.display = document.getElementById('bellman-ford-form').style.display === 'none' ? 'block' : 'none';
+                    populateAlgorithmSelects(['bellman-ford-start-person', 'bellman-ford-end-person'], familyDataForSelect);
+                });
+            }
+            const primButton = document.getElementById('prim-button');
+            if (primButton) {
+                primButton.addEventListener('click', () => {
+                    document.getElementById('prim-form').style.display = document.getElementById('prim-form').style.display === 'none' ? 'block' : 'none';
+                    populateAlgorithmSelects(['prim-start-person'], familyDataForSelect);
+                });
+            }
+            const kruskalButton = document.getElementById('kruskal-button');
+            if (kruskalButton) {
+                kruskalButton.addEventListener('click', () => {
+                    document.getElementById('kruskal-form').style.display = document.getElementById('kruskal-form').style.display === 'none' ? 'block' : 'none';
+                     // Kruskal n'a pas besoin de sélection utilisateur dans ce formulaire, mais on le garde pour la cohérence de l'UI
+                    populateAlgorithmSelects(['kruskal-start-person'], familyDataForSelect);
+                });
+            }
         }
-        
-        const kruskalButton = document.getElementById('kruskal-button');
-        if (kruskalButton) {
-          kruskalButton.addEventListener('click', () => {
-            const kruskalForm = document.getElementById('kruskal-form');
-            kruskalForm.style.display = kruskalForm.style.display === 'none' ? 'block' : 'none';
-            populateAlgorithmSelects(['kruskal-start-person'], familyDataForSelect); 
-          });
-        }
-        // Initial setup of algorithm buttons (will be re-attached if graph view re-renders)
-        if (cyInstance) {
-            setupAlgorithmButtons(cyInstance);
-        }
-
+      if (cyInstance) setupAlgorithmButtons(cyInstance);
 
     } else if (path === '/profile') {
-        setupProfileFormHandler();
+      await setupProfileFormHandler(); // Doit être async car il fait des appels API
     } else if (path === '/login') {
-        setupLoginFormHandler();
+      setupLoginFormHandler();
+    } else if (path === '/register') {
+      setupRegisterFormHandler();
     }
   }
 
@@ -3525,13 +3501,15 @@ export function initRouter() {
     selectIds.forEach(selectId => {
         const selectElement = document.getElementById(selectId);
         if (selectElement) {
+            const currentValue = selectElement.value; // Conserver la valeur si possible (moins pertinent ici)
             selectElement.innerHTML = ''; // Clear previous options
             data.forEach(person => {
                 const option = document.createElement('option');
-                option.value = person.id;
+                option.value = person.id; // UUID
                 option.textContent = person.name;
                 selectElement.appendChild(option);
             });
+            if(currentValue) selectElement.value = currentValue; // Restaurer si l'option existe toujours
         }
     });
   }
@@ -3544,256 +3522,308 @@ export function initRouter() {
   });
 
   window.addEventListener('popstate', renderRoute);
-  renderRoute();
+  renderRoute(); // Premier rendu
 }
 
+// S'assurer que cette fonction est bien définie et importée/exportée correctement si elle est dans un autre module.
+// Pour l'instant, je la définis ici pour la simplicité.
 function updateRightSidebar() {
-  const rightSidebar = document.getElementById('right-sidebar');
-  if (rightSidebar) {
-    rightSidebar.innerHTML = renderRightSidebar();
+  const rightSidebarContainer = document.getElementById('right-sidebar');
+  if (rightSidebarContainer) {
+    // Assumons que renderRightSidebar() est synchrone et utilise uiStateService
+    // qui est toujours basé sur localStorage.
+    rightSidebarContainer.innerHTML = renderRightSidebar();
   }
-}
-// END OF FILE: src/router.js// END OF FILE: src/router.js
+}// END OF FILE: src/router.js
+
+//---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/services/api.js
+
+// frontend/src/services/api.js
+import axios from 'axios';
+
+// Tu peux mettre ça dans un .env.local ou .env.development etc.
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+});
+
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('jwtToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Optionnel: Intercepteur de réponse pour gérer les erreurs globales (ex: 401 Unauthorized)
+apiClient.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response && error.response.status === 401) {
+      // Gérer la déconnexion automatique si token invalide/expiré
+      // Par exemple, en appelant authService.logout() et en redirigeant vers la page de connexion.
+      // Attention aux dépendances circulaires si authService importe apiClient.
+      console.error('Unauthorized, logging out.');
+      localStorage.removeItem('jwtToken');
+      localStorage.removeItem('userProfile'); // Cache du profil
+      window.location.href = '/login'; // Redirection brutale
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default apiClient;// END OF FILE: src/services/api.js
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/services/authService.js
 
-// src/services/authService.js
-const USER_PROFILE_KEY = 'userProfile';
+// frontend/src/services/authService.js
+import apiClient from './api';
+
+const JWT_TOKEN_KEY = 'jwtToken';
+const USER_PROFILE_CACHE_KEY = 'userProfileCache'; // Cache du profil enrichi de l'arbre
 
 export const authService = {
-  login: async (name, birthYear, gmail, gender, img) => {
-    // Simulating ID generation as in original login.js
-    const userData = {
-      id: Date.now(), 
-      name,
-      fid: null, // Use fid/mid consistently
-      mid: null,
-      pids: [],
-      gender,
-      birthYear,
-      img,
-      gmail
-    };
-    localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(userData));
-    return userData; // Return the created user profile
+  // Connexion au backend
+  login: async (email, password) => {
+    const response = await apiClient.post('/auth/login', { email, password });
+    localStorage.setItem(JWT_TOKEN_KEY, response.data.token);
+    // Stocker l'utilisateur de base (id, email, nom) retourné par /auth/login
+    // Le profil complet de l'arbre sera chargé séparément ou via ensureUserProfileInFamilyTree
+    const baseUser = response.data.user; // {id, email, firstName, lastName}
+    
+    // Tentative de synchronisation/création du profil dans l'arbre
+    try {
+      const familyProfile = await authService.ensureUserProfileInFamilyTree({
+        id: baseUser.id, // Utiliser l'ID d'authentification
+        name: `${baseUser.firstName} ${baseUser.lastName}`,
+        gmail: baseUser.email,
+        // Les autres champs (gender, birthYear, img, relations) seront undefined
+        // et pourront être complétés via la page de profil.
+      });
+      localStorage.setItem(USER_PROFILE_CACHE_KEY, JSON.stringify(familyProfile));
+      return familyProfile; // Retourne le profil enrichi de l'arbre
+    } catch (ensureError) {
+      console.error("Erreur lors de l'intégration du profil dans l'arbre après connexion:", ensureError);
+      // Même si l'ensure échoue, l'utilisateur est connecté. On stocke le profil de base.
+      // On va stocker un profil minimal pour que getCurrentUserProfile retourne quelque chose
+      const minimalProfileForCache = {
+          id: baseUser.id,
+          name: `${baseUser.firstName} ${baseUser.lastName}`,
+          email: baseUser.email,
+          // autres champs par défaut
+      }
+      localStorage.setItem(USER_PROFILE_CACHE_KEY, JSON.stringify(minimalProfileForCache));
+      return minimalProfileForCache;
+    }
+  },
+
+  // Inscription au backend
+  register: async (userData) => { // userData: {email, password, firstName, lastName}
+    const response = await apiClient.post('/auth/register', userData);
+    localStorage.setItem(JWT_TOKEN_KEY, response.data.token);
+    const baseUser = response.data.user;
+
+    // Après l'inscription, s'assurer que le profil existe dans l'arbre
+    try {
+      const familyProfileData = {
+        id: baseUser.id, // Utiliser l'ID d'authentification comme ID dans l'arbre
+        name: `${baseUser.firstName} ${baseUser.lastName}`,
+        gmail: baseUser.email,
+        gender: 'unknown', // Valeurs par défaut, à compléter par l'utilisateur
+        img: '/assets/avatars/default.svg',
+        // fid, mid, pids seront null/vide par défaut
+      };
+      const familyProfile = await authService.ensureUserProfileInFamilyTree(familyProfileData);
+      localStorage.setItem(USER_PROFILE_CACHE_KEY, JSON.stringify(familyProfile));
+      return familyProfile; // Retourne le profil enrichi de l'arbre
+    } catch (ensureError) {
+      console.error("Erreur lors de l'intégration du profil dans l'arbre après inscription:", ensureError);
+      const minimalProfileForCache = {
+          id: baseUser.id,
+          name: `${baseUser.firstName} ${baseUser.lastName}`,
+          email: baseUser.email,
+      }
+      localStorage.setItem(USER_PROFILE_CACHE_KEY, JSON.stringify(minimalProfileForCache));
+      return minimalProfileForCache;
+    }
   },
 
   logout: () => {
-    localStorage.removeItem(USER_PROFILE_KEY);
-    // Optionally clear other session-related data if needed
-    // localStorage.removeItem('familyData'); // Or handle this in familyDataService
+    localStorage.removeItem(JWT_TOKEN_KEY);
+    localStorage.removeItem(USER_PROFILE_CACHE_KEY);
+    // Optionnel: appeler un endpoint backend /auth/logout si géré (ex: révocation de token)
+    // apiClient.post('/auth/logout'); 
+    // Redirection gérée par l'intercepteur de réponse ou le router
   },
 
+  // Récupère le profil mis en cache localement (celui de l'arbre)
   getCurrentUserProfile: () => {
-    const stored = localStorage.getItem(USER_PROFILE_KEY);
-    return stored ? JSON.parse(stored) : null;
+    const stored = localStorage.getItem(USER_PROFILE_CACHE_KEY);
+    try {
+      return stored ? JSON.parse(stored) : null;
+    } catch (e) {
+      console.error("Error parsing user profile from cache", e);
+      localStorage.removeItem(USER_PROFILE_CACHE_KEY);
+      return null;
+    }
   },
 
-  updateCurrentUserProfile: (profileData) => {
-    const currentUser = authService.getCurrentUserProfile();
-    if (!currentUser) {
-        console.error("No user profile found to update.");
-        // Potentially create a new one if that's desired behavior, or throw error
-        // For now, let's assume an ID must exist or be assigned from profileData
-    }
-    
-    const updatedProfile = {
-        ...currentUser, // Spread existing data first
-        ...profileData, // Then overwrite with new data
-        id: profileData.id || (currentUser ? currentUser.id : Date.now()) // Ensure ID is preserved or assigned
-    };
+  // Récupère le profil utilisateur authentifié et son profil familial depuis le serveur
+  fetchUserProfileFromServer: async () => {
+    try {
+      // D'abord, obtenir les infos de l'utilisateur authentifié (nom, email, etc.)
+      const authUserResponse = await apiClient.get('/auth/me');
+      const authUser = authUserResponse.data; // {id (auth_uuid), email, firstName, lastName}
 
-    localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(updatedProfile));
-    return updatedProfile;
+      // Ensuite, obtenir son profil détaillé de l'arbre généalogique
+      // L'ID de personne dans l'arbre est le même que l'ID d'authentification (auth_uuid)
+      const familyProfileResponse = await apiClient.get(`/family/${authUser.id}`);
+      const familyProfile = familyProfileResponse.data;
+
+      localStorage.setItem(USER_PROFILE_CACHE_KEY, JSON.stringify(familyProfile));
+      return familyProfile;
+    } catch (error) {
+      console.error("Erreur lors de la récupération du profil utilisateur depuis le serveur:", error);
+      // Si 404 pour familyProfile, cela signifie qu'il faut l'assurer (ensure)
+      if (error.response && error.response.status === 404 && error.config.url.includes('/family/')) {
+          const authUser = (await apiClient.get('/auth/me')).data;
+           console.log("Profil familial non trouvé, tentative de création/synchronisation...");
+           try {
+               const ensuredProfile = await authService.ensureUserProfileInFamilyTree({
+                   id: authUser.id,
+                   name: `${authUser.firstName} ${authUser.lastName}`,
+                   gmail: authUser.email,
+               });
+               localStorage.setItem(USER_PROFILE_CACHE_KEY, JSON.stringify(ensuredProfile));
+               return ensuredProfile;
+           } catch (ensureError) {
+               console.error("Échec de ensureUserProfileInFamilyTree après 404:", ensureError);
+               authService.logout(); // Déconnexion en cas d'erreur critique
+               return null;
+           }
+      }
+      authService.logout(); // Déconnexion en cas d'autre erreur critique
+      return null;
+    }
+  },
+
+  // Met à jour le profil de l'utilisateur DANS L'ARBRE généalogique (via /api/family/:id)
+  updateCurrentUserProfileInFamilyTree: async (profileDataToUpdate) => {
+    if (!profileDataToUpdate.id) {
+      console.error("ID de profil manquant pour la mise à jour dans l'arbre");
+      throw new Error("ID de profil manquant");
+    }
+    try {
+      const response = await apiClient.put(`/family/${profileDataToUpdate.id}`, profileDataToUpdate);
+      localStorage.setItem(USER_PROFILE_CACHE_KEY, JSON.stringify(response.data));
+      return response.data;
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du profil dans l'arbre:", error);
+      throw error;
+    }
+  },
+  
+  // S'assure que l'utilisateur a un profil dans l'arbre, le crée/met à jour si nécessaire.
+  // `profileDetails` peut contenir des infos de base comme name, gender, birthYear, etc.
+  // L'ID utilisé sera celui de l'utilisateur authentifié.
+  ensureUserProfileInFamilyTree: async (profileDetails) => {
+    // profileDetails devrait au minimum contenir l'ID qui est l'ID d'authentification.
+    // S'il manque d'autres infos, le backend les prendra depuis User ou mettra des défauts.
+    try {
+      const response = await apiClient.post('/family/ensure-profile', profileDetails);
+      // Ne pas mettre à jour le cache ici, car ensure-profile est souvent appelé
+      // dans un contexte où le cache sera mis à jour par la fonction appelante (login, register, fetch)
+      return response.data;
+    } catch (error) {
+      console.error("Erreur lors de ensureUserProfileInFamilyTree:", error);
+      throw error;
+    }
   },
 
   isAuthenticated: () => {
-    return !!localStorage.getItem(USER_PROFILE_KEY);
+    const token = localStorage.getItem(JWT_TOKEN_KEY);
+    // Pour une vérification plus robuste, on pourrait décoder le token et vérifier sa date d'expiration.
+    // Mais pour une vérification simple côté client, la présence du token suffit souvent.
+    // Le backend revalidera toujours le token.
+    return !!token;
   }
 };// END OF FILE: src/services/authService.js
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/services/familyDataService.js
 
-// src/services/familyDataService.js
-import { filterDataForPersonalView } from '../js/utils/family-data-filter';
-
-const FAMILY_DATA_KEY = 'familyData';
-
-// Private helper to ensure data is initialized
-async function ensureFamilyDataInitialized() {
-  if (!localStorage.getItem(FAMILY_DATA_KEY)) {
-    try {
-      const response = await fetch('/data/dummydata.json');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const initialFamilyData = await response.json();
-      localStorage.setItem(FAMILY_DATA_KEY, JSON.stringify(initialFamilyData));
-      console.log("Family data initialized from dummydata.json");
-      return initialFamilyData;
-    } catch (error) {
-      console.error("Failed to fetch or initialize family data:", error);
-      localStorage.setItem(FAMILY_DATA_KEY, JSON.stringify([])); // Initialize with empty on error
-      return [];
-    }
-  }
-  return JSON.parse(localStorage.getItem(FAMILY_DATA_KEY));
-}
-
+// frontend/src/services/familyDataService.js
+import apiClient from './api';
+import { authService } from './authService'; // Pour obtenir l'ID de l'utilisateur courant si besoin
 
 export const familyDataService = {
   getAllFamilyData: async () => {
-    return await ensureFamilyDataInitialized();
-  },
-
-  getRawFamilyDataSync: () => { // For cases where async is problematic and data is known to be there
-    const data = localStorage.getItem(FAMILY_DATA_KEY);
-    return data ? JSON.parse(data) : [];
-  },
-  
-  saveAllFamilyData: (data) => {
-    localStorage.setItem(FAMILY_DATA_KEY, JSON.stringify(data));
-  },
-
-  // Gets the user's representation *within* the familyData array,
-  // ensuring it exists and is up-to-date with the profile.
-  // This is crucial for consistency.
-  _ensureUserInFamilyData: (userProfile, currentFamilyData) => {
-    let familyData = [...currentFamilyData]; // Work on a copy
-    let userInFamily = familyData.find(p => p.id === userProfile.id);
-    
-    const profileToSync = {
-        id: userProfile.id,
-        name: userProfile.name,
-        mid: userProfile.mid,
-        fid: userProfile.fid,
-        pids: userProfile.pids || [],
-        gender: userProfile.gender,
-        birthYear: userProfile.birthYear,
-        deathYear: userProfile.deathYear, // Ensure all relevant fields are synced
-        img: userProfile.img,
-        gmail: userProfile.gmail
-    };
-
-    if (!userInFamily) {
-      userInFamily = { ...profileToSync }; // Create new from profile
-      familyData.push(userInFamily);
-    } else {
-      // User exists, update it with properties from userProfileSource
-      Object.assign(userInFamily, profileToSync);
-    }
-    familyDataService.saveAllFamilyData(familyData); // Persist change
-    return { updatedFamilyData: familyData, userNodeInFamilyData: userInFamily };
-  },
-
-  getPersonById: async (id) => {
-    const data = await familyDataService.getAllFamilyData();
-    return data.find(p => p.id === id);
-  },
-
-  updatePersonInFamilyData: async (personToUpdate) => {
-    let data = await familyDataService.getAllFamilyData();
-    const personIndex = data.findIndex(p => p.id === personToUpdate.id);
-    if (personIndex > -1) {
-      data[personIndex] = { ...data[personIndex], ...personToUpdate };
-    } else {
-      // If person doesn't exist, decide whether to add them or throw an error
-      // For now, let's assume update means they should exist or it's an error.
-      // Or, if it's the current user, it's fine to add.
-      console.warn(`Person with ID ${personToUpdate.id} not found in familyData for update. Adding them.`);
-      data.push({...personToUpdate}); // Add if not found - useful for new user from profile
-    }
-    familyDataService.saveAllFamilyData(data);
-    return personToUpdate;
-  },
-
-  addSpouse: async (userProfile, spouseId) => {
-    let allData = await familyDataService.getAllFamilyData();
-    const { updatedFamilyData, userNodeInFamilyData } = familyDataService._ensureUserInFamilyData(userProfile, allData);
-    allData = updatedFamilyData; // Use the potentially updated array
-
-    const spouseNode = allData.find(p => p.id === spouseId);
-
-    if (userNodeInFamilyData && spouseNode) {
-      userNodeInFamilyData.pids = userNodeInFamilyData.pids || [];
-      if (!userNodeInFamilyData.pids.includes(spouseId)) {
-        userNodeInFamilyData.pids.push(spouseId);
-      }
-      spouseNode.pids = spouseNode.pids || [];
-      if (!spouseNode.pids.includes(userNodeInFamilyData.id)) {
-        spouseNode.pids.push(userNodeInFamilyData.id);
-      }
-      familyDataService.saveAllFamilyData(allData);
-      // The userProfile itself might also need to reflect this change for consistency
-      // So, return the updated userNode which should be used to update userProfile in localStorage
-      return userNodeInFamilyData; 
-    }
-    return null; // Or throw error
-  },
-
-  setFather: async (userProfile, fatherId) => {
-    let allData = await familyDataService.getAllFamilyData();
-    const { updatedFamilyData, userNodeInFamilyData } = familyDataService._ensureUserInFamilyData(userProfile, allData);
-    allData = updatedFamilyData;
-
-    const fatherNode = allData.find(p => p.id === fatherId);
-    if (userNodeInFamilyData && fatherNode && fatherNode.gender === 'male') {
-      userNodeInFamilyData.fid = fatherId;
-      if (userNodeInFamilyData.mid === fatherId) userNodeInFamilyData.mid = null;
-      familyDataService.saveAllFamilyData(allData);
-      return userNodeInFamilyData;
-    }
-    return null;
-  },
-
-  setMother: async (userProfile, motherId) => {
-    let allData = await familyDataService.getAllFamilyData();
-    const { updatedFamilyData, userNodeInFamilyData } = familyDataService._ensureUserInFamilyData(userProfile, allData);
-    allData = updatedFamilyData;
-
-    const motherNode = allData.find(p => p.id === motherId);
-    if (userNodeInFamilyData && motherNode && motherNode.gender === 'female') {
-      userNodeInFamilyData.mid = motherId;
-      if (userNodeInFamilyData.fid === motherId) userNodeInFamilyData.fid = null;
-      familyDataService.saveAllFamilyData(allData);
-      return userNodeInFamilyData;
-    }
-    return null;
-  },
-
-  addChild: async (userProfile, childId) => {
-    let allData = await familyDataService.getAllFamilyData();
-    // Ensure parent (userProfile) is synced in familyData
-    const { updatedFamilyData, userNodeInFamilyData: parentNode } = familyDataService._ensureUserInFamilyData(userProfile, allData);
-    allData = updatedFamilyData;
-
-    const childNode = allData.find(p => p.id === childId);
-
-    if (parentNode && childNode) {
-      if (parentNode.gender === 'male') {
-        childNode.fid = parentNode.id;
-        if (childNode.mid === parentNode.id) childNode.mid = null;
-      } else if (parentNode.gender === 'female') {
-        childNode.mid = parentNode.id;
-        if (childNode.fid === parentNode.id) childNode.fid = null;
-      }
-      familyDataService.saveAllFamilyData(allData);
-      // Parent profile (userNodeInFamilyData) itself isn't changed when adding children,
-      // but the child in allData is.
-      return parentNode; // Return parent for consistency, though it's not modified here
-    }
-    return null;
-  },
-  
-  getPersonalFamilyData: async (userProfile) => {
-    if (!userProfile || typeof userProfile.id === 'undefined' || userProfile.id === null) {
-      console.error("familyDataService.getPersonalFamilyData: Called with invalid userProfile or userProfile.id is missing/undefined.", userProfile);
+    try {
+      const response = await apiClient.get('/family');
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch all family data:", error);
       return [];
     }
-    console.log("familyDataService.getPersonalFamilyData - Calling utility. UserProfile:", userProfile.name, userProfile.id);
-    const fullFamilyData = await familyDataService.getAllFamilyData();
-    return filterDataForPersonalView(fullFamilyData, userProfile);
-  }
+  },
+
+  getPersonById: async (personId) => {
+    if (!personId) {
+        console.warn("getPersonById: personId is undefined or null");
+        return null;
+    }
+    try {
+      const response = await apiClient.get(`/family/${personId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Failed to fetch person with id ${personId}:`, error);
+      return null;
+    }
+  },
+
+  // Met à jour les données d'UNE personne dans l'arbre.
+  // Cette fonction est générique. Pour mettre à jour le profil de l'utilisateur connecté,
+  // il est préférable d'utiliser `authService.updateCurrentUserProfileInFamilyTree`.
+  updatePersonInFamilyData: async (personToUpdate) => {
+    if (!personToUpdate || !personToUpdate.id) {
+      console.error("Données de personne invalides ou ID manquant pour la mise à jour.");
+      throw new Error("Données de personne invalides ou ID manquant.");
+    }
+    try {
+      const response = await apiClient.put(`/family/${personToUpdate.id}`, personToUpdate);
+      
+      // Si la personne mise à jour est l'utilisateur actuellement connecté, mettre à jour son cache
+      const currentUser = authService.getCurrentUserProfile();
+      if (currentUser && currentUser.id === response.data.id) {
+        localStorage.setItem('userProfileCache', JSON.stringify(response.data));
+      }
+      return response.data;
+    } catch (error) {
+      console.error(`Failed to update person with id ${personToUpdate.id}:`, error);
+      throw error;
+    }
+  },
+
+  // Obtient les données filtrées pour la vue "personnelle" de l'utilisateur connecté
+  getPersonalFamilyData: async () => {
+    try {
+      const response = await apiClient.get('/family/personal');
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch personal family data:", error);
+      return [];
+    }
+  },
+
+  // Les fonctions spécifiques addSpouse, setFather etc. sont supprimées.
+  // La logique de modification des relations est maintenant gérée par la soumission
+  // du formulaire de profil qui appelle `updatePersonInFamilyData` (ou via authService pour le user courant)
+  // avec l'objet personne complet incluant les `fid`, `mid`, `pids` mis à jour.
 };// END OF FILE: src/services/familyDataService.js
 
 //---> PATH: /c/Users/PC/School/RO/TP/TP1/frontend/src/services/uiStateService.js
