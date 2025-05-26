@@ -128,14 +128,13 @@
   {
     "id": "j1k2l3m4-n5o6-p7q8-r9s0-t1u2v3w4x5y6",
     "name": "Laura Blanc",
-    "mid": null,
-    "fid": null,
+    "mid": "t1u2v3w4-x5y6-z7a8-b9c0-d1e2f3g4h5i6",
+    "fid": "b756bac1-63d0-4910-aaa2-3f4fcfb711d9",
     "pids": [
       "i7j8k9l0-m1n2-o3p4-q5r6-s7t8u9v0w1x2"
     ],
     "gender": "female",
     "birthYear": 1988,
-    "deathYear": null,
     "img": "/assets/avatars/wife.svg",
     "gmail": "laura.blanc@gmail.com"
   },
@@ -283,13 +282,12 @@
     "id": "v1w2x3y4-z5a6-b7c8-d9e0-f1g2h3i4j5k6",
     "name": "Hélène Durand",
     "mid": null,
-    "fid": null,
+    "fid": "s7t8u9v0-w1x2-y3z4-a5b6-c7d8e9f0g1h2",
     "pids": [
       "u7v8w9x0-y1z2-a3b4-c5d6-e7f8g9h0i1j2"
     ],
     "gender": "female",
     "birthYear": 1942,
-    "deathYear": null,
     "img": "/assets/avatars/grandmother.svg",
     "gmail": "helene.durand@gmail.com"
   },
@@ -310,14 +308,13 @@
   {
     "id": "x1y2z3a4-b5c6-d7e8-f9g0-h1i2j3k4l5m6",
     "name": "Nathalie Simon",
-    "mid": null,
-    "fid": null,
+    "mid": "r1s2t3u4-v5w6-x7y8-z9a0-b1c2d3e4f5g6",
+    "fid": "b756bac1-63d0-4910-aaa2-3f4fcfb711d9",
     "pids": [
       "w7x8y9z0-a1b2-c3d4-e5f6-g7h8i9j0k1l2"
     ],
     "gender": "female",
     "birthYear": 1967,
-    "deathYear": null,
     "img": "/assets/avatars/mother.svg",
     "gmail": "nathalie.simon@gmail.com"
   },
@@ -370,5 +367,16 @@
     "deathYear": null,
     "img": "/assets/avatars/grandson.svg",
     "gmail": "theo.moreau@gmail.com"
+  },
+  {
+    "id": "b756bac1-63d0-4910-aaa2-3f4fcfb711d9",
+    "name": "bryan kouassi",
+    "mid": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "fid": "d4c3e1a5-0b1e-4f8a-9a9c-0d2b3e4f5a6b",
+    "pids": [],
+    "gender": "male",
+    "img": "/assets/avatars/default.svg",
+    "gmail": "yobobryan@gmail.com",
+    "birthYear": 2006
   }
 ]
